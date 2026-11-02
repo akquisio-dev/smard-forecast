@@ -171,3 +171,16 @@ Commit `552f040`, Beschreibung in `docs/phase1.md`.
 - Der Download-Dienst wurde neu gestartet, damit er schon mit Logdatei läuft. Er hatte bis
   dahin noch nichts geladen, es ging nichts verloren. Das Journal des ersten Starts liegt in
   `data/logs/download-erster-start.log`.
+
+### 18:41 Archiv-Job ausgerollt
+
+**Gemacht:** Joey hat `archiv/ausrollen.sh` selbst ausgeführt. Der Systemnutzer
+`smard-forecast` wurde angelegt, der Timer `smard-forecast-archiv.timer` aktiviert, und der
+erste Lauf hat gespeichert: `2026/11/02/20261102T1841Z.json.gz`, 95.359 Bytes, Läufe ICON-D2
+und ICON-EU 15 UTC, ICON global 12 UTC, ICON-D2-RUC 17 UTC.
+
+**Geprüft:** Der Timer steht auf stündlich (nächster Lauf 19:36). Der Abzug für die
+Dienste-Sicherung funktioniert (`tar` über ssh, rund 95 KB). Damit ist die Sicherung heute
+Nacht um 04:00 nicht mehr gefährdet.
+
+**Ergebnis:** Ab jetzt wächst das eigene Archiv. Nach einem Jahr reicht es für Tag 7.
