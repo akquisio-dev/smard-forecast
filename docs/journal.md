@@ -149,7 +149,7 @@ kein `tomllib`: das Archiv-Skript nutzt nur die Standardbibliothek, die Ortslist
 Ausrollen als JSON erzeugt.
 
 **Fehlschlag 4:** Das Ausrollen auf die Web-Maschine (`archiv/ausrollen.sh`) wurde von der
-Freigabe-Prüfung von Claude Code abgelehnt (Schreiben auf einem fremden Server). Joey rollt es
+Freigabe-Prüfung von Claude Code abgelehnt (Schreiben auf einem fremden Server). Der Betreuer rollt es
 selbst aus.
 
 **Hinweis zum Download:** Beim Start wurde vorsichtshalber eingetragen, dass heute schon 4.500
@@ -161,7 +161,7 @@ Commit `552f040`, Beschreibung in `docs/phase1.md`.
 
 ### 18:36 Protokollierung
 
-**Ziel:** Jeder Schritt und jeder Fehlschlag soll später nachvollziehbar sein (Wunsch von Joey).
+**Ziel:** Jeder Schritt und jeder Fehlschlag soll später nachvollziehbar sein (Wunsch des Betreuers).
 
 **Gemacht:**
 
@@ -174,7 +174,7 @@ Commit `552f040`, Beschreibung in `docs/phase1.md`.
 
 ### 18:41 Archiv-Job ausgerollt
 
-**Gemacht:** Joey hat `archiv/ausrollen.sh` selbst ausgeführt. Der Systemnutzer
+**Gemacht:** Der Betreuer hat `archiv/ausrollen.sh` selbst ausgeführt. Der Systemnutzer
 `smard-forecast` wurde angelegt, der Timer `smard-forecast-archiv.timer` aktiviert, und der
 erste Lauf hat gespeichert: `2026/11/02/20261102T1841Z.json.gz`, 95.359 Bytes, Läufe ICON-D2
 und ICON-EU 15 UTC, ICON global 12 UTC, ICON-D2-RUC 17 UTC.
@@ -184,3 +184,30 @@ Dienste-Sicherung funktioniert (`tar` über ssh, rund 95 KB). Damit ist die Sich
 Nacht um 04:00 nicht mehr gefährdet.
 
 **Ergebnis:** Ab jetzt wächst das eigene Archiv. Nach einem Jahr reicht es für Tag 7.
+
+### abends: Projektbericht als PDF
+
+**Ziel:** Ein ausführliches Dokument über das ganze Projekt, technisch Schritt für Schritt.
+
+**Gemacht:**
+
+- `docs/bericht/abbildungen.py` erzeugt 15 Abbildungen aus den echten Daten unter `data/`
+  (Karte, Leistung, Auslastung, Datenverfügbarkeit, Beispielwoche, Klimatologie) und
+  Ablaufdiagramme. Farben aus einer geprüften Palette, je Quelle immer dieselbe Farbe.
+  Schematische Abbildungen sind im Titel als „Schema" gekennzeichnet.
+- `docs/bericht/bericht.py` baut daraus mit reportlab
+  `docs/bericht/smard-forecast-projektbericht.pdf` (32 Seiten, 16 Kapitel, Inhaltsverzeichnis
+  mit Lesezeichen).
+- Kartenumrisse aus Natural Earth (gemeinfrei) in `docs/bericht/assets/`.
+
+**Fehlschlag:** Der erste Kartenumriss kam aus einem GitHub-Repo, dessen Quelle (DIVA-GIS) nur
+nicht-kommerzielle Nutzung erlaubt. Für ein öffentliches Repo ersetzt durch Natural Earth.
+
+**Fehlschlag:** Erste Fassung der Diagramme hatte überlappende Beschriftungen (Architektur,
+Ablauf des Archivs, Legenden über Kurven). Jede Abbildung wurde gerendert und angesehen, dann
+korrigiert. Im PDF standen Überschriften allein am Seitenende und die Kopfzeile zeigte das
+Kapitel der Vorseite; beides behoben.
+
+**Gelernt:** Abbildungen immer rendern und ansehen, nicht nur erzeugen. Bei öffentlichen
+Repos auch die Lizenz von Hilfsdaten (Kartenumrisse) prüfen. Personennamen gehören nicht in
+öffentliche Dokumente; sie wurden durch „Betreuer" ersetzt.
