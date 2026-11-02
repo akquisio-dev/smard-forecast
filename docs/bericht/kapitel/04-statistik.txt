@@ -1,0 +1,523 @@
+@teil Statistik und Lernen
+Wie man Fehler misst, was ein Quantil ist, wie ein Computer aus Daten lernt und wie man ehrlich prüft, ob er etwas gelernt hat.
+
+# Beschreibende Statistik
+
+Bevor ein Modell gebaut wird, braucht man Werkzeuge, um Daten und Fehler mit wenigen Zahlen zu beschreiben. Dieses Kapitel führt sie ein und benutzt dafür ein echtes Beispiel: die Fehler der Netzbetreiber-Prognose seit 2024.
+
+!begriff Fehler: hier immer die Differenz echter Wert minus vorhergesagter Wert, e = y − ŷ. Ein positiver Fehler heißt: Es kam mehr als vorhergesagt. Das Dach über ŷ (gesprochen „y Dach“) kennzeichnet einen geschätzten oder vorhergesagten Wert.
+
+## Mittelwert und Median
+
+!begriff Mittelwert: die Summe aller Werte geteilt durch ihre Anzahl. Er reagiert stark auf einzelne extreme Werte.
+
+$$ \bar{y} = \frac{1}{n} \sum_{i=1}^{n} y_i
+
+!begriff Median: der Wert in der Mitte, wenn man alle Werte der Größe nach sortiert. Die Hälfte der Werte liegt darunter, die Hälfte darüber. Einzelne Ausreißer verschieben ihn kaum.
+
+!rechnen Mittelwert gegen Median
+Fünf Stundenfehler in GW: −1, 0, 0,5, 1, 12 (die letzte Stunde war ein grober Ausreißer).
+Mittelwert: (−1 + 0 + 0,5 + 1 + 12) / 5 = 12,5 / 5 = 2,5.
+Median: sortiert −1, 0, **0,5**, 1, 12, der mittlere Wert ist 0,5.
+Der Ausreißer hat den Mittelwert verfünffacht, den Median nicht berührt.
+!ende
+
+## Quantile
+
+Der Median ist ein Sonderfall eines allgemeineren Begriffs.
+
+!begriff Quantil: das τ-Quantil (τ, gesprochen „tau“, eine Zahl zwischen 0 und 1) ist der Wert, unter dem ein Anteil τ aller Werte liegt. Das 0,5-Quantil ist der Median, das 0,1-Quantil liegt so, dass 10 % der Werte kleiner sind. Statt „0,1-Quantil“ sagt man auch „10. Perzentil“ oder kurz p10.
+
+!rechnen Quantile aus zehn Zahlen
+Zehn sortierte Fehler: −3, −2, −1, −1, 0, 0, 1, 1, 2, 5.
+p10: 10 % von 10 Werten ist 1 Wert; das 0,1-Quantil liegt zwischen dem 1. und 2. Wert, also zwischen −3 und −2. Je nach Rechenvorschrift erhält man −3, −2 oder einen Wert dazwischen (Software interpoliert meist linear: −2,9).
+p50 (Median): zwischen dem 5. und 6. Wert, beide 0, also 0.
+p90: zwischen dem 9. und 10. Wert, also zwischen 2 und 5 (linear interpoliert 2,3).
+Zwischen p10 und p90 liegen die mittleren 80 % der Werte.
+!ende
+
+Bei wenigen Werten sind Quantile ungenau; bei tausenden Stunden werden sie sehr stabil.
+
+## Wie Fehler verteilt sind
+
+!begriff Histogramm: ein Balkendiagramm, das zählt, wie viele Werte in jedes Intervall fallen (zum Beispiel jeweils 0,5 GW breit). Es zeigt die Form einer Verteilung: wo die meisten Werte liegen und wie weit sie streuen.
+
+!begriff Verteilung: die Gesamtheit aller möglichen Werte einer Größe zusammen mit der Angabe, wie häufig jeder vorkommt.
+
+[abb l_fehler_histogramm | Echte Fehler der Netzbetreiber-Prognose seit 2024: links Solar (nur Tagesstunden), rechts Wind an Land. Gestrichelt das 10-, 50- und 90-%-Quantil.]
+
+Tabelle: Kennzahlen der Netzbetreiber-Fehler (in GW, seit 1.1.2024)
+| Kennzahl | Solar (Tagesstunden) | Wind an Land |
+| Zahl der Stunden | {{z:nb_solar_n}} | {{z:nb_wind_onshore_n}} |
+| Mittelwert (Bias) | {{z:nb_solar_mittel:3}} | {{z:nb_wind_onshore_mittel:3}} |
+| Median | {{z:nb_solar_median:3}} | {{z:nb_wind_onshore_median:3}} |
+| p10 | {{z:nb_solar_p10:2}} | {{z:nb_wind_onshore_p10:2}} |
+| p90 | {{z:nb_solar_p90:2}} | {{z:nb_wind_onshore_p90:2}} |
+| MAE | {{z:nb_solar_mae:2}} | {{z:nb_wind_onshore_mae:2}} |
+| RMSE | {{z:nb_solar_rmse:2}} | {{z:nb_wind_onshore_rmse:2}} |
+
+Mittelwert und Median liegen nahe null: Die Netzbetreiber liegen im Mittel weder systematisch zu hoch noch zu niedrig. In 80 % der Stunden liegt der Fehler bei Wind an Land zwischen {{z:nb_wind_onshore_p10:2}} und {{z:nb_wind_onshore_p90:2}} GW. Die Verteilung ist spitzer als eine Glockenkurve: viele kleine Fehler, aber auch einige sehr große.
+
+## Fehlermaße: Bias, MAE und RMSE
+
+!begriff Bias: der Mittelwert der Fehler. Er misst, ob ein Verfahren systematisch zu hoch oder zu niedrig liegt. Ein Bias von null heißt nicht, dass die Vorhersagen gut sind: +10 und −10 heben sich auch auf.
+
+$$ \mathrm{Bias} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)
+
+!begriff MAE: mean absolute error, mittlerer absoluter Fehler. Man nimmt von jedem Fehler den Betrag (lässt das Vorzeichen weg) und mittelt. Ein MAE von 1,2 GW heißt: Im Mittel liegt man 1,2 GW daneben, egal in welche Richtung.
+
+$$ \mathrm{MAE} = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
+
+!begriff RMSE: root mean squared error, Wurzel aus dem mittleren quadrierten Fehler. Quadrieren bestraft große Fehler überproportional: Ein Fehler von 4 zählt 16-fach, einer von 1 nur einfach. Die Wurzel am Ende bringt das Ergebnis zurück in die Einheit GW.
+
+$$ \mathrm{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+
+Der RMSE ist immer mindestens so groß wie der MAE. Je größer der Abstand, desto mehr einzelne große Fehler gibt es. Bei Solar ist das Verhältnis {{z:nb_solar_rmse:2}} zu {{z:nb_solar_mae:2}}, also etwa 1,4; bei einer Glockenkurve wäre es 1,25.
+
+!rechnen MAE und RMSE an vier Fehlern
+Fehler 1, −1, 1, −5 (GW).
+Bias = (1 − 1 + 1 − 5)/4 = −1.
+MAE = (1 + 1 + 1 + 5)/4 = 2.
+RMSE = √((1 + 1 + 1 + 25)/4) = √7 = 2,65.
+Der eine große Fehler macht beim RMSE einen viel größeren Teil aus.
+!ende
+
+!praxis Warum das Projekt den MAE als Hauptmaß nimmt
+Der MAE ist anschaulich (in GW oder in % der Leistung) und passt zum Median: Ein Modell, das den Median vorhersagt (p50), minimiert genau den MAE (das zeigt Kapitel 10). Der RMSE wird zusätzlich berichtet, weil er auf grobe Fehler aufmerksam macht.
+!ende
+
+## Streuung: Varianz und Standardabweichung
+
+!begriff Varianz: der mittlere quadrierte Abstand der Werte von ihrem Mittelwert. Sie misst, wie stark Werte streuen.
+
+!begriff Standardabweichung: die Wurzel aus der Varianz, wieder in der Einheit der Werte. Bei einer Glockenkurve liegen etwa 68 % der Werte innerhalb einer Standardabweichung um den Mittelwert.
+
+$$ s^2 = \frac{1}{n} \sum_{i=1}^{n} (y_i - \bar{y})^2 \qquad s = \sqrt{s^2}
+
+Ist der Bias null, ist der RMSE gleich der Standardabweichung der Fehler. Die Varianz taucht in Kapitel 12 wieder auf: Ein Entscheidungsbaum sucht Aufteilungen, die die Varianz in den Teilen möglichst stark senken.
+
+## Zusammenhang: Korrelation
+
+!begriff Korrelation (Pearson): eine Zahl r zwischen −1 und 1, die misst, wie gut sich zwei Größen durch eine gerade Linie verbinden lassen. r = 1: perfekt steigend, r = −1: perfekt fallend, r = 0: kein linearer Zusammenhang.
+
+$$ r = \frac{\sum_i (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_i (x_i - \bar{x})^2} \, \sqrt{\sum_i (y_i - \bar{y})^2}}
+
+Der Zähler ist groß und positiv, wenn x und y gemeinsam über oder gemeinsam unter ihrem Mittelwert liegen. Der Nenner normiert auf die Streuung beider Größen, damit r ohne Einheit und zwischen −1 und 1 ist.
+
+!begriff Bestimmtheitsmaß R²: das Quadrat der Korrelation. Es gibt an, welcher Anteil der Schwankung von y sich durch eine gerade Linie in x erklären lässt. R² = 0,95 heißt: 95 % der Varianz von y werden erklärt, 5 % bleiben übrig.
+
+!begriff Rangkorrelation (Spearman): die Pearson-Korrelation der Ränge statt der Werte (der kleinste Wert bekommt Rang 1 und so weiter). Sie misst, ob y mit x steigt, egal ob in gerader Linie oder gekrümmt. Für Wind mit seiner gekrümmten Leistungskurve ist sie das passendere Maß.
+
+!rechnen Was r = 0,976 bedeutet
+Für Solar wurde in Kapitel 6 zwischen vorhergesagter Strahlung und Auslastung r = {{z:solar_r_tag1:3}} gemessen. R² = 0,976² = {{z:solar_r2_tag1:3}}. Von der gesamten Schwankung der Auslastung über die Tagesstunden bleiben also nur knapp 5 % unerklärt, wenn man allein die mittlere vorhergesagte Strahlung kennt. Bei der Verschiebung um eine Stunde (Kapitel 4) stieg r von 0,942 auf 0,987: Der unerklärte Anteil sank von 1 − 0,942² = 11,3 % auf 1 − 0,987² = 2,6 %.
+!ende
+
+!achtung Korrelation ist nicht Ursache
+Eine hohe Korrelation sagt nur, dass zwei Größen gemeinsam schwanken. Bei Strahlung und Solarstrom ist die Ursache physikalisch klar; im Allgemeinen ist das nicht so.
+!ende
+
+## Autokorrelation: das Gedächtnis einer Zeitreihe
+
+!begriff Autokorrelation: die Korrelation einer Zeitreihe mit sich selbst, um k Schritte verschoben. Sie misst, wie ähnlich ein Wert dem Wert k Stunden später ist.
+
+[abb l_autokorrelation | Autokorrelation der Auslastung, berechnet aus den echten Stundenwerten seit 2024, für Abstände von 0 bis 168 Stunden (eine Woche).]
+
+Die Abbildung verrät viel über die drei Quellen. **Solar** hat einen starken 24-Stunden-Rhythmus: Die Stunde 24 Stunden später ist fast gleich ({{z:acf_solar_24:2}}), zwölf Stunden später ist das Gegenteil (Nacht). **Wind** hat keinen Tagesrhythmus, aber ein langes Gedächtnis über wenige Stunden: Eine Stunde später ist fast alles wie vorher ({{z:acf_wind_onshore_1:2}}), einen Tag später nur noch ungefähr ({{z:acf_wind_onshore_24:2}}), drei Tage später kaum noch ({{z:acf_wind_onshore_72:2}}).
+
+!praxis Zwei Folgen für das Projekt
+Erstens erklärt die Kurve, warum die Messlatte „Persistenz“ (morgen wie heute, Kapitel 15) bei Solar recht gut und bei Wind schon nach einem Tag schlecht ist. Zweitens ist sie der Grund, warum man Daten zum Prüfen nie zufällig auswählen darf: Benachbarte Stunden sind fast gleich, ein zufällig gewählter Prüfwert hätte seinen Zwilling im Training (Kapitel 15).
+!ende
+
+# Quantile und Wahrscheinlichkeitsprognosen
+
+## Warum nicht einfach eine Zahl?
+
+Eine einzelne Zahl („morgen 40 GW“) verschweigt, wie sicher sie ist. Für jemanden, der ein Elektroauto laden oder eine Wärmepumpe steuern will, macht es einen großen Unterschied, ob 40 GW „ziemlich sicher“ oder „irgendwo zwischen 10 und 60“ heißt.
+
+!begriff Wahrscheinlichkeitsprognose: eine Prognose, die nicht nur einen Wert, sondern eine Verteilung möglicher Werte angibt. Die einfachste Form sind einige Quantile, etwa p10, p50 und p90. Englisch: probabilistic forecast.
+
+smard-forecast sagt drei Quantile voraus. Die Aussage „p10 = 31, p50 = 40, p90 = 46 GW“ bedeutet:
+
+- Mit 10 % Wahrscheinlichkeit wird es weniger als 31 GW.
+- Mit 50 % Wahrscheinlichkeit weniger als 40, mit 50 % mehr.
+- Mit 90 % Wahrscheinlichkeit weniger als 46 GW, also nur mit 10 % mehr.
+- Zwischen 31 und 46 GW liegt der echte Wert mit 80 % Wahrscheinlichkeit.
+
+Die Bandbreite muss nicht symmetrisch sein. Bei Solar ist sie oft nach unten breiter als nach oben: Eine unerwartete Wolke kann viel kosten, mehr als klarer Himmel geht nicht.
+
+## Der Pinball-Verlust
+
+Wie bringt man einem Lernverfahren bei, statt eines Mittelwerts ein Quantil vorherzusagen? Über die Funktion, mit der man seine Fehler bewertet.
+
+!begriff Verlustfunktion: eine Formel, die jedem Paar aus echtem Wert y und Vorhersage q eine Strafe zuordnet. Lernen heißt: die Vorhersagen so wählen, dass die mittlere Strafe über alle Trainingsdaten möglichst klein wird. Englisch: loss function.
+
+Für das τ-Quantil benutzt man den **Pinball-Verlust** (auch Quantilverlust):
+
+$$ L_\tau(y, q) = \tau \cdot \max(y - q,\ 0) \ +\ (1 - \tau) \cdot \max(q - y,\ 0)
+
+Die Funktion max(a, 0) gibt a zurück, wenn a positiv ist, sonst 0; so zählt jeweils nur einer der beiden Summanden. Liegt die Vorhersage q zu niedrig (der echte Wert ist größer), kostet jede Einheit Abstand τ. Liegt sie zu hoch, kostet jede Einheit 1 − τ. Für τ = 0,5 sind beide Seiten gleich teuer, und der Pinball-Verlust ist der halbe absolute Fehler. Für τ = 0,9 kostet zu niedrig 0,9 und zu hoch nur 0,1, also ist zu niedrig neunmal so teuer.
+
+[abb pinball | Links: der Pinball-Verlust für drei Quantile als Funktion des Fehlers; die Form erinnert an den Weg einer Kugel im Flipper, daher der Name. Rechts: so sieht eine Tagesprognose mit Bandbreite aus (Schema mit erfundenen Werten).]
+
+!rechnen Pinball-Verlust ausrechnen
+Echter Wert y = 40 GW. Vorhersage für p90: q = 46 GW (zu hoch um 6). Verlust = (1 − 0,9) · 6 = 0,6.
+Wäre q = 36 gewesen (zu niedrig um 4): Verlust = 0,9 · 4 = 3,6.
+Obwohl 36 näher an 40 liegt als 46, ist der Verlust sechsmal so groß. Für ein 90-%-Quantil ist „lieber etwas zu hoch“ richtig.
+!ende
+
+## Warum das Minimum genau beim Quantil liegt
+
+Das ist der zentrale mathematische Grund, warum der Pinball-Verlust funktioniert. Angenommen, man soll für eine unsichere Größe Y eine einzige Zahl q angeben und wird mit dem mittleren Pinball-Verlust bewertet. Welche Zahl ist am besten?
+
+Man betrachtet, was passiert, wenn man q um ein winziges Stück d nach oben schiebt:
+
+- Bei allen Fällen, in denen Y über q liegt (Anteil P(Y > q)), wird der Abstand um d kleiner; jeder dieser Fälle spart τ · d.
+- Bei allen Fällen, in denen Y unter q liegt (Anteil P(Y < q)), wird der Abstand um d größer; jeder kostet (1 − τ) · d mehr.
+
+!begriff Wahrscheinlichkeit P(...): der Anteil der Fälle, in denen etwas eintritt, als Zahl zwischen 0 und 1. P(Y < q) = 0,3 heißt: In 30 % der Fälle liegt Y unter q. Bei Daten schätzt man sie durch Abzählen.
+
+Die Änderung des mittleren Verlusts ist also
+
+$$ \frac{d\,\overline{L}}{dq} = -\tau \cdot P(Y > q) + (1 - \tau) \cdot P(Y < q)
+
+Am Minimum ist diese Ableitung null (Kapitel 7). Mit P(Y > q) = 1 − P(Y < q) folgt:
+
+$$ -\tau\,(1 - P(Y<q)) + (1-\tau)\,P(Y<q) = 0 \quad\Rightarrow\quad P(Y < q) = \tau
+
+Genau dort, wo ein Anteil τ der Werte unter q liegt, ist der Verlust am kleinsten. Das ist die Definition des τ-Quantils. Für τ = 0,5 ist es der Median; deshalb minimiert der Median den MAE.
+
+Mit echten Daten lässt sich das nachprüfen. Für die Fehler der Netzbetreiber bei Wind an Land wurde für jede konstante Vorhersage q zwischen −6 und +6 GW der mittlere Pinball-Verlust ausgerechnet:
+
+[abb l_pinball_minimum | Mittlerer Pinball-Verlust über alle {{z:nb_wind_onshore_n}} Stunden seit 2024 für jede mögliche konstante Vorhersage q. Punkte: Minimum der Kurve; gepunktete Linien: die direkt abgezählten Quantile. Sie fallen zusammen.]
+
+Tabelle: Wo das Minimum liegt und wo das abgezählte Quantil liegt (GW)
+| τ | Minimum der Kurve | Quantil durch Abzählen |
+| 0,1 | {{z:pin_min_0.1:2}} | {{z:pin_q_0.1:2}} |
+| 0,5 | {{z:pin_min_0.5:2}} | {{z:pin_q_0.5:2}} |
+| 0,9 | {{z:pin_min_0.9:2}} | {{z:pin_q_0.9:2}} |
+
+Die kleinen Unterschiede kommen nur daher, dass q in Schritten von 0,05 GW ausprobiert wurde.
+
+!merke
+Wer den Pinball-Verlust mit τ minimiert, schätzt automatisch das τ-Quantil. Das gilt nicht nur für eine Konstante, sondern auch für ein ganzes Modell, das für jede Stunde eine eigene Vorhersage macht: Es lernt das τ-Quantil **unter der Bedingung** der jeweiligen Merkmale.
+!ende
+
+## Kalibrierung: stimmen die Wahrscheinlichkeiten?
+
+Eine Bandbreite von p10 bis p90 verspricht: In 80 % der Stunden liegt der echte Wert darin. Ob das stimmt, lässt sich einfach abzählen.
+
+!begriff Trefferquote: der Anteil der Stunden, in denen der echte Wert zwischen p10 und p90 lag. Englisch: coverage. Soll-Wert: 80 %.
+
+!begriff Kalibrierung: ein Prognoseverfahren ist gut kalibriert, wenn seine Wahrscheinlichkeiten stimmen: Was mit 80 % angekündigt wird, tritt in 80 % der Fälle ein. Liegt die Trefferquote deutlich darunter, ist die Bandbreite zu schmal (das Verfahren ist zu selbstsicher); liegt sie deutlich darüber, ist sie unnötig breit.
+
+!begriff Schärfe: wie schmal eine Bandbreite ist. Eine Prognose „zwischen 0 und 60 GW“ ist fast immer richtig, aber nutzlos. Ziel ist die schärfste Bandbreite, die noch gut kalibriert ist.
+
+Ein echtes Lernbeispiel zeigt, wie man das prüft. Aus der Prognose der Netzbetreiber für Wind an Land wird eine Bandbreite gebaut: Für die Jahre 2024 und 2025 wird je Prognoseklasse (in Schritten von 2 GW) abgezählt, wie weit die Fehler streuten, und das 10- und 90-%-Quantil gemerkt. Für 2026 wird dann jede Prognose um diese Fehlerquantile ergänzt, und es wird abgezählt, wie oft der echte Wert darin lag.
+
+[abb l_kalibrierung | Lernbeispiel: Bandbreite aus vergangenen Fehlern, geprüft an 2026. Links: Trefferquote je vollständigem Monat (Ziel 80 %). Rechts: eine Woche im März mit Bandbreite und echtem Wert.]
+
+Über alle Stunden von 2026 lag die Trefferquote bei {{z:kal_gesamt:1}} %, in den einzelnen Monaten zwischen {{z:kal_min:1}} und {{z:kal_max:1}} %. Das ist schon nahe am Ziel, aber etwas zu selbstsicher: Die Fehler waren 2026 im Mittel etwas größer als 2024 und 2025. Genau so etwas soll das Monitoring im Betrieb (Kapitel 24) erkennen.
+
+!praxis Prüfung im Projekt
+An Prüfpunkt A muss die Trefferquote zwischen 75 und 85 % liegen, für jeden Vorlauftag getrennt. Zusätzlich wird der mittlere Pinball-Verlust berichtet, weil er Kalibrierung und Schärfe gemeinsam bewertet.
+!ende
+
+!warum Gibt es ein Maß für die ganze Verteilung?
+Ja: den CRPS (continuous ranked probability score). Er ist im Prinzip der Pinball-Verlust, gemittelt über alle Quantile von 0 bis 1. Mit nur drei Quantilen lässt er sich grob annähern, indem man die drei Pinball-Verluste mittelt; das Projekt nennt diese Zahl einfach „mittlerer Pinball-Verlust“.
+!ende
+
+# Was es heißt, dass ein Modell lernt
+
+## Modell, Merkmale, Zielgröße
+
+!begriff Modell: eine Rechenvorschrift f, die aus Eingaben x eine Vorhersage ŷ = f(x) macht. „Ein Modell lernen“ heißt: die Rechenvorschrift aus Beispielen bestimmen, statt sie von Hand aufzuschreiben.
+
+!begriff Merkmal: eine einzelne Eingabe eines Modells, etwa „vorhergesagte Strahlung in München“ oder „Stunde des Tages“. Alle Merkmale einer Stunde zusammen bilden den Vektor x. Englisch: feature.
+
+!begriff Zielgröße: die Größe, die das Modell vorhersagen soll, hier die Auslastung einer Quelle in einer Stunde. Englisch: target oder label.
+
+!begriff Trainingsdaten: die Beispiele, aus denen das Modell lernt: viele Zeilen, in denen sowohl die Merkmale als auch die tatsächlich eingetretene Zielgröße bekannt sind.
+
+Im Projekt ist eine Zeile der Trainingsdaten: eine Stunde (zum Beispiel 3. Mai 2025, 11:00 UTC) mit einem Vorlauftag (zum Beispiel 3), dazu die Wettervorhersagen aller Orte für diese Stunde aus dem Lauf drei Tage vorher, die Sonnenhöhe, die Uhrzeit und die tatsächlich gemessene Auslastung.
+
+## Lernen als Minimieren
+
+Lernen bedeutet formal: Unter allen Rechenvorschriften einer bestimmten Familie (etwa „alle Summen von höchstens 300 kleinen Entscheidungsbäumen“) diejenige suchen, deren mittlerer Verlust auf den Trainingsdaten am kleinsten ist:
+
+$$ \hat{f} = \mathrm{arg\,min}_{f} \; \frac{1}{n} \sum_{i=1}^{n} L(y_i, f(x_i))
+
+„arg min“ heißt: nicht der kleinste Wert selbst, sondern dasjenige f, bei dem er erreicht wird. Welche Familie man wählt und wie man in ihr sucht, unterscheidet die Lernverfahren. Kapitel 12 und 13 erklären das Verfahren, das hier benutzt wird.
+
+## Generalisierung und Überanpassung
+
+Das eigentliche Ziel ist nicht, die Trainingsdaten gut zu treffen, sondern **neue** Daten, die das Modell nie gesehen hat.
+
+!begriff Generalisierung: die Fähigkeit eines Modells, auf neuen Daten ähnlich gut zu sein wie auf den Trainingsdaten.
+
+!begriff Überanpassung: ein Modell hat die Trainingsdaten auswendig gelernt, einschließlich ihres zufälligen Rauschens, statt die allgemeine Regel. Es ist dann auf den Trainingsdaten sehr gut und auf neuen Daten schlechter. Englisch: overfitting.
+
+Ein echtes Lernbeispiel: Ein Modell bekommt die Strahlungsvorhersagen der 21 Solar-Orte und die Sonnenhöhe, aber nur **{{z:overfit.train_h}} Stunden** Trainingsdaten (sechs Wochen im Frühjahr 2025). Es darf viele große Bäume bauen (Kapitel 13). Geprüft wird an {{z:overfit.test_h}} Stunden aus April und Mai 2026.
+
+[abb l_overfitting | Lernbeispiel: Fehler auf den Trainingsdaten (grau) und auf neuen Daten (orange), je nachdem, wie viele Bäume das Modell schon gebaut hat.]
+
+Der Trainingsfehler sinkt immer weiter, am Ende auf {{z:overfit.train_ende:3}} %: Das Modell trifft jede Trainingsstunde fast exakt. Auf neuen Daten bleibt der Fehler dagegen ab etwa {{z:overfit.bester}} Bäumen bei rund {{z:overfit.test_best:1}} % stehen. Alles, was danach gelernt wird, ist Auswendiglernen: Es verbessert nur noch den Trainingsfehler.
+
+!merke
+Der Fehler auf den Trainingsdaten sagt nichts darüber, wie gut ein Modell ist. Man braucht immer Daten, die das Modell beim Lernen nicht gesehen hat, und sie müssen so gewählt sein, wie sie im Betrieb vorkommen (Kapitel 15).
+!ende
+
+!warum Verzerrung und Varianz
+Fehler auf neuen Daten haben zwei Quellen. Ein zu einfaches Modell (etwa eine einzige Gerade) verfehlt die wahre Regel systematisch: Es hat eine große **Verzerrung** (englisch bias, nicht zu verwechseln mit dem Bias der Fehler). Ein zu komplexes Modell folgt dem Zufall der Trainingsdaten: Mit anderen Trainingsdaten käme ein ganz anderes Modell heraus, es hat eine große **Varianz**. Gute Modelle halten beides in Balance. Bei Entscheidungsbäumen steuert man das über Größe und Zahl der Bäume, Mindestgrößen von Blättern und frühes Stoppen.
+!ende
+
+# Entscheidungsbäume
+
+## Aufbau
+
+!begriff Entscheidungsbaum: ein Modell aus hintereinander geschalteten Ja-Nein-Fragen über die Merkmale („Strahlung ≤ 274 W/m²?“). Jede Antwort führt zur nächsten Frage, bis man an einem Blatt ankommt, in dem eine Vorhersage steht. Englisch: decision tree.
+
+!begriff Knoten und Blatt: ein Knoten ist eine Frage im Baum, ein Blatt das Ende eines Wegs mit einer festen Vorhersage. Ein Baum mit 4 Blättern teilt alle möglichen Eingaben in 4 Gruppen und sagt für jede Gruppe einen festen Wert voraus.
+
+Hier ein echter, absichtlich winziger Baum (Tiefe 2, also zwei Fragen hintereinander), gelernt aus allen Tagesstunden 2024 und 2025 mit den Merkmalen „mittlere Strahlung“ und „Sonnenhöhe“:
+
+[abb l_baum_klein | Lernbeispiel: ein echter Entscheidungsbaum der Tiefe 2 für die Solar-Auslastung. In Klammern die Zahl der Trainingsstunden, die an dieser Stelle ankommen.]
+
+Er liest sich so: Ist die mittlere Strahlung höchstens {{z:baum.schwelle:0}} W/m², und dabei höchstens {{z:baum.links.schwelle:0}} W/m², sagt er eine Auslastung von {{z:baum.links.links.blatt:3}} voraus. Liegt sie über {{z:baum.rechts.schwelle:0}} W/m², sagt er {{z:baum.rechts.rechts.blatt:3}} voraus. Jedes Blatt enthält den Mittelwert der Auslastung aller Trainingsstunden, die dort ankommen.
+
+Bemerkenswert: Der Baum hat die Sonnenhöhe gar nicht benutzt. Bei nur zwei Fragen war die Strahlung jedes Mal die bessere Wahl. Ein so kleiner Baum macht aus der glatten Kurve eine grobe Treppe mit vier Stufen. Deshalb benutzt man nicht einen Baum, sondern viele (Kapitel 13).
+
+## Wie ein Baum seine Fragen findet
+
+Der Baum entsteht von oben nach unten, und an jedem Knoten wird nach derselben Regel gesucht: **Welche Frage teilt die Daten so, dass die Werte in den beiden Teilen möglichst ähnlich sind?** Gemessen wird die Ähnlichkeit mit der Summe der quadrierten Abweichungen vom jeweiligen Mittelwert (die Varianz mal der Anzahl):
+
+$$ \mathrm{SSE}(M) = \sum_{i \in M} (y_i - \bar{y}_M)^2
+
+!begriff SSE: sum of squared errors, die Summe der quadrierten Abstände der Werte einer Gruppe M von ihrem Mittelwert. Je kleiner, desto einheitlicher die Gruppe.
+
+Eine Frage „x ≤ s?“ teilt die Gruppe in L (links, ja) und R (rechts, nein). Der **Gewinn** einer Frage ist, um wie viel die SSE dadurch sinkt:
+
+$$ \mathrm{Gewinn} = \mathrm{SSE}(M) - \left(\mathrm{SSE}(L) + \mathrm{SSE}(R)\right)
+
+Der Baum probiert alle Merkmale und alle sinnvollen Schwellen s aus und nimmt die Frage mit dem größten Gewinn. Dann macht er mit L und R dasselbe, bis eine Abbruchregel greift (höchste Tiefe erreicht, zu wenige Stunden im Blatt, Gewinn zu klein).
+
+!rechnen Eine Aufteilung von Hand, mit echten Werten
+Sieben echte Stunden vom 12. Mai 2025 (jede zweite Tagesstunde), sortiert nach mittlerer Strahlung (W/m²) mit gemessener Auslastung: {{z:split.punkte.0.0:0}} → {{z:split.punkte.0.1:3}}; {{z:split.punkte.1.0:0}} → {{z:split.punkte.1.1:3}}; {{z:split.punkte.2.0:0}} → {{z:split.punkte.2.1:3}}; {{z:split.punkte.3.0:0}} → {{z:split.punkte.3.1:3}}; {{z:split.punkte.4.0:0}} → {{z:split.punkte.4.1:3}}; {{z:split.punkte.5.0:0}} → {{z:split.punkte.5.1:3}}; {{z:split.punkte.6.0:0}} → {{z:split.punkte.6.1:3}}.
+Mittelwert aller sieben: {{z:split.mittel:3}}. SSE aller sieben: {{z:split.sse_gesamt:4}}.
+Als Schwellen kommen die Mitten zwischen benachbarten Strahlungswerten in Frage. Für jede wird gerechnet:
+| Schwelle | links | rechts | Mittel links | Mittel rechts | SSE nachher | Gewinn |
+| {{z:split.zeilen.0.0:1}} | {{z:split.zeilen.0.1}} | {{z:split.zeilen.0.2}} | {{z:split.zeilen.0.3:3}} | {{z:split.zeilen.0.4:3}} | {{z:split.zeilen.0.5:4}} | {{z:split.zeilen.0.6:4}} |
+| {{z:split.zeilen.1.0:1}} | {{z:split.zeilen.1.1}} | {{z:split.zeilen.1.2}} | {{z:split.zeilen.1.3:3}} | {{z:split.zeilen.1.4:3}} | {{z:split.zeilen.1.5:4}} | **{{z:split.zeilen.1.6:4}}** |
+| {{z:split.zeilen.2.0:1}} | {{z:split.zeilen.2.1}} | {{z:split.zeilen.2.2}} | {{z:split.zeilen.2.3:3}} | {{z:split.zeilen.2.4:3}} | {{z:split.zeilen.2.5:4}} | {{z:split.zeilen.2.6:4}} |
+| {{z:split.zeilen.3.0:1}} | {{z:split.zeilen.3.1}} | {{z:split.zeilen.3.2}} | {{z:split.zeilen.3.3:3}} | {{z:split.zeilen.3.4:3}} | {{z:split.zeilen.3.5:4}} | {{z:split.zeilen.3.6:4}} |
+| {{z:split.zeilen.4.0:1}} | {{z:split.zeilen.4.1}} | {{z:split.zeilen.4.2}} | {{z:split.zeilen.4.3:3}} | {{z:split.zeilen.4.4:3}} | {{z:split.zeilen.4.5:4}} | {{z:split.zeilen.4.6:4}} |
+| {{z:split.zeilen.5.0:1}} | {{z:split.zeilen.5.1}} | {{z:split.zeilen.5.2}} | {{z:split.zeilen.5.3:3}} | {{z:split.zeilen.5.4:3}} | {{z:split.zeilen.5.5:4}} | {{z:split.zeilen.5.6:4}} |
+Den größten Gewinn bringt die Schwelle {{z:split.zeilen.1.0:1}} W/m²: Links bleiben die zwei dunklen Morgenstunden, rechts die fünf hellen. Die Frage „Strahlung ≤ {{z:split.zeilen.1.0:0}}?“ wäre die erste Frage eines Baums, der nur diese sieben Stunden kennt.
+!ende
+
+!warum Warum quadrierte Abstände?
+Der Mittelwert ist genau der Wert, der die Summe der quadrierten Abstände minimiert (so wie der Median die Summe der absoluten Abstände minimiert). Ein Blatt, das den Mittelwert vorhersagt, hat also die kleinstmögliche SSE. Die Suche nach der besten Frage ist damit dasselbe wie die Suche nach der Teilung, nach der zwei Blätter mit ihren Mittelwerten den quadratischen Fehler am stärksten senken.
+!ende
+
+## Stärken und Schwächen
+
+Bäume haben Eigenschaften, die für dieses Projekt sehr gut passen. Sie brauchen keine Annahme über die Form des Zusammenhangs (gerade, gekrümmt, mit Knick wie die Leistungskurve). Sie sind unempfindlich gegen die Maßeinheit (ob Wind in km/h oder m/s, die Fragen ändern nur ihre Schwellen). Sie finden Wechselwirkungen von selbst („viel Strahlung **und** tiefe Sonne“). Und ein fertiger Baum ist nur eine Liste von Fragen und Zahlen, die sich in jeder Programmiersprache auswerten lässt.
+
+Ihre Schwäche: Ein einzelner Baum ist entweder grob (wenige Blätter, Treppenstufen) oder überangepasst (viele Blätter, Kapitel 11). Die Lösung heißt Boosting.
+
+# Gradient Boosting und LightGBM
+
+## Die Idee: viele kleine Korrekturen
+
+!begriff Gradient Boosting: ein Lernverfahren, das viele kleine Entscheidungsbäume nacheinander baut. Jeder neue Baum wird darauf trainiert, die verbleibenden Fehler aller bisherigen Bäume zu verkleinern. Die Vorhersage ist die Summe aller Bäume.
+
+Der Ablauf, Schritt für Schritt:
+
+1. **Start.** Die erste Vorhersage F₀ ist für alle Stunden gleich, zum Beispiel der Mittelwert der Zielgröße. Im Solar-Lernbeispiel: F₀ = {{z:boost_basis:3}}.
+2. **Restfehler berechnen.** Für jede Trainingsstunde: r = y − F₀ (echter Wert minus bisherige Vorhersage).
+3. **Einen kleinen Baum auf die Restfehler trainieren.** Er soll nicht y vorhersagen, sondern r: Wo liegt die bisherige Vorhersage zu tief, wo zu hoch?
+4. **Vorsichtig korrigieren.** Die neue Vorhersage ist die alte plus ein kleiner Teil η (eta) dessen, was der Baum sagt.
+5. **Wiederholen** mit den neuen Restfehlern, viele hundert Mal.
+
+$$ F_m(x) = F_{m-1}(x) + \eta \cdot h_m(x)
+
+!begriff Residuum: der Restfehler y − F(x), den das Modell bisher noch nicht erklärt. Mehrzahl: Residuen.
+
+!begriff Lernrate: der Faktor η (meist zwischen 0,01 und 0,1), mit dem jede Korrektur gedämpft wird. Kleine Lernraten brauchen mehr Bäume, führen aber zu genaueren und robusteren Modellen, weil kein einzelner Baum zu viel Gewicht bekommt.
+
+[abb l_boosting | Lernbeispiel mit echten Daten (Solar, 2024 und 2025, nur ein Merkmal): Die Vorhersage nach 1, 3, 10 und 200 Bäumen mit Lernrate 0,1. Nach einem Baum ist sie fast flach, nach 200 folgt sie der Punktwolke.]
+
+!rechnen Drei Schritte von Hand
+Eine Stunde mit echter Auslastung y = 0,45, Startwert F₀ = 0,17, Lernrate η = 0,1.
+Residuum: r₁ = 0,45 − 0,17 = 0,28. Der erste Baum sagt für diese Stunde (zusammen mit ähnlichen) +0,26 voraus. F₁ = 0,17 + 0,1 · 0,26 = 0,196.
+Neues Residuum: r₂ = 0,45 − 0,196 = 0,254. Der zweite Baum sagt +0,24. F₂ = 0,196 + 0,024 = 0,220.
+Nach jedem Schritt kommt die Vorhersage ein Stück näher, und die Korrekturen werden kleiner, weil die Residuen kleiner werden. (Die Baumwerte sind erfunden, um den Rechenweg zu zeigen.)
+!ende
+
+## Warum es „Gradient“ heißt
+
+!begriff Gradient: die Richtung und Stärke, in der eine Funktion am steilsten ansteigt; bei einer Funktion mit nur einer Eingabe einfach ihre Ableitung. Läuft man in die entgegengesetzte Richtung (negativer Gradient), wird die Funktion am schnellsten kleiner.
+
+Beim quadratischen Verlust L = ½ (y − F)² ist die Ableitung nach der Vorhersage F:
+
+$$ \frac{\partial L}{\partial F} = -(y - F)
+
+Der negative Gradient ist also genau das Residuum y − F. „Einen Baum auf die Residuen trainieren“ heißt mathematisch: in Richtung des steilsten Abstiegs des Verlusts gehen. Das Verfahren heißt deshalb Gradient Boosting, und es funktioniert mit **jeder** ableitbaren Verlustfunktion, nicht nur mit dem quadratischen Fehler.
+
+## Boosting für Quantile
+
+Für den Pinball-Verlust (Kapitel 10) ist die Ableitung nach F besonders einfach:
+
+$$ -\frac{\partial L_\tau}{\partial F} = \tau \ \ \mathrm{falls}\ y > F, \qquad -\frac{\partial L_\tau}{\partial F} = -(1 - \tau) \ \ \mathrm{falls}\ y < F
+
+Jeder Baum bekommt also für jede Stunde nur das Signal „rauf um τ“ oder „runter um 1 − τ“. Für τ = 0,9 schiebt jede Stunde, die über der Vorhersage liegt, mit Gewicht 0,9 nach oben, jede darunter mit 0,1 nach unten. Das Gleichgewicht ist erreicht, wenn 10 % der Stunden über der Vorhersage liegen, also genau beim 90-%-Quantil (Kapitel 10).
+
+[abb l_quantil_boosting | Lernbeispiel mit echten Daten: drei LightGBM-Modelle für p10, p50 und p90 der Auslastung Wind an Land, nur mit dem mittleren Wind als Merkmal. Die Bandbreite wird mit dem Wind breiter.]
+
+Schon dieses Ein-Merkmal-Modell ist auf den Daten von 2026 recht gut kalibriert: Die Trefferquote liegt bei {{z:qb_cover:1}} % (Ziel 80 %). Man sieht auch, dass die Bandbreite nicht überall gleich breit ist: Bei Flaute ist sicher, dass wenig kommt; bei mittlerem Wind ist die Unsicherheit am größten.
+
+!achtung Gekreuzte Quantile
+Weil die drei Quantile von drei getrennten Modellen gelernt werden, kann es in seltenen Stunden passieren, dass p10 über p50 liegt. Das Projekt sortiert deshalb die drei Vorhersagen jeder Stunde nach der Größe, bevor sie ausgegeben werden. Das ändert die Kalibrierung nicht, verhindert aber unsinnige Ausgaben.
+!ende
+
+## Was LightGBM besonders macht
+
+!begriff LightGBM: eine freie Software-Bibliothek von Microsoft für Gradient Boosting mit Entscheidungsbäumen. Sie ist besonders schnell, braucht wenig Speicher und kann Quantile direkt lernen. Lizenz MIT.
+
+LightGBM unterscheidet sich in einigen Punkten vom Grundverfahren:
+
+- **Histogramme.** Statt jeden einzelnen Wert als Schwelle zu probieren, sortiert LightGBM die Werte jedes Merkmals einmal in höchstens 255 Fächer (Klassen). Gesucht wird nur zwischen den Fächern. Das macht die Suche um ein Vielfaches schneller und schadet der Genauigkeit kaum.
+- **Blattweises Wachstum.** Andere Verfahren bauen Bäume Ebene für Ebene. LightGBM teilt immer das Blatt, dessen Teilung den größten Gewinn bringt, wo immer es im Baum liegt. So entstehen mit gleicher Blattzahl genauere Bäume; begrenzt wird über die Zahl der Blätter (`num_leaves`).
+- **Fehlende Werte.** Fehlt ein Wert (etwa im April 2026 bei einem Ausfall), lernt LightGBM an jedem Knoten, ob solche Stunden besser links oder rechts weiterlaufen. Man muss fehlende Werte also nicht erfinden.
+- **Regularisierung.** Mehrere Stellschrauben verhindern Überanpassung: Mindestzahl der Stunden je Blatt, nur ein Teil der Merkmale und der Zeilen je Baum, Strafen für große Blattwerte.
+- **Frühes Stoppen.** Während des Trainings wird nach jedem Baum der Fehler auf Prüfdaten gemessen; wird er über viele Bäume nicht mehr besser, hört das Training auf. Das ist die automatische Antwort auf Abbildung „Überanpassung“ in Kapitel 11.
+
+!begriff Regularisierung: alle Maßnahmen, die ein Modell absichtlich einschränken, damit es weniger auswendig lernt und besser generalisiert.
+
+!begriff Hyperparameter: Einstellungen eines Lernverfahrens, die nicht aus den Daten gelernt, sondern vorher festgelegt werden, etwa Lernrate, Blattzahl oder Zahl der Bäume. Man findet gute Werte durch Ausprobieren auf Prüfdaten.
+
+Tabelle: Die Hyperparameter des Projekts und was sie bewirken (Startwerte für Phase 2)
+| Parameter | Startwert | Wirkung |
+| `objective` / `alpha` | `quantile` / 0,1, 0,5, 0,9 | Pinball-Verlust für das jeweilige Quantil |
+| `num_leaves` | 15 | höchste Blattzahl je Baum; kleiner heißt grober, aber robuster und kleinere Modelldatei |
+| `learning_rate` | 0,05 | Lernrate η |
+| `n_estimators` | höchstens 300 | höchste Zahl der Bäume; frühes Stoppen bricht vorher ab |
+| `min_data_in_leaf` | 50 | jedes Blatt muss mindestens 50 Stunden enthalten, gegen Auswendiglernen |
+| `feature_fraction` | 0,8 | jeder Baum sieht nur zufällige 80 % der Merkmale |
+| `bagging_fraction`, `bagging_freq` | 0,8, 1 | jeder Baum sieht nur zufällige 80 % der Zeilen |
+| `max_bin` | 255 | Zahl der Histogramm-Fächer je Merkmal |
+
+!praxis Warum Boosting und kein neuronales Netz?
+Für Tabellen mit einigen hundert Spalten und hunderttausend Zeilen sind Boosting-Verfahren erfahrungsgemäß mindestens so gut wie neuronale Netze, viel schneller zu trainieren (Minuten auf einer CPU statt Stunden auf einer Grafikkarte) und viel leichter in einem anderen Programm auszuwerten. Genau das braucht smard-mcp, das in TypeScript geschrieben ist und keine schweren Abhängigkeiten bekommen soll (Kapitel 23).
+!ende
+
+# Merkmale bauen
+
+Ein Lernverfahren findet nur Zusammenhänge, die in seinen Merkmalen stecken. Merkmale geschickt zu bauen (englisch feature engineering) ist oft wichtiger als die Wahl des Verfahrens.
+
+## Zeit als Kreis
+
+Die Stunde des Tages als Zahl 0 bis 23 hat einen Haken: 23 und 0 liegen zahlenmäßig weit auseinander, sind aber benachbart. Ein Baum müsste lernen, dass 23 und 0 ähnlich sind, obwohl 12 dazwischen liegt. Die Lösung: Man stellt die Stunde als Punkt auf einem Kreis dar, mit zwei Merkmalen:
+
+$$ x_{\sin} = \sin\left(\frac{2\pi \cdot h}{24}\right) \qquad x_{\cos} = \cos\left(\frac{2\pi \cdot h}{24}\right)
+
+[abb l_sincos | Links: die Stunde als Zahl; 23 und 0 liegen weit auseinander. Rechts: die Stunde als Punkt auf dem Kreis; 23 und 0 sind Nachbarn.]
+
+Genauso wird der Tag im Jahr behandelt (mit 365,25 statt 24), damit der 31. Dezember neben dem 1. Januar liegt.
+
+!rechnen Stunde 23 und Stunde 0 auf dem Kreis
+Stunde 0: sin 0 = 0, cos 0 = 1, also der Punkt (1; 0).
+Stunde 23: Winkel 2π · 23/24 = 6,021. sin = −0,259, cos = 0,966, also der Punkt (0,966; −0,259).
+Abstand der beiden Punkte: √((1 − 0,966)² + (0 + 0,259)²) = 0,261. Stunde 0 und Stunde 12 dagegen haben den Abstand 2 (gegenüberliegende Seiten des Kreises).
+!ende
+
+## Merkmale aus der Physik
+
+Die Kapitel aus Teil III liefern Merkmale, die das Modell nicht selbst erfinden könnte:
+
+- **Sonnenhöhe** (Kapitel 6), exakt berechnet für den Mittelpunkt jeder Stunde und die Mitte Deutschlands (51° N, 10° O).
+- **Direkte und diffuse Strahlung getrennt**, damit das Modell den Einfluss geneigter Module lernen kann.
+- **Temperatur**, weil heiße Module schlechter arbeiten und kalte Luft dichter ist.
+- **Wind in 10 und 100 m**, Windrichtung als Sinus und Kosinus (Richtung ist wie die Stunde ein Kreis: 359° liegt neben 1°), Böen für die Sturmabschaltung.
+- **Mittelwerte über Orte** zusätzlich zu den einzelnen Orten. Ein Baum kann mit einer einzigen Frage „mittlere Strahlung ≤ 274?“ viel mehr anfangen als mit 21 einzelnen Fragen.
+
+## Vorlaufzeit als Merkmal
+
+Statt sechs getrennter Modelle (eines je Vorlauftag) gibt es je Quelle und Quantil **ein** Modell, das den Vorlauftag als Merkmal bekommt. Jede Stunde kommt dann sechsmal in den Trainingsdaten vor, einmal mit jedem Vorlauf. Vorteile: sechsmal so viele Trainingszeilen, und das Modell kann lernen, was für alle Vorläufe gleich ist (die Physik), und gleichzeitig, was sich mit dem Vorlauf ändert (vor allem die Breite der Bandbreite).
+
+## Kalender
+
+Wochentag und bundesweite Feiertage helfen, Abregelung bei niedrigem Verbrauch (Kapitel 5) zu erkennen. Ob Feiertage einzelner Bundesländer gewichtet einfließen sollen, ist noch offen.
+
+## Die Zielgröße noch einmal
+
+!rechnen Warum Auslastung statt Gigawatt
+Gleiches Wetter am 15. Juni 2024 und am 15. Juni 2026, Auslastung jeweils 0,40.
+Installierte Solarleistung (AC): Juni 2024 rund 84 GW, Juni 2026 rund 115 GW.
+Erzeugung: 0,40 · 84 = 33,6 GW gegenüber 0,40 · 115 = 46,0 GW.
+Ein Modell, das GW lernt, sähe zweimal dasselbe Wetter mit zwei verschiedenen Ergebnissen und müsste den Unterschied dem Datum zuschreiben. Ein Modell, das die Auslastung lernt, sieht zweimal dasselbe. Für eine Vorhersage im Dezember 2026 rechnet man die vorhergesagte Auslastung mit der Leistung vom Dezember 2026 zurück.
+!ende
+
+# Richtig prüfen
+
+Ein Modell ist nur so viel wert wie die Prüfung, die es bestanden hat. Bei Zeitreihen ist die Prüfung voller Fallen.
+
+## Die Falle der zufälligen Aufteilung
+
+Die übliche Methode im maschinellen Lernen: 80 % der Zeilen zufällig zum Training, 20 % zum Prüfen. Bei Zeitreihen ist das falsch.
+
+!begriff Datenleck: eine Situation, in der beim Prüfen Information verfügbar ist, die es im echten Betrieb nicht gäbe. Das Modell sieht dann besser aus, als es ist. Englisch: data leakage.
+
+Die Autokorrelation (Kapitel 9) zeigt warum: Die Stunde 11:00 ist fast gleich der Stunde 12:00. Liegt 11:00 im Training und 12:00 in der Prüfung, kennt das Modell die Antwort praktisch schon. Im Betrieb dagegen soll es Stunden vorhersagen, die alle in der Zukunft liegen.
+
+!rechnen Wie groß der Unterschied wirklich ist
+Dasselbe Solar-Lernmodell (21 Orte, Sonnenhöhe, 200 Bäume) wurde zweimal geprüft:
+Zufällige Aufteilung (80 % aller Tagesstunden 2024 bis 2026 zum Lernen, 20 % zum Prüfen): MAE {{z:leak_zufall:2}} % der Leistung.
+Zeitliche Aufteilung (Lernen 2024 und 2025, Prüfen 2026): MAE {{z:leak_zeit:2}} %.
+Die zufällige Aufteilung macht das Modell um etwa 15 % besser, als es tatsächlich ist.
+!ende
+
+## Rollierende Validierung
+
+Das Projekt prüft deshalb nur zeitlich, und zwar mehrfach:
+
+!begriff Rollierende Validierung: man trainiert mit allen Daten bis zum Monat M und prüft am Monat M+1; dann trainiert man bis M+1 und prüft an M+2, und so weiter. So entstehen viele Prüfungen, die alle so ablaufen wie im Betrieb: Das Modell kennt nur die Vergangenheit. Englisch: rolling oder walk-forward validation.
+
+[abb validierung | Rollierende Validierung mit den echten Monaten des Projekts. Die erste Prüfrunde beginnt nach 12 Monaten Training, damit jede Jahreszeit einmal gesehen wurde.]
+
+!begriff Abschlusstest: die letzten drei Monate, die während der gesamten Entwicklung nicht angefasst werden, auch nicht, um Hyperparameter einzustellen. Sie werden erst ganz am Ende einmal benutzt. Wer an Prüfdaten so lange herumschraubt, bis die Zahlen gut aussehen, passt sein Modell nämlich auch an die Prüfdaten an.
+
+## Messlatten
+
+Ein MAE von 3 % sagt allein nichts. Ist das gut? Man vergleicht deshalb mit Verfahren, die man ohne jedes Lernen hätte:
+
+!begriff Messlatte: ein einfaches Vergleichsverfahren. Ein Modell taugt nur, wenn es die Messlatten deutlich schlägt. Englisch: baseline.
+
+Tabelle: Die drei Messlatten
+| Messlatte | Vorschrift | gilt für |
+| Klimatologie | mittlere Auslastung derselben Stunde im selben Monat der Vorjahre | Tag 1 bis 6 |
+| Persistenz | der letzte vollständige Tag wiederholt sich | Tag 1 bis 6 |
+| Netzbetreiber | Day-Ahead-Prognose von SMARD | nur Tag 1 |
+
+[abb klimatologie | So sieht die Messlatte Klimatologie für Solar aus, berechnet aus allen Stunden von 2024 und 2025 mit den monatlichen Leistungswerten.]
+
+!begriff Klimatologie: im Wetterbereich das langjährige Mittel. Als Messlatte sagt sie für jeden Junitag um 13 Uhr dasselbe voraus, egal welches Wetter angekündigt ist.
+
+!begriff Persistenz: die Annahme, dass es so bleibt, wie es ist. Für Wind über ein, zwei Stunden sehr gut, für mehrere Tage schlecht (Kapitel 9, Autokorrelation).
+
+## Der Skill-Score
+
+!begriff Skill-Score: der Anteil, um den ein Modell den Fehler einer Messlatte verkleinert. 0 heißt: nicht besser als die Messlatte. 1 hieße: perfekt. Negativ heißt: schlechter als die Messlatte.
+
+$$ \mathrm{Skill} = 1 - \frac{\mathrm{MAE}_{\mathrm{Modell}}}{\mathrm{MAE}_{\mathrm{Messlatte}}}
+
+!rechnen Skill an Prüfpunkt A
+Angenommen, für Solar an Tag 3 hat Klimatologie einen MAE von 6,0 %, Persistenz 4,5 %, das Modell 3,2 %. Die bessere Messlatte ist Persistenz. Skill = 1 − 3,2/4,5 = 0,29. Das Modell ist 29 % besser als die bessere Messlatte und erfüllt damit das Kriterium „mindestens 20 %“. (Zahlen erfunden; die echten entstehen in Phase 2.)
+!ende
+
+!praxis Das Weiter-Kriterium (Prüfpunkt A)
+1. An Tag 2 bis 6: Skill gegenüber der besseren der beiden einfachen Messlatten mindestens 0,2.
+2. An Tag 1: MAE höchstens 20 % über dem der Netzbetreiber (Skill gegenüber den Netzbetreibern mindestens −0,2). Die Netzbetreiber haben Zugriff auf Daten, die öffentlich nicht verfügbar sind, etwa aktuelle Messungen einzelner Parks; deshalb wäre Gleichstand schon ein Erfolg.
+3. Trefferquote der Bandbreite zwischen 75 und 85 %, je Vorlauftag.
+4. Wintermonate werden getrennt ausgewiesen, weil der Abschlusstest (August bis Oktober 2026) keinen Winter enthält.
+Die Schwellen sind Startwerte; sie dürfen nach den ersten Ergebnissen begründet angepasst werden, aber nicht, um ein schwaches Ergebnis passend zu machen.
+!ende

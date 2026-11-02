@@ -216,3 +216,32 @@ Repos auch die Lizenz von Hilfsdaten (Kartenumrisse) prüfen. Personennamen geh�
 (`docs/bericht/*.pdf` steht in `.gitignore`); im Repo bleiben nur die Skripte, die es erzeugen.
 Das Entfernen aus der Git-Geschichte (Force-Push) wurde von der Freigabe-Prüfung von Claude
 Code abgelehnt und bleibt dem Betreuer überlassen.
+
+### abends: Bericht als Lehrbuch, Zeitversatz entdeckt
+
+**Ziel:** Der Bericht soll so ausführlich sein, dass man ohne Vorwissen jeden Schritt versteht
+(Wunsch des Betreuers): jeder Fachbegriff bei erster Verwendung erklärt, Mathematik hergeleitet.
+
+**Gemacht:**
+
+- `docs/bericht/lehrgrafiken.py`: 20 Lehrgrafiken und alle Zahlen des Textes aus den echten
+  Daten (Phase-0-Rohdaten und SMARD), gespeichert in `abb/zahlen.json`. Kleine Lernbeispiele
+  mit LightGBM (ausdrücklich nicht das Projektmodell).
+- `docs/bericht/bericht.py` neu: Kapiteltexte in `docs/bericht/kapitel/*.txt` mit einfacher
+  Auszeichnung, Formelsatz über matplotlib, Begriffskästen, aus denen das Glossar entsteht.
+- Ergebnis: 94 Seiten, 6 Teile, 25 Kapitel und 4 Anhänge, 35 Abbildungen, 46 Formeln,
+  105 erklärte Begriffe. Das PDF bleibt lokal.
+
+**Ergebnis (für das Projekt wichtig):** Strahlung und Solarstrom sind um eine Stunde versetzt
+gestempelt; siehe Nachtrag in `docs/phase0.md`.
+
+**Fehlschlag:** Das erste Lernbeispiel zur Überanpassung (ein einzelner, immer größerer Baum)
+zeigte keine Überanpassung, weil der Baum bei 12.500 Stunden nicht weit genug wächst. Neu
+gebaut mit sechs Wochen Daten und 600 Bäumen: Trainingsfehler fast null, Prüffehler bleibt bei
+rund 2 %.
+
+**Fehlschlag:** Mehrere LaTeX-Konstrukte (`cases`, `\arg\min`) kann der Formelsatz von
+matplotlib nicht; umgeschrieben. Kästen, die länger als eine Seite waren, brachen den Satz ab;
+Kästen bestehen jetzt aus einer Tabellenzeile je Baustein und können umbrechen.
+
+**Gelernt:** Erklären zwingt zum Nachrechnen; beim Nachrechnen fiel der Zeitversatz auf.

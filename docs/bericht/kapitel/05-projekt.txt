@@ -1,0 +1,530 @@
+@teil Das Projekt
+Wie die Bausteine aus Teil II bis IV zum Projekt zusammengesetzt werden: Daten, Phasen, Architektur, Werkzeuge und Betrieb.
+
+# Das Vorlaufzeit-Problem
+
+Dieses Kapitel ist der Kern des ganzen Projekts.
+
+!merke
+Ein Modell muss mit genau den Vorhersagen trainiert werden, die es im Betrieb bekommt. Eine Prognose für Tag 5 lernt man nur aus früheren Vorhersagen, die ebenfalls 5 Tage Vorlauf hatten.
+!ende
+
+## Warum das so wichtig ist
+
+Kapitel 8 hat gezeigt: Eine Wettervorhersage mit 5 Tagen Vorlauf liegt deutlich öfter daneben als eine mit einem Tag. Trainiert man ein Modell mit fast perfekten Wetterdaten (etwa mit Messungen oder Vorhersagen mit nur wenigen Stunden Vorlauf), lernt es: „Wenn 800 W/m² angekündigt sind, kommen auch 800.“ Im Betrieb bekommt es dann eine 5 Tage alte Vorhersage von 800 W/m², vertraut ihr genauso, und gibt eine viel zu schmale Bandbreite aus. In der Prüfung sähe alles gut aus, weil die Prüfdaten ebenso fast perfekt wären. Im Betrieb wäre es schlecht und wüsste es nicht.
+
+## Die Archive von Open-Meteo
+
+!begriff Open-Meteo: ein freier Dienst, der die Ergebnisse vieler Wettermodelle (darunter alle ICON-Modelle des DWD) über eine einfache Schnittstelle im Internet bereitstellt, für aktuelle Vorhersagen und für die Vergangenheit. Die Daten stehen unter CC BY 4.0.
+
+Open-Meteo bietet drei Archive, die für dieses Projekt in Frage kommen:
+
+Tabelle: Archive von Open-Meteo
+| Schnittstelle | was sie liefert | geeignet? |
+| Historical Forecast API | für jede vergangene Stunde den Wert aus dem jüngsten Lauf; also fast immer mit 0 bis 6 Stunden Vorlauf | nein: viel zu optimistisch, genau die Falle von oben |
+| Previous Runs API | für jede Stunde zusätzlich den Wert aus dem Lauf von 1, 2, ... 7 Tagen vorher, als eigene Spalten `..._previous_day1` bis `..._previous_day7` | ja |
+| Single Runs API | einen ganzen Lauf mit exaktem Startzeitpunkt | nur ab Mai 2026; für Prüfungen |
+
+[abb vorlauf_schema | Oben: die Historical Forecast API nimmt für jede Stunde den jüngsten Lauf. Unten: die Previous Runs API nimmt für Tag 3 den Lauf, der mindestens 72 Stunden vorher begann (Schema).]
+
+## Was „Tag N“ genau bedeutet
+
+Die Dokumentation von Open-Meteo sagt nicht genau, welcher Lauf hinter `previous_day3` steckt. Deshalb wurde es am 2. November gemessen: Für einen Ort (52,5° N, 10° O) und alle Stunden des 20. Oktober 2026 wurden die Werte der Previous Runs API mit allen Einzelläufen der Woche davor verglichen, Wert für Wert, mit Temperatur und Wind.
+
+Tabelle: Ergebnis des Abgleichs
+| Spalte | passt genau zu | Vorlauf |
+| previous_day3 | dem Lauf 3 Tage vorher | 72 bis 77 h |
+| previous_day6 | dem ICON-global-Lauf 6 Tage vorher | 144 bis 150 h |
+| previous_day1 | keinem Einzellauf genau; Abweichung wenige Zehntel Grad | etwa 24 bis 27 h |
+
+Daraus folgt die Regel, die in Training und Betrieb gleich gilt: **Tag N ist der neueste Lauf, der mindestens N mal 24 Stunden vor der Zielstunde gestartet ist.** Die Vorlaufzeit liegt also zwischen N · 24 Stunden und N · 24 Stunden plus dem Abstand zwischen zwei Läufen.
+
+$$ \mathrm{Vorlauftag} = \max\left(1,\ \left\lfloor \frac{t_{\mathrm{Ziel}} - t_{\mathrm{Lauf}}}{24\,\mathrm{h}} \right\rfloor\right)
+
+!begriff Abrunden ⌊x⌋: die größte ganze Zahl, die nicht größer als x ist. ⌊2,9⌋ = 2. Stunden mit weniger als 24 Stunden Vorlauf werden im Betrieb wie Tag 1 behandelt (das „max(1, ...)“).
+
+!rechnen Vorlauftag im Betrieb
+Der neueste ICON-Lauf begann am 2. November um 12:00 UTC. Für die Zielstunde 5. November, 15:00 UTC: Abstand = 3 Tage und 3 Stunden = 75 Stunden. 75/24 = 3,125, abgerundet 3. Das Modell bekommt also „Vorlauftag 3“, genau wie in den Trainingsdaten, wo `previous_day3` Vorläufe von 72 bis 77 Stunden hat.
+Für die Zielstunde 2. November, 20:00 UTC: Abstand 8 Stunden, 8/24 = 0,33, abgerundet 0, durch max(1, ...) wird daraus Tag 1.
+!ende
+
+Dass Tag 1 nicht exakt passt, liegt sehr wahrscheinlich an ICON-D2-RUC (Kapitel 8). Open-Meteo nutzt für die ersten Stunden inzwischen diese stündlich aktualisierte Variante, und die Single Runs API meldete bei ihren Fehlermeldungen genau dieses Modell. Für das Training ist das unkritisch. Das eigene Archiv (Kapitel 20) speichert die Startzeitpunkte aller ICON-Modelle mit, damit sich die Frage später klären lässt.
+
+## Warum es Tag 7 nicht gibt
+
+Die Spalten `previous_day7` sind in allen Stichproben leer, 2024 genauso wie 2026. Der Grund: Ein Lauf, der mindestens 7 · 24 = 168 Stunden vor der Zielstunde begann, müsste bis mindestens 168 Stunden vorausrechnen. ICON global rechnet nur 180 Stunden voraus, und das nur bei den Läufen um 00 und 12 UTC. Für viele Zielstunden reicht kein Lauf so weit, und Open-Meteo führt die Spalte deshalb gar nicht. Im Betrieb dagegen gibt es Tag 7 teilweise: Die aktuelle Vorhersage reicht etwa 7,5 Tage. Weil es dafür aber keine Trainingsdaten gibt, kann das Modell ihn nicht lernen. Version 1 geht deshalb bis Tag 6; Tag 7 kommt, wenn das eigene Archiv ein Jahr umfasst (frühestens November 2027).
+
+# Datenquellen und Schnittstellen
+
+## Was eine Schnittstelle ist
+
+!begriff API: application programming interface, eine Schnittstelle, über die ein Programm ein anderes nutzt. Hier immer eine Web-API: Man ruft eine Internetadresse (URL) auf und bekommt Daten zurück, meist im Format JSON.
+
+!begriff HTTP: das Protokoll, mit dem Browser und Programme Daten im Internet abrufen. Eine Anfrage (Request) nennt eine URL; die Antwort (Response) hat einen Statuscode (200 = alles gut, 429 = zu viele Anfragen, 500 = Fehler beim Server) und einen Inhalt.
+
+!begriff JSON: JavaScript Object Notation, ein Textformat für strukturierte Daten aus Objekten in geschweiften Klammern (Schlüssel und Wert), Listen in eckigen Klammern, Zahlen und Texten. Menschen können es lesen, Programme leicht verarbeiten.
+
+### Eine Anfrage an Open-Meteo, zerlegt
+
+```
+https://previous-runs-api.open-meteo.com/v1/forecast      Server und Pfad
+  ?latitude=48.14&longitude=11.58                          Ort (München)
+  &models=icon_seamless                                    Wettermodell
+  &start_date=2025-01-01&end_date=2025-12-31               Zeitraum
+  &hourly=shortwave_radiation_previous_day1,               Spalten: Variable
+          shortwave_radiation_previous_day2, ...                    je Vorlauftag
+  &timezone=GMT                                            Zeitstempel in UTC
+```
+
+Die Antwort ist ein JSON-Objekt mit einer Liste von Zeitstempeln und für jede Spalte einer gleich langen Liste von Werten; fehlende Werte stehen als `null`.
+
+```
+{"latitude": 48.14, "longitude": 11.58, "elevation": 519.0,
+ "hourly": {"time": ["2025-01-01T00:00", "2025-01-01T01:00", ...],
+            "shortwave_radiation_previous_day1": [0.0, 0.0, ..., 212.0, ...],
+            "shortwave_radiation_previous_day2": [0.0, 0.0, ..., 198.0, ...]}}
+```
+
+### Abrufgrenzen und Gewichtung
+
+Ein freier Dienst muss sich vor Überlastung schützen. Open-Meteo erlaubt ohne Bezahlung 600 Abrufe pro Minute, 5.000 pro Stunde und 10.000 pro Tag, für nicht-kommerzielle Nutzung. Große Abrufe zählen dabei mehrfach: anteilig mehr ab 10 Spalten und ab 14 Tagen Zeitraum, und jeder Ort zählt einzeln. Im Projekt steht dafür die Funktion `gewicht()` in `sf/openmeteo.py`:
+
+$$ w = n_{\mathrm{Orte}} \cdot \max\left(1,\ \frac{n_{\mathrm{Spalten}}}{10}\right) \cdot \max\left(1,\ \frac{n_{\mathrm{Tage}}}{14}\right)
+
+!rechnen Was ein Jahr München kostet
+6 Variablen · 6 Vorlauftage = 36 Spalten, ein ganzes Jahr = 365 Tage, ein Ort.
+w = 1 · (36/10) · (365/14) = 3,6 · 26,07 = 93,9. Ein einziger Abruf zählt also wie 94 kleine.
+Ein Ort mit Solar und Wind (10 Variablen, 60 Spalten): w = 6 · 26,07 = 156.
+!ende
+
+## SMARD
+
+Die Daten von SMARD kommen über eine Schnittstelle, die auch die Diagramme auf smard.de speist. Sie arbeitet in zwei Schritten:
+
+1. **Inhaltsverzeichnis holen.** `https://www.smard.de/app/chart_data/4068/DE/index_hour.json` liefert für die Reihe 4068 (Solar), Region DE und stündliche Auflösung eine Liste von Zeitstempeln. Jeder steht für ein Stück von einer Woche.
+2. **Wochenstücke holen.** `.../4068/DE/4068_DE_hour_<Zeitstempel>.json` liefert `{"series": [[Zeitstempel, Wert], ...]}` mit Unix-Zeit in Millisekunden (Kapitel 4) und dem Wert in MWh, oder `null`, wenn noch nichts veröffentlicht ist.
+
+Tabelle: Die SMARD-Reihen des Projekts (Kennungen wie in smard-mcp)
+| Schlüssel | Kennung | Inhalt |
+| generation_solar | 4068 | Erzeugung Photovoltaik |
+| generation_wind_onshore | 4067 | Erzeugung Wind an Land |
+| generation_wind_offshore | 1225 | Erzeugung Wind auf See |
+| forecast_generation_solar | 125 | Prognose der Netzbetreiber, Solar |
+| forecast_generation_wind_onshore | 123 | Prognose Wind an Land |
+| forecast_generation_wind_offshore | 3791 | Prognose Wind auf See |
+| capacity_solar, _wind_onshore, _wind_offshore | 188, 186, 4076 | installierte Leistung, nur Jahreswerte |
+
+[abb woche | Eine echte Woche im Juni 2026: gemessene Erzeugung gegen die Prognose der Netzbetreiber vom Vortag. Das ist die Messlatte für Tag 1.]
+
+## Energy-Charts
+
+Energy-Charts (Fraunhofer ISE) liefert die installierte Leistung monatlich, abgeleitet aus dem Marktstammdatenregister, über `api.energy-charts.info/installed_power?country=de&time_step=monthly`. Für Solar gibt es DC (Module) und AC (Wechselrichter); das Projekt nimmt AC (Kapitel 6).
+
+## Lizenzen
+
+!begriff CC BY 4.0: eine freie Lizenz der Organisation Creative Commons. Man darf die Daten nutzen, verändern und weitergeben, auch kommerziell, muss aber die Quelle nennen („Namensnennung“, englisch attribution).
+
+SMARD und Open-Meteo stehen unter CC BY 4.0. Das Tool nennt deshalb in jeder Antwort „Bundesnetzagentur | SMARD.de (CC BY 4.0)“ und „Wetterdaten: Open-Meteo.com (CC BY 4.0), Modelle des DWD“. Die freie Schnittstelle von Open-Meteo ist außerdem nur für nicht-kommerzielle Nutzung ohne Werbung gedacht; smard-mcp ist kostenlos und werbefrei. Die Lizenz der Energy-Charts-Daten ist noch zu klären; der Rückfall wäre, die Monatswerte selbst aus dem Marktstammdatenregister zu berechnen (Lizenz dl-de/by-2-0, ebenfalls mit Namensnennung).
+
+# Phase 0: Datenprüfung
+
+Ziel von Phase 0: Bevor eine Zeile Modellcode entsteht, beweisen, dass die Daten den Plan tragen. Ein Fehlschlag kostet hier nur Zeit.
+
+## Wetter: Lücken über den ganzen Zeitraum
+
+Das Skript `scripts/phase0_wetter.py` hat für alle 40 Orte den Zeitraum 25.01.2024 bis 01.11.2026 abgerufen, je Vorlauftag 1 bis 6: die Temperatur, dazu die Strahlung (Solar-Orte) beziehungsweise den Wind in 100 m (Wind-Orte). Je Ort drei Abrufe (einer je Kalenderjahr), jede Antwort wurde gespeichert, damit ein Abbruch nicht alles kostet.
+
+[abb verfuegbarkeit | Ab wann es Werte gibt, je Variable und Vorlauftag. Die senkrechte Linie ist der gewählte Trainingsbeginn.]
+
+Tabelle: Befunde der Wetterprüfung
+| Befund | Umfang | Folge |
+| Ausfall im Archiv | 10. bis 13.04.2026, Tag 2, 4, 5, 6, an allen Orten gleich; Tag 1 und 3 vollständig | diese Stunden fallen im Training weg |
+| Wind in 100 m beginnt später | Tag 1 ab 16.02.2024, Tag 6 ab 21.02.2024 | Trainingsbeginn 22.02.2024 für alle Quellen |
+| previous_day7 | nie vorhanden | Version 1 bis Tag 6 |
+| cloud_cover_low, snow_depth | nicht im Archiv | diese Merkmale entfallen |
+| Orte auf See | alle 7 mit Höhe 0 m | liegen wirklich auf See |
+| sonst | keine Lücken | Rückfallebene nicht nötig |
+
+## SMARD
+
+Erzeugung aller drei Quellen ab 01.01.2024 stündlich: lückenlos. Netzbetreiber-Prognose: ein fehlender Tag (23.10.2026, 22 Uhr, bis 24.10.2026, Solar und Wind an Land).
+
+## Installierte Leistung: ein falscher Nenner
+
+Prüfidee: Stimmt die installierte Leistung, sollte die höchste Auslastung über die Jahre ungefähr gleich bleiben, denn das Wetter hat keinen Trend über drei Jahre. Mit den SMARD-Jahreswerten fällt sie bei Solar und steigt bei Wind auf See.
+
+[abb kapazitaet | Installierte Leistung: SMARD-Jahreswerte (gestrichelt) gegen Monatswerte von Energy-Charts. Die Zahl am Ende ist der Stand Oktober 2026 in GW.]
+
+[abb auslastung_nenner | 99-%-Quantil der stündlichen Auslastung je Jahr, einmal mit SMARD als Nenner, einmal mit Monatswerten.]
+
+Der Grund: SMARD hinkt dem Zubau hinterher. 2026 stehen dort 103,3 GW Solar gegenüber 120,4 GW AC bei Energy-Charts, 67,7 gegenüber 71,7 GW Wind an Land und 9,2 gegenüber 11,7 GW Wind auf See. **Entscheidung:** Monatswerte als Nenner.
+
+!merke
+Eine Plausibilitätsprüfung über mehrere Jahre (hier: die höchste Auslastung) deckt einen falschen Nenner sofort auf. Ohne sie hätte das Modell einen Scheintrend gelernt.
+!ende
+
+## Die 40 Wetterorte
+
+Die Orte stehen in `config/orte.toml`: 21 Solar-Orte nach den Schwerpunkten der Photovoltaik (stark in Bayern und Baden-Württemberg), 14 Wind-Orte (Küste, Norddeutsches Tiefland, Mittelgebirge) und 7 Orte auf See in den Clustern der Nord- und Ostsee. Magdeburg und Cottbus zählen für Solar und Wind.
+
+!begriff TOML: ein einfaches Textformat für Einstellungsdateien mit Abschnitten in eckigen Klammern und Zeilen der Form `name = "wert"`.
+
+[abb karte 0.8 | Die 40 Wetterorte.]
+
+@orte
+
+## Ergebnis
+
+!praxis Phase 0 bestanden
+Trainingsbeginn 22.02.2024, rund 32 Monate, 6 Vorlauftage, 40 Orte. Neu hinzugekommen: Die Strahlung muss um eine Stunde verschoben werden (Kapitel 4). Offen ist nur die Lizenz von Energy-Charts.
+!ende
+
+# Architektur und Werkzeuge
+
+## Wer was wo macht
+
+[abb architektur | Wer was macht. Training auf der großen Maschine, Betrieb auf der Web-Maschine, Austausch über GitHub.]
+
+Das Projekt verteilt sich auf zwei Server, zwei Repositories und drei externe Quellen:
+
+Tabelle: Orte im Überblick
+| Ort | Was dort liegt | Warum dort |
+| große Maschine, `/root/smard-forecast` | Download, Trainingsdaten, Training, Berichte | viel Speicher und Platz |
+| Web-Maschine, `/opt/smard-forecast-archiv` | Archiv-Skript und Ortsliste | läuft dauerhaft; smard-mcp läuft dort auch |
+| Web-Maschine, `/var/lib/smard-forecast/archiv` | gespeicherte Vorhersagen | Zustand des Dienstes, nachts gesichert |
+| GitHub `akquisio-dev/smard-forecast` | Plan, Code, später Modelle und Workflow | öffentlich, nachvollziehbar |
+| GitHub `akquisio-dev/smard-mcp` | Tool, TypeScript-Auswertung, Modelldateien | Auslieferung |
+| npm, `energie.akquisio.eu/mcp` | das fertige Tool | dort nutzen es KI-Assistenten |
+
+## Git, GitHub und der Deploy-Key
+
+!begriff Git: ein Programm zur Versionsverwaltung. Jeder gespeicherte Stand heißt Commit und hat eine eindeutige Kennung (zum Beispiel `163d455`), eine Beschreibung und einen Verweis auf den vorherigen Stand. So lässt sich jede Änderung nachvollziehen und rückgängig machen.
+
+!begriff Push: das Übertragen neuer Commits aus der lokalen Kopie eines Repositorys in eine entfernte, hier zu GitHub.
+
+!begriff SSH-Schlüssel: ein Schlüsselpaar zur Anmeldung ohne Passwort. Der private Teil bleibt geheim auf dem eigenen Rechner, der öffentliche wird beim Gegenüber hinterlegt. Wer sich anmeldet, beweist mit dem privaten Teil, dass er dazu passt, ohne ihn je zu verschicken.
+
+!begriff Deploy-Key: ein SSH-Schlüssel, der bei GitHub nur für ein einziges Repository hinterlegt ist. Wird er gestohlen, ist nur dieses eine Repository betroffen.
+
+Für smard-forecast wurde am 2. November ein eigener Deploy-Key mit Schreibrecht angelegt (`~/.ssh/smard_forecast_deploy`) und in der SSH-Konfiguration unter dem Namen `github-smard-forecast` eingetragen. Commits erscheinen unter dem Namen `akquisio-dev` mit einer von GitHub bereitgestellten noreply-Adresse, damit keine privaten Daten im öffentlichen Repository landen.
+
+## Aufbau des Repositorys
+
+```
+smard-forecast/
+├── README.md, LICENSE (MIT), pyproject.toml, .gitignore
+├── config/orte.toml          40 Wetterorte (Name, Breite, Länge, Typ)
+├── sf/                       kleine Python-Bibliothek
+│   ├── orte.py               lädt die Ortsliste
+│   ├── openmeteo.py          Previous Runs API, Variablen je Typ, gewicht()
+│   ├── smard.py              SMARD chart_data, Kennungen
+│   └── log.py                Protokoll mit Zeitstempel nach data/logs/
+├── scripts/
+│   ├── phase0_wetter.py      Lückenprüfung Wetter
+│   ├── smard_laden.py        SMARD laden und prüfen
+│   ├── download.py           Trainingsdaten laden (Phase 1)
+│   └── kapazitaet.py         installierte Leistung monatlich
+├── archiv/
+│   ├── archiv.py             Archiv-Job (Server, nur Standardbibliothek)
+│   ├── smard-forecast-archiv.service / .timer
+│   └── ausrollen.sh          bringt den Job auf den Server
+├── docs/
+│   ├── PLAN.md, phase0.md, phase1.md
+│   ├── journal.md            Projekttagebuch
+│   └── bericht/              dieses Dokument (Skripte und Kapiteltexte)
+└── data/                     nicht im Git: wetter/, smard/, phase0/, logs/
+```
+
+!begriff Python: die Programmiersprache, in der Datenbeschaffung, Training und Berichte geschrieben sind. Die Bibliotheken pandas (Tabellen), numpy (Rechnen mit Zahlenreihen), LightGBM (Lernen) und matplotlib (Diagramme) machen sie zum Standardwerkzeug für Datenarbeit.
+
+!begriff Virtuelle Umgebung: ein eigener Ordner (hier `.venv`) mit einer Python-Installation und genau den Bibliotheken, die das Projekt braucht. So stört das Projekt keine anderen Programme auf derselben Maschine.
+
+## Parquet: wie die Daten gespeichert werden
+
+!begriff Parquet: ein Dateiformat für Tabellen, das Spalte für Spalte statt Zeile für Zeile speichert. Gleichartige Werte liegen nebeneinander und lassen sich stark komprimieren; außerdem kann man einzelne Spalten lesen, ohne die ganze Datei zu laden.
+
+[abb l_parquet | Zeilenweise gegen spaltenweise Speicherung (Schema).]
+
+Die Wetterdaten liegen in der „langen Form“: eine Zeile je Stunde und Vorlauftag, Spalten `zeit` (UTC), `vorlauf` (1 bis 6) und je Variable eine Spalte. Zahlen werden als 32-Bit-Gleitkommazahlen gespeichert; sie haben etwa 7 gültige Stellen, mehr als jede Wettervorhersage genau ist, und brauchen halb so viel Platz wie die üblichen 64 Bit.
+
+!begriff Gleitkommazahl: die Art, wie Computer Kommazahlen speichern: als Ziffernfolge (Mantisse) und Zehner- beziehungsweise Zweierpotenz (Exponent). 32 Bit reichen für etwa 7, 64 Bit für etwa 16 gültige Dezimalstellen.
+
+## systemd: Dienste und Zeitgeber
+
+!begriff systemd: das Programm, das auf Linux-Servern alle Dienste startet, überwacht und protokolliert. Ein Dienst wird in einer kleinen Textdatei beschrieben, der Unit-Datei.
+
+!begriff Timer: eine systemd-Unit, die einen Dienst zu festgelegten Zeiten startet, ähnlich einem Wecker. Anders als der ältere cron holt ein Timer verpasste Termine nach (`Persistent=true`), etwa nach einem Neustart.
+
+Der Archiv-Job besteht aus zwei Unit-Dateien. Hier die wichtigsten Zeilen mit Erklärung:
+
+```
+[Service]
+Type=oneshot                   läuft einmal durch und endet
+User=smard-forecast            eigener Benutzer ohne Anmeldung, keine Root-Rechte
+ExecStart=/usr/bin/python3 -I /opt/smard-forecast-archiv/archiv.py
+StateDirectory=smard-forecast  systemd legt /var/lib/smard-forecast an, nur dort darf geschrieben werden
+ProtectSystem=strict           der Rest des Dateisystems ist schreibgeschützt
+ProtectHome=yes                keine Sicht auf Home-Verzeichnisse
+NoNewPrivileges=yes            kann sich keine Rechte verschaffen
+CapabilityBoundingSet=         keinerlei Sonderrechte
+RestrictAddressFamilies=AF_INET AF_INET6   nur normales Internet, keine anderen Kanäle
+MemoryMax=256M                 höchstens 256 MB Speicher
+
+[Timer]
+OnCalendar=*-*-* *:35:00       jede Stunde um :35
+RandomizedDelaySec=120         plus bis zu 2 Minuten Zufall, damit nicht alle gleichzeitig fragen
+Persistent=true                verpasste Termine nachholen
+```
+
+!warum Warum so viele Einschränkungen?
+Das Prinzip heißt geringstmögliche Rechte: Ein Programm darf nur das, was es wirklich braucht. Hätte das Archiv-Skript einen Fehler oder bekäme es manipulierte Daten, könnte es trotzdem nichts außerhalb seines Ordners anrichten.
+!ende
+
+# Phase 1: Daten laden und eigenes Archiv
+
+## Der Trainingsdownload, Schritt für Schritt
+
+Das Skript `scripts/download.py` läuft als eigener systemd-Dienst `smard-forecast-download`, damit es unabhängig von einer offenen Sitzung weiterläuft.
+
+1. Ortsliste lesen; je Ort die Variablen bestimmen (Solar 6, Wind 6, beides 10).
+2. Den Zeitraum 22.02.2024 bis 01.11.2026 in Kalenderjahre teilen: drei Stücke je Ort, 120 insgesamt.
+3. Stücke überspringen, deren Datei schon existiert (`data/wetter/<ort>/<von>_<bis>.parquet`). Dadurch kann der Download jederzeit abbrechen und weitermachen.
+4. Für jedes offene Stück das Gewicht berechnen (Formel oben, 78 bis 156).
+5. Prüfen, ob das Gewicht in alle drei Zeitfenster passt (nächster Abschnitt); sonst warten.
+6. Abruf; bei leerer Antwort, Zeitüberschreitung oder Statuscode 429 oder 5xx bis zu fünfmal wiederholen, mit wachsender Pause.
+7. Abruf mit Zeitpunkt und Gewicht in `data/wetter/budget.json` buchen.
+8. Antwort in die lange Form bringen und als Parquet speichern; erst in eine `.tmp`-Datei, dann umbenennen, damit eine halb geschriebene Datei nie als fertig gilt.
+9. Eine Zeile ins Protokoll `data/logs/download.log`.
+
+## Gleitende Zeitfenster
+
+Wie stellt man sicher, dass in **keiner** Minute mehr als 450 und in **keiner** Stunde mehr als 4.500 Einheiten abgerufen werden? Mit gleitenden Fenstern: Vor jedem Abruf mit Gewicht w zum Zeitpunkt t wird geprüft
+
+$$ \sum_{t_k > t - 60\,\mathrm{s}} w_k + w \leq 450, \qquad \sum_{t_k > t - 3600\,\mathrm{s}} w_k + w \leq 4500, \qquad \sum_{t_k \geq 0{:}00\,\mathrm{UTC}} w_k + w \leq 9000
+
+!begriff Gleitendes Fenster: ein Zeitraum fester Länge, der immer bis zum aktuellen Augenblick reicht, also mitwandert. Im Gegensatz dazu beginnt ein festes Fenster zu festen Zeiten (etwa „jede volle Stunde“).
+
+Die Grenzen liegen absichtlich unter denen von Open-Meteo (600, 5.000, 10.000), als Sicherheitsabstand: Open-Meteo zählt vielleicht etwas anders, und andere Abrufe derselben Maschine zählen mit.
+
+[abb l_budget | Der echte Download am 2. November: gebuchte Einheiten des Tages. Beim Start waren 4.500 Einheiten vorsorglich vorgebucht (wegen der Lückenprüfung am Morgen). Bei rund 9.000 hat der Download angehalten und wartet auf den nächsten UTC-Tag.]
+
+!praxis Stand am 2. November, abends
+Bis 19:42 UTC waren 53 von 120 Stücken geladen. Dann war das Tageskontingent erreicht, und der Download wartet bis 00:05 UTC. Die übrigen 67 Stücke folgen am 3. November.
+!ende
+
+## Das eigene Archiv
+
+Warum ein eigenes Archiv, wenn Open-Meteo eins hat? Drei Gründe: Tag 7 gibt es dort nicht; die Überwachung im Betrieb braucht genau die Vorhersagen, die zum Zeitpunkt einer Prognose vorlagen; und ein fremdes Archiv kann Lücken bekommen oder eingestellt werden.
+
+[abb archiv_ablauf | Was der Archiv-Job jede Stunde tut.]
+
+1. Der Timer startet den Dienst stündlich um :35.
+2. Der Dienst liest für vier Modelle die Datei `meta.json` von Open-Meteo und darin den Startzeitpunkt des letzten Laufs. Das kostet kein Kontingent.
+3. Hat sich der Lauf von ICON-D2, ICON-EU oder ICON global gegenüber dem letzten gespeicherten Stand geändert? D2-RUC wird nur mitgeschrieben, nicht als Auslöser genutzt; sonst wären es 24 Abrufe am Tag.
+4. Wenn ja: ein Abruf mit allen 40 Orten kommagetrennt, 10 Variablen, 8 Tage (Gewicht 40).
+5. Speichern als `/var/lib/smard-forecast/archiv/JJJJ/MM/TT/<Zeit>.json.gz`, mit Abrufzeit, Modell und allen Laufzeitpunkten.
+
+!begriff gzip: ein verbreitetes Verfahren, um Dateien verlustfrei zu verkleinern. Es ersetzt Wiederholungen durch Verweise auf frühere Stellen. JSON mit vielen ähnlichen Zahlen schrumpft dabei stark.
+
+Die erste Archivdatei hat unkomprimiert {{z:gzip_roh}} Bytes und mit gzip {{z:gzip_gz}} Bytes, also etwa ein Fünftel. Bei etwa 8 Abrufen am Tag sind das rund 300 MB im Jahr. Gesichert wird das Archiv jede Nacht um 04:00 UTC: Die Dienste-Sicherung der großen Maschine holt es als Archivdatei ab, prüft sie und hebt mehrere Stände auf.
+
+[abb tagesablauf | Ein Tag im Betrieb: Modellläufe, stündliche Prüfungen des Archivs, Sicherung und geplante Überwachung.]
+
+## Installierte Leistung
+
+`scripts/kapazitaet.py` lädt die Monatswerte von Energy-Charts nach `data/kapazitaet.parquet` (Spalten Monat, Solar AC, Wind an Land, Wind auf See, jeweils in MW).
+
+# Phase 2: das Solar-Modell
+
+Solar kommt zuerst, weil es am besten vorhersagbar ist und sein Fehler am klarsten zu messen. Schlägt Solar die Messlatten nicht, lohnt sich der Rest nicht.
+
+[abb pipeline | Datenfluss von den Rohdaten bis zum Tool.]
+
+## Schritt 1: die Trainingstabelle
+
+1. Alle Parquet-Stücke der 21 Solar-Orte einlesen.
+2. Strahlungsgrößen um eine Stunde nach vorn schieben (Kapitel 4).
+3. Breit machen: je Kombination aus Stunde und Vorlauftag eine Zeile; je Ort und Variable eine Spalte, etwa `muenchen__shortwave_radiation`. Bei 21 Orten und 6 Variablen sind das 126 Wetterspalten.
+4. SMARD-Erzeugung Solar dazu (stündlich, UTC, Zeitstempel am Anfang der Stunde).
+5. Zielgröße: Erzeugung geteilt durch die installierte AC-Leistung des Monats.
+6. Merkmale aus Kapitel 14 berechnen.
+7. Zeilen ohne Zielwert, mit vollständig fehlendem Wetter (Ausfall April 2026) oder mit Sonnenhöhe unter 0° entfernen.
+
+Größe: rund 23.000 Stunden mal 6 Vorlauftage, etwa 140.000 Zeilen, davon etwa die Hälfte am Tag.
+
+## Schritt 2: Training
+
+Je Quantil ein Modell, also drei für Solar, mit den Hyperparametern aus Kapitel 13. Danach werden die drei Vorhersagen jeder Stunde sortiert (gegen gekreuzte Quantile), auf den Bereich 0 bis 1 begrenzt, und nachts wird 0 gesetzt.
+
+## Schritt 3: Bewertung
+
+Rollierend Monat für Monat ab dem 13. Monat, dazu der Abschlusstest August bis Oktober 2026 (Kapitel 15). Kennzahlen je Vorlauftag:
+
+Tabelle: Was je Vorlauftag berichtet wird
+| Kennzahl | Formel | Ziel |
+| MAE | Mittel der Beträge von echt − p50, in GW | klein |
+| MAE in % | MAE geteilt durch installierte Leistung | vergleichbar über Jahre |
+| Fehler der Tagesenergie | Betrag von Summe echt − Summe p50, je Tag in GWh | für Tagesfragen |
+| Trefferquote | Anteil Stunden mit p10 ≤ echt ≤ p90 | 75 bis 85 % |
+| mittlerer Pinball-Verlust | über alle drei Quantile | klein |
+| Skill | 1 − MAE Modell / MAE Messlatte | mindestens 0,2 ab Tag 2 |
+
+Am Ende steht **Prüfpunkt A** mit dem Weiter-Kriterium aus Kapitel 15.
+
+# Phase 3: Wind an Land und auf See
+
+Gleicher Ablauf wie Solar, mit den Merkmalen aus Kapitel 7.
+
+Tabelle: Unterschiede der Wind-Modelle
+| | Wind an Land | Wind auf See |
+| Orte | 16 (14 Wind und Magdeburg, Cottbus) | 7 (5 Nordsee, 2 Ostsee) |
+| Variablen | Wind 10 und 100 m, Richtung als Sinus und Kosinus, Böen, Temperatur, Luftdruck | dieselben |
+| Besonderheit | sanfte Gesamtkurve aus vielen Anlagen | wenige große Parks; Netzengpässe und Abregelung häufig |
+| Nachtstunden | zählen voll | zählen voll |
+
+Prüfpunkt B wendet dieselben Kriterien je Quelle an. Wind auf See wird es am schwersten haben (Kapitel 7 und 8).
+
+# Phase 4: das Tool in smard-mcp
+
+## Wie eine Frage beantwortet wird
+
+[abb l_mcp | Ablauf einer Anfrage, vom Menschen über den KI-Assistenten und smard-mcp zu den Datenquellen und zurück (Schema).]
+
+1. Eingaben prüfen: Zeitraum höchstens 6 Tage ab jetzt, nicht in der Vergangenheit.
+2. Wetter holen: ein Abruf für alle 40 Orte, zwischengespeichert, bis `meta.json` einen neueren Lauf meldet.
+3. Für jede Zielstunde die Vorlaufzeit bestimmen (Kapitel 16).
+4. Merkmale bauen, genau wie im Training (die Spaltenliste steht in der Modelldatei).
+5. Drei Modelle je Quelle auswerten, sortieren, auf 0 bis 1 begrenzen.
+6. Mit der installierten Leistung des aktuellen Monats in GW umrechnen; je Tag zu GWh summieren.
+7. Wo veröffentlicht: Netzbetreiber-Prognose daneben stellen.
+8. Ausgabe mit Metadaten und den gemessenen Fehlern.
+
+## Modelle von Python nach TypeScript
+
+!begriff TypeScript: die Programmiersprache, in der smard-mcp geschrieben ist; JavaScript mit Typangaben, die Fehler schon vor dem Ausführen finden.
+
+smard-mcp soll keine neue Abhängigkeit bekommen. LightGBM kann ein fertiges Modell als JSON ausgeben; das Projekt wandelt es in ein kompaktes eigenes Format um:
+
+```
+// models/solar_p50.json (vereinfacht)
+{ "version": "2026-12-01", "quelle": "solar", "quantil": 0.5,
+  "spalten": ["vorlauf", "stunde_sin", ..., "muenchen__shortwave_radiation", ...],
+  "basis": 0.0812,
+  "baeume": [ { "s": [12, 3, ...],                 // Spalte je Knoten
+                "t": [210.5, 0.31, ...],           // Schwelle je Knoten
+                "l": [1, 3, ...], "r": [2, 4, ...], // Kinder; negativ = Blatt Nr. -(i+1)
+                "v": [0.0123, -0.004, ...],        // Werte der Blätter
+                "n": [0, 1, ...] } ] }             // fehlender Wert: 0 = links, 1 = rechts
+```
+
+Die Auswertung eines Baums ist eine kurze Schleife: am ersten Knoten beginnen, die Frage stellen, links oder rechts weiter, bis ein Blatt erreicht ist. Die Vorhersage ist der Basiswert plus die Summe aller Blattwerte (Kapitel 13; die Lernrate steckt bei LightGBM schon in den Blattwerten).
+
+```
+function baum(b: Baum, x: Float64Array): number {
+  let k = 0;
+  for (;;) {
+    const w = x[b.s[k]];
+    const links = Number.isNaN(w) ? b.n[k] === 0 : w <= b.t[k];
+    const z = links ? b.l[k] : b.r[k];
+    if (z < 0) return b.v[-z - 1];
+    k = z;
+  }
+}
+const vorhersage = (m: Modell, x: Float64Array) =>
+  m.baeume.reduce((s, b) => s + baum(b, x), m.basis);
+```
+
+Ein automatischer Test vergleicht die TypeScript-Auswertung mit Python-Vorhersagen auf festen Beispielzeilen; die Abweichung muss kleiner als 10⁻⁹ sein. Ziel für alle neun Modelle zusammen: unter 2 MB.
+
+## Die Schnittstelle
+
+Tabelle: Eingaben von forecast_renewables
+| Parameter | Werte | Standard |
+| from, to | ISO-Datum oder Datum mit Uhrzeit (Berlin), höchstens 6 Tage ab jetzt | jetzt bis +6 Tage |
+| sources | solar, wind_onshore, wind_offshore | alle drei |
+| resolution | hour, day | day, bei bis zu 48 h hour |
+| include_intervals | ja oder nein | nein |
+
+```
+// Beispielantwort, gekürzt; Zahlen erfunden
+{ "period": {"from": "2026-12-03T00:00+01:00", "to": "2026-12-09T00:00+01:00"},
+  "region": "DE", "resolution": "day",
+  "sources": {
+    "solar": { "days": [ {"date": "2026-12-03", "p10_gwh": 41, "p50_gwh": 58, "p90_gwh": 72,
+                          "lead_day": 1, "official_forecast_gwh": 55}, ... ] }, ... },
+  "model_version": "2026-12-01", "trained_until": "2026-11-30",
+  "weather_run": {"dwd_icon_d2": "2026-12-02T21:00Z", "dwd_icon": "2026-12-02T18:00Z"},
+  "skill": {"solar": {"mae_pct_by_lead_day": [2.1, 2.6, 3.0, 3.4, 3.8, 4.1],
+                      "coverage_last_30_days": 0.79}},
+  "notes": ["Tag 6 stammt aus ICON global (13 km)."],
+  "source": "Bundesnetzagentur | SMARD.de (CC BY 4.0); Wetterdaten: Open-Meteo.com (CC BY 4.0), Modelle des DWD" }
+```
+
+Tabelle: Verhalten in Grenzfällen
+| Fall | Verhalten |
+| Zeitraum über 6 Tage hinaus | Fehler, der den letzten möglichen Zeitpunkt nennt |
+| Zeitraum in der Vergangenheit | Fehler mit Hinweis auf get_generation_mix |
+| Open-Meteo nicht erreichbar | zuletzt gespeicherte Vorhersage mit Warnung und ihrem Alter; ab 12 Stunden Alter ein Fehler |
+| Netzbetreiber-Prognose fehlt | official_forecast entfällt, Hinweis in notes |
+| Feiertag, sonniges Wochenende | Hinweis auf mögliche Abregelung |
+
+# Phase 5 und 6: Überwachung, Neu-Training, Ausrollen
+
+## Tägliche Überwachung
+
+Ein täglicher Job nimmt die archivierten Vorhersagen, rechnet mit dem aktuellen Modell die Prognose, die das Tool damals ausgegeben hätte, und vergleicht sie mit den inzwischen veröffentlichten SMARD-Werten. MAE und Trefferquote der letzten 30 Tage je Vorlauftag erscheinen in jeder Antwort des Tools. So sieht jeder Nutzer, wie verlässlich die Zahlen gerade sind, nicht nur wie gut sie im Test waren. Das Lernbeispiel zur Kalibrierung (Kapitel 10) zeigt, warum das nötig ist: Fehler können sich von Jahr zu Jahr verändern.
+
+## Monatliches Neu-Training
+
+[abb workflow | Automatisch bis zum Pull Request, gemergt wird nur von Hand.]
+
+!begriff GitHub Actions: ein Dienst von GitHub, der Programme automatisch ausführt, etwa zu festen Zeiten oder nach jedem Push. Eine Beschreibung in einer Datei (Workflow) legt fest, was wann läuft.
+
+!begriff Pull Request: ein Vorschlag, Änderungen in den Hauptzweig eines Repositorys zu übernehmen. Man kann ihn ansehen, kommentieren und dann übernehmen (mergen) oder ablehnen.
+
+## Ausrollen und Prüfpunkt C
+
+1. Tool auf einem Nebenzweig in smard-mcp, Tests grün, TypeScript gegen Python geprüft.
+2. Ausrollen nur mit `npm run deploy` (verlangt einen sauberen, gepushten Stand, führt die Tests aus, sichert die alte Version, prüft nach dem Start, ob der Dienst antwortet, und rollt sonst automatisch zurück).
+3. Zwei bis vier Wochen den Fehler im Betrieb beobachten.
+4. **Prüfpunkt C:** Ist der Fehler im Betrieb ähnlich wie im Abschlusstest? Dann Veröffentlichung als neue Version bei npm, sonst nachbessern.
+
+# Betrieb, Kosten und Risiken
+
+Tabelle: Laufende Kosten
+| Was | Wie oft | Kosten |
+| Archiv-Job | stündlich prüfen, etwa 8 Abrufe am Tag | 320 Einheiten am Tag, 300 MB im Jahr |
+| Wetter für das Tool | bei neuem Lauf, etwa 8 Abrufe am Tag | 320 Einheiten am Tag |
+| Anfrage an das Tool | je Anfrage | Millisekunden Rechenzeit |
+| Überwachung | täglich | Sekunden |
+| Neu-Training | monatlich | Minuten Rechenzeit, unter 1 GB Speicher |
+| Erstdownload | einmalig | etwa 10.460 Einheiten, zwei Tage |
+
+Geldkosten fallen keine an.
+
+Tabelle: Risiken
+| Risiko | Folge | Gegenmaßnahme |
+| Lücken im ICON-Archiv | weniger Trainingsdaten | geprüft: nur ein Ausfall; eigenes Archiv |
+| Abregelung bei negativen Preisen | Erzeugung unter dem Wetterwert | Wochentag und Feiertag als Merkmal, Hinweis in notes |
+| Zubau | systematischer Versatz | Monatswerte statt SMARD-Jahreswerte |
+| seltene Wetterlagen (Dunkelflaute, Sturm) | grobe Ausreißer | Quantile; Winter getrennt bewertet |
+| Open-Meteo ändert Bedingungen oder fällt aus | keine Prognose | Zwischenspeicher mit Warnung; langfristig DWD Open Data als zweite Quelle |
+| Wechsel innerhalb von icon_seamless | Eingaben verändern sich | Laufzeitpunkte im Archiv, Überwachung zeigt Brüche |
+| Lizenz Energy-Charts | Nenner fehlt | Rückfall Marktstammdatenregister |
+
+## Offene Fragen
+
+- Lizenz der Energy-Charts-Daten.
+- Welche Lauffolge liefert icon_seamless in den ersten 48 Stunden genau?
+- Bundesweite Feiertage oder gewichtet nach Bundesländern?
+- Ab wann Tag 7 aus dem eigenen Archiv (frühestens November 2027)?
+
+## Wo man nachsieht
+
+Tabelle: Nützliche Befehle
+| Frage | Befehl |
+| Läuft der Download? | `systemctl status smard-forecast-download` |
+| Fortschritt des Downloads | `tail -5 /root/smard-forecast/data/logs/download.log` |
+| Archiv-Timer (Web-Maschine) | `systemctl list-timers smard-forecast-archiv.timer` |
+| Letzte Archiv-Läufe | `journalctl -u smard-forecast-archiv -n 20` |
+| Dieses Dokument neu bauen | `abbildungen.py`, `lehrgrafiken.py`, dann `bericht.py` |

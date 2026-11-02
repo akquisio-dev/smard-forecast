@@ -1,0 +1,108 @@
+@teil Anhang
+Wie das Projekt entstanden ist, alle Formeln auf einen Blick, alle Begriffe und alle Quellen.
+
+@anhang
+
+# Entstehung: das Projekttagebuch
+
+Das vollständige Tagebuch steht in `docs/journal.md` im Repository. Jeder Eintrag hat dieselbe Form: Ziel, was gemacht wurde, Ergebnis, Fehlschlag mit Ursache und Lösung, was man daraus lernt. Hier die wichtigsten Stationen und vor allem die Fehlschläge, denn aus ihnen lernt man am meisten.
+
+## Zeitleiste
+
+Tabelle: Zeitleiste am 2. November 2026 (UTC)
+| Zeit | Schritt | Commit |
+| 08:00 | Konzept geprüft; Tag 7 fehlt im Archiv | |
+| 08:14 | Deploy-Key angelegt, Plan ins Repository | f151cfd |
+| 08:20 bis 09:15 | Phase 0: Vorlaufzeit, SMARD, Orte, Lückenprüfung | |
+| 09:16 | Phase 0 abgeschlossen | 163d455 |
+| 18:28 | Download gestartet, Archiv-Job geschrieben | 552f040 |
+| 18:37 | Protokollierung und Tagebuch; Download mit Logdatei neu gestartet | 109c6f3 |
+| 18:41 | Archiv-Job auf der Web-Maschine in Betrieb | b0783a5 |
+| abends | erster Projektbericht; PDF auf Wunsch aus dem öffentlichen Repository genommen | 6fbdfd0 |
+| abends | diese ausführliche Fassung mit Lehrteil; dabei Zeitversatz der Strahlung entdeckt | |
+
+## Fehlschläge und was sie lehren
+
+Tabelle: Fehlschläge
+| Was passiert ist | Ursache | Lösung und Lehre |
+| Die Dokumentation versprach Vorhersagen „ab Januar 2024“; Tag 7 fehlt aber ganz | ICON global reicht nur 180 Stunden | Die riskanteste Annahme eines Plans zuerst an der echten Quelle prüfen, nicht an der Dokumentation |
+| Tag 1 passt zu keinem einzelnen Lauf | vermutlich ICON-D2-RUC | ungeklärte Fragen nicht verdrängen; Laufzeitpunkte aller Modelle archivieren, damit man es später klären kann |
+| Die Single Runs API wäre ideal, beginnt aber erst im Mai 2026 | Archivtiefe des Dienstes | nur für Prüfungen nutzen |
+| Die Auslastung zeigte einen Scheintrend | SMARD führt die installierte Leistung zu niedrig | Plausibilität über mehrere Jahre prüfen; Monatswerte |
+| Die Lückenprüfung brach nach 11 Orten ab (leere Antwort) | Minutenlimit: bei 3 Sekunden Abstand rund 620 Einheiten pro Minute | Gewichte ausrechnen statt Abrufe zählen; 10 Sekunden Abstand; jede Antwort sofort speichern |
+| Das Ausrollen auf die Web-Maschine wurde abgelehnt | Freigabe-Prüfung des Assistenten bei Schreibzugriffen auf fremde Server | der Betreuer rollt selbst aus |
+| Der Download startete eine Stunde später als nötig | zu vorsichtig vorgebucht | harmlos; die Buchführung hätte die Uhrzeit der Lückenprüfung berücksichtigen können |
+| Der erste Kartenumriss hatte eine Lizenz nur für nicht-kommerzielle Nutzung | Hilfsdaten ungeprüft übernommen | durch gemeinfreie Natural-Earth-Daten ersetzt; auch bei Hilfsdaten die Lizenz prüfen |
+| Das erste Lernbeispiel zur Überanpassung zeigte keine Überanpassung | ein einzelner Baum wächst bei 12.500 Stunden nicht weit genug | Beispiel mit wenig Daten und vielen Bäumen neu gebaut; jede Grafik ansehen, bevor man ihr glaubt |
+| Strahlung und Strom waren um eine Stunde versetzt | Open-Meteo stempelt Strahlung am Ende, SMARD am Anfang der Stunde | mit den Daten selbst prüfen (Korrelation bei verschiedenen Verschiebungen) |
+
+!merke
+Fast jeder dieser Fehlschläge wurde gefunden, weil etwas nachgerechnet oder angesehen wurde, statt es anzunehmen. Das ist die wichtigste Arbeitsregel des Projekts.
+!ende
+
+# Formelsammlung
+
+Alle wichtigen Formeln aus dem Dokument an einer Stelle. Die Nummern rechts laufen im ganzen Dokument durch; die Herleitungen stehen im Haupttext.
+
+### Strom
+
+$$ E = \sum_i P_i \cdot \Delta t \qquad a = \frac{P}{P_{\mathrm{inst}}}
+
+### Sonnenstand
+
+$$ \gamma = \frac{2\pi}{365}\left(N - 1 + \frac{h - 12}{24}\right) \qquad \omega = \frac{60\,h_{\mathrm{UTC}} + E + 4\lambda}{4} - 180^\circ
+
+$$ \sin \alpha = \sin\varphi \, \sin\delta + \cos\varphi \, \cos\delta \, \cos\omega \qquad \mathrm{GHI} = \mathrm{DNI} \cdot \sin\alpha + \mathrm{DHI}
+
+$$ P = P_{\mathrm{STC}} \cdot \frac{G}{1000} \cdot \left(1 + \gamma_T (T_{\mathrm{Zelle}} - 25)\right) \qquad T_{\mathrm{Zelle}} \approx T_{\mathrm{Luft}} + \frac{G}{800}(\mathrm{NOCT} - 20)
+
+### Wind
+
+$$ P_{\mathrm{Wind}} = \frac{1}{2}\rho A v^3 \qquad c_{p,\max} = \frac{16}{27} \qquad v(h) = v_{\mathrm{ref}}\left(\frac{h}{h_{\mathrm{ref}}}\right)^{\alpha} \qquad \rho = \frac{p}{R_s T}
+
+### Statistik
+
+$$ \mathrm{Bias} = \frac{1}{n}\sum (y_i - \hat{y}_i) \qquad \mathrm{MAE} = \frac{1}{n}\sum |y_i - \hat{y}_i| \qquad \mathrm{RMSE} = \sqrt{\frac{1}{n}\sum (y_i - \hat{y}_i)^2}
+
+$$ r = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum (x_i - \bar{x})^2}\sqrt{\sum (y_i - \bar{y})^2}} \qquad \mathrm{Skill} = 1 - \frac{\mathrm{MAE}_{\mathrm{Modell}}}{\mathrm{MAE}_{\mathrm{Messlatte}}}
+
+### Quantile
+
+$$ L_\tau(y, q) = \tau \max(y - q, 0) + (1 - \tau)\max(q - y, 0) \qquad \mathrm{Minimum\ bei}\ P(Y < q) = \tau
+
+### Lernen
+
+$$ \mathrm{Gewinn} = \mathrm{SSE}(M) - \mathrm{SSE}(L) - \mathrm{SSE}(R) \qquad F_m(x) = F_{m-1}(x) + \eta\, h_m(x)
+
+$$ x_{\sin} = \sin\frac{2\pi h}{24} \qquad x_{\cos} = \cos\frac{2\pi h}{24} \qquad \mathrm{Vorlauftag} = \max\left(1, \left\lfloor \frac{t_{\mathrm{Ziel}} - t_{\mathrm{Lauf}}}{24\,\mathrm{h}} \right\rfloor\right)
+
+### Abrufgewicht
+
+$$ w = n_{\mathrm{Orte}} \cdot \max\left(1, \frac{n_{\mathrm{Spalten}}}{10}\right) \cdot \max\left(1, \frac{n_{\mathrm{Tage}}}{14}\right)
+
+# Glossar
+
+Alle Begriffe, die in diesem Dokument in einem Begriffskasten erklärt wurden, alphabetisch.
+
+@glossar
+
+# Quellen und Lizenzen
+
+Tabelle: Daten
+| Quelle | Inhalt | Lizenz |
+| Bundesnetzagentur, SMARD.de | Erzeugung, Prognosen der Netzbetreiber, installierte Leistung (Jahreswerte) | CC BY 4.0 |
+| Open-Meteo.com, Modelle des DWD | Wettervorhersagen ICON, Previous Runs API, Single Runs API | CC BY 4.0, freie Schnittstelle nur nicht-kommerziell |
+| Energy-Charts, Fraunhofer ISE | installierte Leistung monatlich | noch zu klären |
+| Natural Earth | Ländergrenzen für die Karte | gemeinfrei |
+
+Tabelle: Verfahren und Werkzeuge
+| Name | wofür | Lizenz |
+| LightGBM (Microsoft) | Gradient Boosting | MIT |
+| pandas, numpy | Tabellen und Rechnen | BSD |
+| matplotlib | Diagramme und Formelsatz in diesem Dokument | matplotlib-Lizenz (BSD-artig) |
+| reportlab | Satz dieses PDFs | BSD |
+| Formel der Sonnendeklination und Zeitgleichung | Kapitel 6 | J. W. Spencer, Search 2 (5), 1971 |
+| Betz-Grenze | Kapitel 7 | A. Betz, 1920 |
+| Lorenz-System | Kapitel 8 | E. N. Lorenz, Journal of the Atmospheric Sciences 20, 1963 |
+
+Das Repository steht unter der MIT-Lizenz. Dieses Dokument wird aus den Dateien in `docs/bericht/` erzeugt; das fertige PDF liegt bewusst nicht im öffentlichen Repository.

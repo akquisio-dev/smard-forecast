@@ -88,3 +88,13 @@ wird die AC-Leistung genommen, weil die Einspeisung durch die Wechselrichter beg
 
 Ergebnis: **Phase 0 bestanden.** Die Datenlage trägt den Plan mit Trainingsbeginn 2024-02-22
 (rund 32 Monate) und 6 Vorlauftagen.
+
+## Nachtrag 2026-11-02 abends: Zeitversatz der Strahlung
+
+Open-Meteo liefert `shortwave_radiation` als Mittel der **vorangegangenen** Stunde (Wert bei
+12:00 = Mittel 11:00 bis 12:00), SMARD stempelt mit dem **Anfang** der Stunde. Geprüft mit der
+Korrelation zwischen mittlerer Strahlung (21 Solar-Orte, Tag 1) und Solarerzeugung bei
+verschiedenen Verschiebungen: −2 h 0,950, **−1 h 0,987**, 0 h 0,942, +1 h 0,825.
+Folge für Phase 2: alle Strahlungsgrößen vor dem Zusammenführen um eine Stunde nach vorn
+schieben (`shift(-1)`). Wind (Momentanwert) zeigte kaum Unterschied (0,925 gegen 0,923); wird
+in Phase 2 je Variable noch einmal geprüft.

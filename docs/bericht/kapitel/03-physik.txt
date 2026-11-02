@@ -1,0 +1,284 @@
+@teil Physik und Wetter
+Woher die Information kommt: wie aus Sonnenlicht und Wind Strom wird, und warum eine Wettervorhersage mit jedem Tag unsicherer wird.
+
+# Wie aus Sonnenlicht Strom wird
+
+Eine Solaranlage wandelt Licht in elektrischen Strom um. Wie viel sie liefert, hängt vor allem von drei Dingen ab: wie viel Licht auf die Module fällt, aus welchem Winkel es kommt und wie warm die Module sind. Dieses Kapitel erklärt alle drei und zeigt an echten Daten, wie eng Strahlung und Solarstrom zusammenhängen.
+
+## Der Sonnenstand
+
+Wie viel Licht ankommt, hängt zuerst davon ab, wie hoch die Sonne am Himmel steht. Steht sie tief, verteilt sich dasselbe Lichtbündel auf eine größere Fläche, und es muss einen längeren Weg durch die Atmosphäre nehmen.
+
+!begriff Sonnenhöhe: der Winkel zwischen Horizont und Sonnenmittelpunkt, in Grad. 0° heißt Sonnenauf- oder -untergang, 90° hieße Sonne genau senkrecht über dem Kopf (in Deutschland nie). Negative Werte bedeuten: Die Sonne steht unter dem Horizont, es ist Nacht.
+
+Die Sonnenhöhe lässt sich für jeden Ort und jeden Zeitpunkt exakt ausrechnen; sie muss nicht vorhergesagt werden. Das Projekt nutzt das: Sie ist ein Merkmal, das immer stimmt, egal wie gut oder schlecht die Wettervorhersage ist. Die Rechnung hat vier Schritte.
+
+### Schritt 1: der Tag im Jahr als Winkel
+
+Die Erde läuft in einem Jahr einmal um die Sonne. Den Tag im Jahr N (1 bis 365) und die Uhrzeit h in UTC rechnet man deshalb in einen Winkel γ (gamma) um, der im Laufe des Jahres einmal von 0 bis 2π läuft:
+
+$$ \gamma = \frac{2\pi}{365}\left(N - 1 + \frac{h - 12}{24}\right)
+
+!begriff Bogenmaß: eine Art, Winkel zu messen, bei der ein voller Kreis 2π (etwa 6,283) statt 360° hat. Mathematische Funktionen wie Sinus und Kosinus rechnen in Bogenmaß. Umrechnung: Grad = Bogenmaß · 180/π.
+
+### Schritt 2: die Deklination
+
+!begriff Deklination: der Winkel, um den die Sonne über (positiv) oder unter (negativ) dem Himmelsäquator steht. Weil die Erdachse um 23,44° geneigt ist, schwankt die Deklination im Jahr zwischen +23,44° (Sommeranfang) und −23,44° (Winteranfang). Sie ist der Grund für die Jahreszeiten.
+
+Eine genaue Näherung (nach Spencer, 1971) setzt die Deklination δ (delta, in Bogenmaß) aus Kosinus- und Sinus-Wellen zusammen:
+
+$$ \delta = 0{,}006918 - 0{,}399912\cos\gamma + 0{,}070257\sin\gamma - 0{,}006758\cos 2\gamma + \ldots
+
+Das ist eine **Fourier-Reihe**: Eine periodische Kurve wird als Summe von Wellen mit ein-, zwei- und dreifacher Frequenz geschrieben. Der größte Summand, −0,399912 cos γ, ist allein schon die grobe Jahreskurve; die anderen korrigieren, dass die Erdbahn leicht elliptisch ist. Die vollständige Formel mit sieben Summanden steht in `lehrgrafiken.py`, Funktion `sonnenhoehe()`.
+
+!begriff Fourier-Reihe: die Darstellung einer sich wiederholenden Kurve als Summe von Sinus- und Kosinuswellen verschiedener Frequenz. Mit wenigen Wellen lässt sich fast jede glatte periodische Kurve sehr genau annähern.
+
+### Schritt 3: der Stundenwinkel
+
+Die Erde dreht sich in 24 Stunden einmal um sich selbst, also um 15° pro Stunde oder 1° pro 4 Minuten. Der **Stundenwinkel** ω (omega) sagt, wie weit sich die Erde seit dem Mittag gedreht hat; mittags ist er 0, vormittags negativ, nachmittags positiv. Um ihn zu berechnen, braucht man die **wahre Sonnenzeit** in Minuten:
+
+$$ t_{\mathrm{Sonne}} = 60 \cdot h_{\mathrm{UTC}} + E + 4 \cdot \lambda \qquad \omega = \frac{t_{\mathrm{Sonne}}}{4} - 180^\circ
+
+Darin ist λ (lambda) die geografische Länge in Grad Ost: Jedes Grad nach Osten bringt die Sonne 4 Minuten früher. E ist die **Zeitgleichung**.
+
+!begriff Zeitgleichung: der Unterschied zwischen der Uhrzeit, zu der die Sonne tatsächlich am höchsten steht, und 12 Uhr mittlerer Ortszeit. Weil die Erdbahn elliptisch und die Erdachse geneigt ist, schwankt er übers Jahr zwischen etwa −14 und +16 Minuten.
+
+### Schritt 4: die Sonnenhöhe
+
+Aus Breitengrad φ (phi), Deklination δ und Stundenwinkel ω folgt die Sonnenhöhe α über eine Formel der Kugelgeometrie:
+
+$$ \sin \alpha = \sin\varphi \, \sin\delta + \cos\varphi \, \cos\delta \, \cos\omega
+
+!rechnen München, 21. Juni 2026, 11:00 UTC (13:00 Sommerzeit)
+Tag im Jahr N = 172, h = 11, Breite φ = 48,14°, Länge λ = 11,58°.
+1. γ = 2π/365 · (171 + (11 − 12)/24) = 2,943 (Bogenmaß).
+2. Deklination δ = 23,45°: Sommeranfang, fast das Maximum von 23,44°.
+3. Zeitgleichung E = −1,3 Minuten. Sonnenzeit = 660 − 1,3 + 4 · 11,58 = 705,0 Minuten, also 11:45 wahre Sonnenzeit. Stundenwinkel ω = 705,0/4 − 180 = −3,75°: noch knapp vor dem Sonnenhöchststand.
+4. sin α = sin 48,14° · sin 23,45° + cos 48,14° · cos 23,45° · cos(−3,75°) = 0,907. Also α = 65,1°.
+Das ist fast der Höchstwert des Jahres für München: Er liegt bei {{z:sonne_max_2026-06-21:1}}°. Am 21. Dezember sind es mittags nur {{z:sonne_max_2026-12-21:1}}°.
+!ende
+
+[abb l_sonnenbahn | Sonnenhöhe über München an drei Tagen, berechnet mit den Formeln dieses Abschnitts. Im Juni steht die Sonne fast 16 Stunden über dem Horizont, im Dezember nur gut 8. Der Höchststand liegt im Juni gegen 13:15 Uhr, weil Sommerzeit gilt und München westlich des 15. Längengrads liegt, nach dem sich die mitteleuropäische Zeit richtet.]
+
+!praxis Wo das im Projekt steckt
+Die Sonnenhöhe ist ein Merkmal des Solar-Modells. Außerdem entscheidet sie, welche Stunden überhaupt bewertet werden: Liegt sie unter 0°, ist die Solarerzeugung physikalisch null, und solche Stunden gehen weder ins Training noch in die Fehlerberechnung ein (Kapitel 15).
+!ende
+
+## Strahlung: direkt, diffus, global
+
+Sonnenlicht erreicht den Boden auf zwei Wegen. Ein Teil kommt **direkt** aus Richtung der Sonne. Ein anderer Teil wird an Wolken, Staub und Luftmolekülen gestreut und kommt **diffus** aus dem ganzen Himmel. Deshalb ist es auch an bewölkten Tagen hell.
+
+!begriff Globalstrahlung (GHI): die gesamte Sonnenstrahlung, die auf eine waagerechte Fläche fällt, in Watt pro Quadratmeter (W/m²). Sie ist die Summe aus direkter und diffuser Strahlung. In Open-Meteo heißt sie `shortwave_radiation`.
+
+!begriff Direktnormalstrahlung (DNI): die direkte Strahlung, gemessen auf einer Fläche, die genau zur Sonne zeigt. Auf eine waagerechte Fläche fällt davon nur der Anteil sin α.
+
+!begriff Diffusstrahlung (DHI): die gestreute Strahlung auf eine waagerechte Fläche.
+
+Die drei hängen über die Sonnenhöhe zusammen:
+
+$$ \mathrm{GHI} = \mathrm{DNI} \cdot \sin\alpha + \mathrm{DHI}
+
+!rechnen Klarer Sommermittag gegen Wintermittag
+Bei klarem Himmel ist DNI etwa 850 W/m² im Sommer, und die diffuse Strahlung etwa 100 W/m². Mit α = 65° (Juni): GHI = 850 · sin 65° + 100 = 850 · 0,906 + 100 = 870 W/m².
+Im Dezember bei α = 18°, wegen des längeren Wegs durch die Luft eher DNI = 600 und DHI = 50: GHI = 600 · sin 18° + 50 = 600 · 0,309 + 50 = 235 W/m². Ein klarer Wintermittag liefert also auf einer waagerechten Fläche nur gut ein Viertel des Sommerwerts.
+!ende
+
+Das Solar-Modell bekommt Globalstrahlung, direkte und diffuse Strahlung getrennt. Der Grund: Solarmodule sind meist geneigt und nach Süden ausgerichtet. Auf sie fällt die direkte Strahlung unter einem anderen Winkel als auf eine waagerechte Fläche, die diffuse dagegen ungefähr gleich. Mit beiden Werten getrennt kann das Modell diesen Unterschied lernen, ohne dass man ihm die Ausrichtung jeder einzelnen Anlage sagen muss.
+
+## Vom Licht zum Strom: Modul, Temperatur, Wechselrichter
+
+!begriff Photovoltaik: die direkte Umwandlung von Licht in elektrischen Strom in Halbleitern (meist Silizium). Ein Lichtteilchen (Photon) löst im Halbleiter ein Elektron, das als Strom abfließen kann.
+
+Ein Modul wird mit seiner **Nennleistung unter Standardbedingungen** angegeben: 1.000 W/m² Einstrahlung, 25 °C Zelltemperatur. Für andere Bedingungen gilt näherungsweise:
+
+$$ P = P_{\mathrm{STC}} \cdot \frac{G}{1000\,\mathrm{W/m^2}} \cdot \left(1 + \gamma_T \, (T_{\mathrm{Zelle}} - 25\,^\circ\mathrm{C})\right)
+
+Dabei ist G die Einstrahlung auf das Modul und γ_T der **Temperaturkoeffizient**, bei Silizium etwa −0,4 % pro Kelvin: Jedes Grad über 25 °C kostet 0,4 % Leistung. Die Zelltemperatur liegt in der Sonne deutlich über der Lufttemperatur; eine verbreitete Näherung benutzt die Nennbetriebstemperatur (NOCT, typisch 45 °C):
+
+$$ T_{\mathrm{Zelle}} \approx T_{\mathrm{Luft}} + \frac{G}{800\,\mathrm{W/m^2}} \cdot (\mathrm{NOCT} - 20\,^\circ\mathrm{C})
+
+!rechnen Heißer Sommertag
+G = 800 W/m², Luft 30 °C, NOCT 45 °C. Zelltemperatur ≈ 30 + 800/800 · 25 = 55 °C. Temperaturfaktor = 1 − 0,004 · (55 − 25) = 0,88. Ein 10-kW-Dach liefert dann 10 · 0,8 · 0,88 = 7,0 kW statt 8,0 kW: 12 % gehen allein durch die Hitze verloren.
+Bei 5 °C Luft und gleicher Einstrahlung: Zelle ≈ 30 °C, Faktor 0,98, Leistung 7,8 kW.
+!ende
+
+Deshalb bekommt das Solar-Modell auch die Temperatur und die Windgeschwindigkeit in 10 m Höhe (Wind kühlt die Module).
+
+!begriff Wechselrichter: das Gerät, das den Gleichstrom (DC) der Module in netzüblichen Wechselstrom (AC) umwandelt. Er hat selbst eine Höchstleistung. Oft ist er etwas kleiner als die Module (zum Beispiel 8 kW Wechselrichter an 10 kW Modulen), weil die Module ihre volle Leistung selten erreichen. An den wenigen Spitzenstunden wird dann gekappt.
+
+!praxis Warum AC-Leistung als Nenner
+Weil die Wechselrichter begrenzen, was ins Netz fließen kann, ist ihre Summe (AC-Leistung) die sinnvolle Bezugsgröße für die Auslastung. Energy-Charts führt für Oktober 2026 rund 120 GW AC gegenüber 132 GW DC.
+!ende
+
+## Was die echten Daten zeigen
+
+Wie eng hängen vorhergesagte Strahlung und gemessene Solarerzeugung zusammen? Für jede Tagesstunde seit Februar 2024 (insgesamt {{z:solar_n_stunden}} Stunden) wurde die mittlere vorhergesagte Globalstrahlung der 21 Solar-Orte (Vorlauf Tag 1, um eine Stunde ausgerichtet wie in Kapitel 4) neben die gemessene Auslastung gestellt.
+
+[abb l_solar_streu | Links: jede Tagesstunde seit Februar 2024 als Punkt; dunklere Sechsecke enthalten mehr Stunden. Die orange Linie ist der Median je 50 W/m². Rechts: wie viel Auslastung je 1.000 W/m² Strahlung herauskommt, nach Monat.]
+
+Der Zusammenhang ist fast eine Gerade: Die Korrelation liegt bei {{z:solar_r_tag1:3}}, das heißt: {{z:solar_r2_tag1:2}} oder rund 95 % der Schwankung der Auslastung lassen sich allein mit der mittleren vorhergesagten Strahlung von morgen erklären (wie man das liest, steht in Kapitel 9). Je 100 W/m² mehr Strahlung steigt die Auslastung im Mittel um {{z:solar_steigung_100:3}}, also um gut 6 Prozentpunkte.
+
+Der rechte Teil zeigt eine Feinheit: Pro Einheit Strahlung kommt im Dezember ({{z:solar_eff_dez:2}}) mehr Auslastung heraus als im Juni ({{z:solar_eff_jun:2}}). Mehrere Ursachen spielen dabei vermutlich zusammen, die sich mit diesen Daten allein nicht trennen lassen: Kalte Module arbeiten besser (siehe Formel oben); geneigte, nach Süden zeigende Module fangen tief stehende Wintersonne viel besser ein als eine waagerechte Fläche, auf die sich GHI bezieht; und im Sommer kappen die Wechselrichter mittags häufiger. Genau solche Effekte soll das Modell aus Monat, Sonnenhöhe und Temperatur selbst lernen.
+
+!merke
+Solarstrom ist fast eine lineare Funktion der Strahlung. Die verbleibenden 5 % stecken in Temperatur, Einfallswinkel, Wechselrichtern, Abregelung und vor allem in den Fehlern der Wettervorhersage selbst.
+!ende
+
+# Wie aus Wind Strom wird
+
+## Die Leistung im Wind
+
+Wind ist bewegte Luft, und bewegte Masse hat Bewegungsenergie (kinetische Energie):
+
+$$ E_{\mathrm{kin}} = \frac{1}{2} \, m \, v^2
+
+Wie viel Luft strömt in einer Sekunde durch die Kreisfläche A, die ein Rotor überstreicht? In einer Sekunde legt die Luft die Strecke v zurück; das Volumen ist also A · v pro Sekunde, die Masse ρ · A · v pro Sekunde, wobei ρ (rho) die Luftdichte ist. Setzt man diesen Massenstrom für m ein, erhält man die Leistung, die im Wind steckt:
+
+$$ P_{\mathrm{Wind}} = \frac{1}{2} \, \rho \, A \, v^3
+
+!begriff Luftdichte: die Masse von einem Kubikmeter Luft, in kg/m³. Auf Meereshöhe bei 15 °C sind es 1,225 kg/m³. Kalte Luft ist dichter als warme, und in der Höhe ist die Luft dünner.
+
+Das Entscheidende ist die **dritte Potenz**: Doppelte Windgeschwindigkeit bedeutet achtfache Leistung. Ein v steckt im Massenstrom (mehr Luft pro Sekunde), zwei weitere in der Bewegungsenergie jedes Kilogramms.
+
+!rechnen Eine moderne Anlage an Land
+Rotordurchmesser 120 m, also Radius r = 60 m. Fläche A = π · r² = π · 3.600 = 11.310 m². Luftdichte ρ = 1,225 kg/m³.
+Bei v = 10 m/s: P = ½ · 1,225 · 11.310 · 1.000 = 6.927.000 W ≈ {{z:wind_p_10ms_mw:2}} MW.
+Bei v = 5 m/s: P = ½ · 1,225 · 11.310 · 125 ≈ {{z:wind_p_5ms_mw:2}} MW.
+Halber Wind, ein Achtel der Leistung. Diese Leistung steckt im Wind; eine Anlage kann davon nur einen Teil nutzen (nächster Abschnitt).
+!ende
+
+## Die Betz-Grenze
+
+Eine Windanlage kann dem Wind nicht die gesamte Energie entziehen, sonst stünde die Luft hinter dem Rotor still und es käme keine neue nach. Der Physiker Albert Betz hat 1920 gezeigt, dass höchstens 16/27 ≈ 59,3 % nutzbar sind.
+
+!warum Woher die 16/27 kommen
+Die Luft wird von v₁ vor dem Rotor auf v₂ dahinter abgebremst; durch den Rotor strömt sie mit dem Mittel (v₁ + v₂)/2. Die entzogene Leistung ist dann ½ · ρ · A · (v₁ + v₂)/2 · (v₁² − v₂²). Teilt man durch die Leistung im ungestörten Wind und schreibt x = v₂/v₁, erhält man den Leistungsbeiwert c_p = ½ · (1 + x) · (1 − x²). Leitet man nach x ab und setzt die Ableitung null, liegt das Maximum bei x = 1/3: Die Luft wird auf ein Drittel abgebremst. Eingesetzt: c_p = ½ · (4/3) · (8/9) = 16/27.
+!ende
+
+!begriff Ableitung: die Steigung einer Funktion an einer Stelle. Wo eine glatte Funktion ihr Maximum oder Minimum hat, ist die Steigung null; deshalb findet man Extremstellen, indem man die Ableitung gleich null setzt. Dieses Werkzeug taucht in Kapitel 10 und 13 wieder auf.
+
+## Die Leistungskurve einer Anlage
+
+Echte Anlagen folgen der v³-Kurve nur in einem mittleren Bereich:
+
+- **Unter etwa 3 m/s** (Anlaufgeschwindigkeit) dreht sich der Rotor nicht oder liefert nichts.
+- **Von 3 bis etwa 12 m/s** steigt die Leistung ungefähr mit v³.
+- **Ab etwa 12 m/s** (Nenngeschwindigkeit) ist die Nennleistung erreicht; Generator und Netzanschluss sind dafür ausgelegt. Die Anlage dreht die Rotorblätter aus dem Wind und hält die Leistung konstant.
+- **Ab etwa 25 m/s** (Abschaltgeschwindigkeit) schaltet sie zum Schutz ab.
+
+[abb l_wind_theorie | Links: Leistung im Wind, Betz-Grenze und Leistungskurve einer typischen 4,2-MW-Anlage (Schema). Rechts: wie die Windgeschwindigkeit mit der Höhe zunimmt (Schema).]
+
+## Wind in der Höhe
+
+Am Boden bremst die Reibung den Wind; mit der Höhe nimmt er zu. Eine einfache Näherung ist das **Potenzgesetz**:
+
+$$ v(h) = v_{\mathrm{ref}} \cdot \left(\frac{h}{h_{\mathrm{ref}}}\right)^{\alpha}
+
+Der Exponent α hängt von der Rauigkeit der Umgebung ab: etwa 0,10 über offenem Meer, 0,14 über flachem Land, 0,25 und mehr über Wald und Städten.
+
+!rechnen Wie viel mehr Wind auf Nabenhöhe?
+In 10 m Höhe weht es mit 6 m/s, flaches Land (α = 0,14). In 100 m Höhe: v = 6 · (100/10)^0,14 = 6 · 1,380 = 8,28 m/s. Das ist 38 % mehr Wind, aber wegen v³ das 1,38³ = 2,63-Fache an Leistung.
+!ende
+
+!praxis Deshalb Wind in 100 m
+Das Modell bekommt die Windgeschwindigkeit in 100 m Höhe, weil moderne Anlagen ihre Nabe in 100 bis 160 m Höhe haben. Wind in 10 m gibt es zusätzlich, weil das Verhältnis beider Werte etwas über die Schichtung der Luft verrät.
+!ende
+
+## Luftdichte und Temperatur
+
+Die Luftdichte folgt aus Druck und Temperatur über die Gasgleichung:
+
+$$ \rho = \frac{p}{R_s \cdot T}
+
+mit dem Luftdruck p in Pascal, der Temperatur T in Kelvin (°C + 273,15) und der Gaskonstante für trockene Luft R_s = 287,05 J/(kg·K).
+
+!rechnen Winter gegen Sommer
+p = 101.325 Pa (Normaldruck). Bei 15 °C = 288,15 K: ρ = 101.325 / (287,05 · 288,15) = 1,225 kg/m³. Bei −10 °C = 263,15 K: ρ = 1,341 kg/m³. Kalte Winterluft ist 9,5 % dichter und liefert bei gleichem Wind 9,5 % mehr Leistung.
+!ende
+
+Deshalb gehören Temperatur und Luftdruck zu den Merkmalen der Wind-Modelle.
+
+## Was die echten Daten zeigen
+
+Für die einzelne Anlage ist die Leistungskurve scharf. Für ganz Deutschland mit rund 30.000 Anlagen an Land sieht es anders aus: Nicht überall weht derselbe Wind, und die mittlere Windgeschwindigkeit über 14 Orte ist nur ein grober Stellvertreter.
+
+[abb l_wind_streu | Mittlere vorhergesagte Windgeschwindigkeit in 100 m (Tag 1) gegen die gemessene Auslastung, je Stunde seit Februar 2024. Durchgezogen: Median; gestrichelt: 10- und 90-%-Linie (Kapitel 9).]
+
+An Land entsteht so eine sanfte, fast gerade ansteigende Kurve statt der scharfen Kurve einer Anlage. Die **Rangkorrelation** (Kapitel 9) liegt bei {{z:wind_onshore_spearman_tag1:3}}. Auf See ist der Zusammenhang schwächer ({{z:wind_offshore_spearman_tag1:3}}), und bei sehr starkem Wind sinkt der Median sogar wieder. Mögliche Gründe sind Sturmabschaltungen, Engpässe im Netz an Land, in die der Offshore-Strom eingespeist wird, und Abregelung; außerdem gibt es bei sehr hohen Windgeschwindigkeiten nur wenige Stunden, sodass die Kurve dort unruhig wird.
+
+!merke
+Wind ist schwieriger als Sonne: Die Leistung hängt mit der dritten Potenz an einer Größe, die das Wettermodell schlechter vorhersagt als die Strahlung, und sie wird oft aus Gründen gedrosselt, die mit dem Wetter nichts zu tun haben.
+!ende
+
+# Wie eine Wettervorhersage entsteht
+
+## Die Atmosphäre als Rechenaufgabe
+
+Die Atmosphäre gehorcht physikalischen Gesetzen: Luft bewegt sich, weil Druckunterschiede sie antreiben (Bewegungsgleichungen), Masse geht nicht verloren (Kontinuitätsgleichung), Energie wird zwischen Wärme, Bewegung und Strahlung umgesetzt (Thermodynamik), Wasser verdunstet und kondensiert. Kennt man den Zustand der ganzen Atmosphäre jetzt, kann man im Prinzip ausrechnen, wie er in einer Stunde aussieht.
+
+!begriff Numerisches Wettermodell: ein Computerprogramm, das die Atmosphäre in ein dreidimensionales Gitter aus Zellen zerlegt und für jede Zelle die physikalischen Gleichungen in kleinen Zeitschritten (Sekunden bis Minuten) näherungsweise löst. Englisch: numerical weather prediction, NWP.
+
+In der Praxis geht das so:
+
+1. **Beobachten.** Wetterstationen, Wetterballons, Flugzeuge, Schiffe, Bojen und Satelliten messen Temperatur, Druck, Wind und Feuchte, weltweit Millionen Werte am Tag.
+2. **Anfangszustand bestimmen.** Die Messungen sind lückenhaft und ungenau. Ein Verfahren namens **Datenassimilation** verbindet sie mit der letzten Vorhersage zu einem vollständigen, physikalisch stimmigen Zustand der Atmosphäre auf dem Gitter.
+3. **Vorwärtsrechnen.** Von diesem Anfangszustand aus rechnet das Modell Schritt für Schritt in die Zukunft, bei ICON global bis 180 Stunden.
+4. **Ausgeben.** Für jede Stunde und jede Gitterzelle stehen dann Temperatur, Wind, Strahlung, Wolken und vieles mehr fest.
+
+!begriff Datenassimilation: das Verfahren, aus unvollständigen Messungen und einer Vorhersage einen bestmöglichen vollständigen Anfangszustand zu berechnen. Grob gesagt: Wo es viele gute Messungen gibt, folgt man den Messungen; wo es keine gibt, der Vorhersage.
+
+!begriff Lauf: eine vollständige Rechnung des Wettermodells von einem Anfangszustand aus. Ein Lauf hat einen Startzeitpunkt (Initialisierung), etwa „ICON-EU, 2. November 2026, 15:00 UTC“. Ein neuer Lauf beginnt beim DWD je nach Modell jede Stunde, alle drei oder alle sechs Stunden.
+
+!begriff Vorlaufzeit: der Abstand zwischen dem Startzeitpunkt eines Laufs und der Stunde, für die er etwas vorhersagt. Ein Lauf von 00:00 UTC sagt für 18:00 UTC desselben Tages mit 18 Stunden Vorlauf voraus. Englisch: lead time.
+
+## Die Modelle des Deutschen Wetterdienstes
+
+Der Deutsche Wetterdienst (DWD) betreibt das Modellsystem ICON in mehreren Ausprägungen. Feinere Gitter sehen mehr Einzelheiten (etwa einzelne Gewitter), kosten aber mehr Rechenzeit und decken deshalb ein kleineres Gebiet und eine kürzere Zeit ab.
+
+Tabelle: Die ICON-Modelle des DWD
+| Modell | Gebiet | Gitterabstand | neue Läufe | Vorhersage reicht |
+| ICON-D2 | Deutschland und Nachbarn | 2,2 km | alle 3 h | 48 h |
+| ICON-D2-RUC | wie D2 | 2,2 km | jede Stunde | kurz; für schnelle Aktualisierung |
+| ICON-EU | Europa | 6,5 km | alle 3 h (lange Läufe alle 6 h) | 120 h |
+| ICON (global) | ganze Erde | 13 km | alle 6 h (lange Läufe 00 und 12 UTC) | 180 h |
+
+!begriff icon_seamless: eine Zusammenstellung des Dienstes Open-Meteo. Für jede Stunde wird das feinste verfügbare ICON-Modell genommen: in den ersten Stunden ICON-D2 (seit kurzem auch D2-RUC), danach ICON-EU, danach ICON global. So erhält man eine durchgehende Vorhersage über 7,5 Tage.
+
+## Chaos: warum Vorhersagen mit der Zeit schlechter werden
+
+Selbst ein perfektes Modell könnte das Wetter nicht beliebig weit vorhersagen. Der Grund heißt **deterministisches Chaos** und wurde 1963 von dem Meteorologen Edward Lorenz an einem stark vereinfachten Modell der Luftbewegung entdeckt:
+
+$$ \frac{dx}{dt} = \sigma (y - x), \qquad \frac{dy}{dt} = x(\rho - z) - y, \qquad \frac{dz}{dt} = xy - \beta z
+
+!begriff Differentialgleichung: eine Gleichung, die angibt, wie schnell sich eine Größe ändert (dx/dt heißt „Änderung von x pro Zeiteinheit“), abhängig vom aktuellen Zustand. Kennt man den Anfangszustand, kann man die Zukunft Schritt für Schritt ausrechnen: neuer Wert = alter Wert + Änderung · Zeitschritt.
+
+Mit σ = 10, ρ = 28 und β = 8/3 verhält sich dieses System chaotisch. Startet man zweimal mit Werten, die sich nur in der vierten Nachkommastelle unterscheiden (x = 1,0000 und x = 1,0001), laufen beide Rechnungen eine Weile fast gleich und dann völlig auseinander.
+
+[abb l_lorenz | Das Lorenz-System, tatsächlich mit einem einfachen Schrittverfahren durchgerechnet. Links: zwei Rechnungen mit winzigem Startunterschied. Rechts: ihr Abstand auf logarithmischer Achse; er wächst zunächst etwa exponentiell (gerade Linie im logarithmischen Maßstab) und bleibt dann auf der Größe des ganzen Systems stehen.]
+
+!begriff Logarithmische Achse: eine Achse, auf der gleiche Abstände gleiche Faktoren bedeuten (0,001, 0,01, 0,1, 1, 10). Exponentielles Wachstum, also Verdopplung in festen Zeitabständen, erscheint darauf als gerade Linie.
+
+Der Abstand überschreitet hier nach etwa {{z:lorenz_t_abstand_1}} Zeiteinheiten den Wert 1. Die echte Atmosphäre verhält sich ähnlich: Kleine Fehler im Anfangszustand (und die gibt es immer, weil nicht jeder Kubikmeter Luft gemessen wird) wachsen, bis die Vorhersage nach etwa zwei Wochen nicht besser ist als das langjährige Mittel. Für die Größen, die hier zählen, sind die ersten Tage gut und die Güte sinkt danach stetig.
+
+!begriff Ensemble-Vorhersage: viele Läufe desselben Modells mit leicht veränderten Anfangszuständen. Laufen sie auseinander, ist die Lage unsicher; bleiben sie zusammen, ist sie gut vorhersagbar. smard-forecast nutzt keine Ensembles, sondern lernt die Unsicherheit aus der Vergangenheit (Kapitel 10). Ensembles wären eine mögliche spätere Erweiterung.
+
+## Wie stark die Güte mit dem Vorlauf sinkt, an echten Daten
+
+Wie schnell verliert die Vorhersage für Strom an Wert? Das lässt sich mit dem denkbar einfachsten Modell messen: Man teilt die Stunden des Jahres 2024 und 2025 nach der vorhergesagten Strahlung (oder dem vorhergesagten Wind) in Klassen und merkt sich für jede Klasse den mittleren Wert (genauer den Median, Kapitel 9) der Auslastung. Für jede Stunde des Jahres 2026 schlägt man dann die Klasse nach. Das macht man einmal mit den Vorhersagen von Tag 1, einmal mit Tag 2 und so weiter.
+
+[abb l_guete_vorlauf | Lernbeispiel: Fehler eines sehr einfachen Modells, gelernt mit den Daten 2024 und 2025, geprüft an 2026, je Vorlauftag. Gemessen als mittlerer absoluter Fehler in Prozent der installierten Leistung (Kapitel 9).]
+
+Tabelle: Fehler des einfachen Modells in % der installierten Leistung (Test 2026)
+| Vorlauf | Solar | Wind an Land | Wind auf See |
+| Tag 1 | {{z:guete_vorlauf.solar.0:1}} | {{z:guete_vorlauf.wind_onshore.0:1}} | {{z:guete_vorlauf.wind_offshore.0:1}} |
+| Tag 2 | {{z:guete_vorlauf.solar.1:1}} | {{z:guete_vorlauf.wind_onshore.1:1}} | {{z:guete_vorlauf.wind_offshore.1:1}} |
+| Tag 3 | {{z:guete_vorlauf.solar.2:1}} | {{z:guete_vorlauf.wind_onshore.2:1}} | {{z:guete_vorlauf.wind_offshore.2:1}} |
+| Tag 4 | {{z:guete_vorlauf.solar.3:1}} | {{z:guete_vorlauf.wind_onshore.3:1}} | {{z:guete_vorlauf.wind_offshore.3:1}} |
+| Tag 5 | {{z:guete_vorlauf.solar.4:1}} | {{z:guete_vorlauf.wind_onshore.4:1}} | {{z:guete_vorlauf.wind_offshore.4:1}} |
+| Tag 6 | {{z:guete_vorlauf.solar.5:1}} | {{z:guete_vorlauf.wind_onshore.5:1}} | {{z:guete_vorlauf.wind_offshore.5:1}} |
+
+Drei Dinge fallen auf. Erstens wächst der Fehler bei allen drei Quellen mit dem Vorlauf, wie das Chaos-Argument erwarten lässt. Zweitens wächst er bei Wind viel stärker als bei Solar: An Land mehr als doppelt so viel Fehler an Tag 6 wie an Tag 1, bei Solar nur 75 % mehr. Ein Grund: Der größte Teil des Solar-Tagesgangs ist Sonnenstand, und der ist exakt bekannt; nur die Bewölkung ist unsicher. Drittens ist Wind auf See schon an Tag 1 schwer, wie Kapitel 7 erwarten ließ.
+
+!praxis Was daraus folgt
+Diese Zahlen sind keine Messlatte für das spätere Projektmodell, das viel mehr Information bekommt. Sie zeigen aber zweierlei, was das Projekt prägt: Die Vorlaufzeit muss ein Merkmal sein, weil sich der Zusammenhang mit ihr ändert. Und die Bandbreite (p10 bis p90) muss mit dem Vorlauf breiter werden, sonst wäre sie an Tag 6 viel zu schmal.
+!ende

@@ -1,0 +1,159 @@
+@teil Strom und Zeit
+Was die Zahlen von SMARD bedeuten: Leistung und Energie, Zeitstempel und Zeitzonen, und wie das deutsche Stromsystem funktioniert.
+
+# Leistung und Energie
+
+Wer Stromdaten liest, muss zwei Größen auseinanderhalten, die im Alltag ständig verwechselt werden: **Leistung** und **Energie**. Fast jeder Rechenfehler mit Stromdaten beginnt hier.
+
+## Leistung: wie schnell
+
+!begriff Leistung: wie viel Energie pro Zeit umgesetzt wird, gemessen in Watt (W). Ein Wasserkocher mit 2.000 W setzt in jeder Sekunde 2.000 Joule elektrische Energie in Wärme um. Leistung ist eine Momentaufnahme, wie die Geschwindigkeit beim Auto.
+
+Die Einheit Watt ist klein; für Kraftwerke und ganze Länder benutzt man Vielfache:
+
+Tabelle: Vorsätze für Watt
+| Einheit | Zeichen | Watt | Größenordnung |
+| Kilowatt | kW | 1.000 | ein Wasserkocher (2 kW), eine Wallbox (11 kW) |
+| Megawatt | MW | 1.000.000 | eine große Windanlage an Land (4 bis 6 MW) |
+| Gigawatt | GW | 1.000.000.000 | ein großes Kohlekraftwerk (etwa 1 GW); alle Solaranlagen Deutschlands zur Mittagszeit im Sommer (etwa 50 GW) |
+| Terawatt | TW | 10¹² | in Deutschland nur für Energie üblich (TWh) |
+
+## Energie: wie viel
+
+!begriff Energie: das, was bei einer Leistung über eine Zeit hinweg zusammenkommt. Energie = Leistung mal Zeit. Im Strombereich misst man sie in Wattstunden (Wh): 1 Wh ist die Energie, die bei 1 W Leistung in einer Stunde umgesetzt wird. Energie entspricht beim Auto der gefahrenen Strecke.
+
+$$ E = P \cdot t
+
+Hier ist E die Energie, P die Leistung (vom englischen power) und t die Zeit. Ist die Leistung nicht konstant, zerlegt man die Zeit in kleine Stücke, in denen sie fast konstant ist, und addiert:
+
+$$ E = \sum_{i} P_i \cdot \Delta t
+
+Das Zeichen Σ (großes griechisches Sigma) bedeutet „addiere alle Summanden“; Δt (Delta t) ist die Länge eines Zeitstücks. Bei Stundenwerten ist Δt = 1 h.
+
+!rechnen Ein Tag Solarstrom
+Am 20. Juni 2026 erreichte die Solarerzeugung in Deutschland in der Stunde ab {{z:tag_spitze_stunde}}:00 Uhr ihren Höchstwert von {{z:tag_spitze_gw:1}} GW. Das ist eine Leistung. Wie viel Energie kam an diesem Tag insgesamt zusammen?
+SMARD liefert für jede Stunde die erzeugte Energie in MWh. Weil eine Stunde genau 1 h lang ist, ist die Zahl in MWh zugleich die mittlere Leistung dieser Stunde in MW. Addiert man die 24 Stundenwerte, erhält man die Energie des Tages: {{z:tag_energie_gwh:0}} GWh.
+Zum Vergleich: Ein durchschnittlicher deutscher Haushalt verbraucht etwa 3.000 kWh = 3 MWh im Jahr. {{z:tag_energie_gwh:0}} GWh = {{z:tag_energie_gwh:0}}.000 MWh reichen also rechnerisch für den Jahresverbrauch von rund 150.000 Haushalten.
+!ende
+
+[abb l_leistung_energie | Leistung und Energie an einem echten Tag. Die Linie ist die Leistung (wie schnell erzeugt wird), die Fläche darunter die Energie (wie viel erzeugt wurde). Jeder Balken ist eine Stunde breit; seine Höhe in GW mal 1 h ergibt seine Energie in GWh.]
+
+!achtung Die häufigste Verwechslung
+„Solar hat gestern 450 GW erzeugt“ ist falsch: 450 ist eine Energie und hat die Einheit GWh. „Die Leistung lag mittags bei 50 GWh“ ist ebenso falsch: Eine Leistung hat die Einheit GW. Im Tool `forecast_renewables` stehen Stundenwerte deshalb in GW (Leistung) und Tageswerte in GWh (Energie).
+!ende
+
+## Stundenwerte und Viertelstundenwerte
+
+SMARD veröffentlicht die meisten Reihen in zwei Auflösungen: **Viertelstunde** und **Stunde**. Seit Oktober 2025 wird der europäische Strommarkt sogar in Viertelstunden abgerechnet.
+
+!begriff Auflösung: die Länge der Zeitstücke, in die eine Zeitreihe zerlegt ist. Stündliche Auflösung heißt: ein Wert je Stunde.
+
+!begriff Zeitreihe: eine Folge von Werten, von denen jeder zu einem Zeitpunkt oder Zeitraum gehört, zum Beispiel die Solarerzeugung jeder Stunde seit 2024.
+
+Ein SMARD-Wert für eine Viertelstunde ist die in diesen 15 Minuten erzeugte Energie in MWh. Will man daraus die mittlere Leistung, teilt man durch die Dauer: 10 MWh in 0,25 h entsprechen 40 MW. Bei Stundenwerten teilt man durch 1 und die Zahl bleibt gleich; deshalb rechnet das Projekt mit Stundenwerten, da sind MWh und MW zahlengleich.
+
+!rechnen Viertelstunden zu einer Stunde
+Vier Viertelstunden mit 9, 10, 11 und 10 MWh ergeben die Stunde mit 40 MWh. Mittlere Leistung der Stunde: 40 MWh / 1 h = 40 MW. Mittlere Leistung der dritten Viertelstunde: 11 MWh / 0,25 h = 44 MW. Die Stunde verdeckt also, dass es innerhalb kurz mehr war.
+!ende
+
+## Installierte Leistung und Auslastung
+
+!begriff Installierte Leistung: die Summe der Nennleistungen aller Anlagen einer Art, also das, was sie unter idealen Bedingungen gleichzeitig höchstens liefern könnten. Bei Solar unterscheidet man die Leistung der Module (DC, Gleichstrom) und die der Wechselrichter (AC, Wechselstrom), Kapitel 6.
+
+!begriff Auslastung: Erzeugung geteilt durch installierte Leistung, eine Zahl zwischen 0 und 1. Eine Auslastung von 0,4 bedeutet: Die Anlagen liefern gerade 40 % dessen, was sie höchstens könnten. Im Englischen heißt das capacity factor.
+
+$$ a = \frac{P}{P_{\mathrm{inst}}}
+
+!rechnen Auslastung zur Mittagsspitze
+Am 20.06.2026 um die Mittagszeit: P = {{z:tag_spitze_gw:1}} GW. Installierte Solarleistung (AC) im Juni 2026 laut Energy-Charts: rund 115 GW. Auslastung a = 50,4 / 115 ≈ 0,44. Selbst am sonnigsten Tag des Jahres liefern die Anlagen also nicht einmal die Hälfte ihrer Nennleistung. Gründe: Viele Module sind nicht optimal ausgerichtet, nicht überall scheint gleichzeitig die Sonne, Module werden in der Hitze schlechter (Kapitel 6), und ein Teil des Solarstroms wird im eigenen Haus verbraucht und taucht in der Netzeinspeisung gar nicht auf.
+!ende
+
+!praxis Warum das Modell Auslastung lernt
+In Deutschland kommen jeden Monat rund 1,3 GW Solarleistung dazu. Dasselbe Wetter erzeugt deshalb 2026 mehr Strom als 2024. Würde das Modell die Erzeugung in GW lernen, müsste es aus dem Wetter auch noch das Datum erraten. Lernt es die Auslastung, ist der Zubau herausgerechnet: Gleiches Wetter, gleiche Auslastung. Im Betrieb wird mit der aktuellen installierten Leistung zurückgerechnet: P = a · P_inst. Kapitel 14 rechnet das Beispiel ausführlich durch.
+!ende
+
+# Zeit ist schwieriger als gedacht
+
+Wetterdaten und Stromdaten zusammenzubringen klingt einfach: gleiche Stunde, gleiche Zeile. In der Praxis lauern drei Fallen: verschiedene Zeitzonen, die Sommerzeit und die Frage, ob ein Zeitstempel den Anfang oder das Ende eines Zeitraums bezeichnet. Die dritte Falle hat das Projekt tatsächlich getroffen.
+
+## UTC und Ortszeit
+
+!begriff UTC: Coordinated Universal Time, die weltweite Bezugszeit. Sie kennt keine Sommerzeit und keine Zeitzonen. Deutschland liegt im Winter eine Stunde vor UTC (MEZ = UTC+1), im Sommer zwei Stunden (MESZ = UTC+2).
+
+Alle Daten im Projekt werden intern in UTC gespeichert. Nur bei der Ausgabe an Menschen wird in Berliner Zeit umgerechnet. Das ist eine bewährte Regel: Rechnet man intern in Ortszeit, gibt es Stunden, die doppelt vorkommen, und Stunden, die fehlen.
+
+## Die Sommerzeit
+
+Am letzten Sonntag im März springt die Uhr in Deutschland von 2:00 auf 3:00; am letzten Sonntag im Oktober von 3:00 zurück auf 2:00. Ein Kalendertag in Ortszeit hat dann nicht 24 Stunden.
+
+Tabelle: Stunden je Kalendertag in Berliner Zeit (berechnet)
+| Tag | Stunden |
+| {{z:sommerzeit.0.0}} | {{z:sommerzeit.0.1}} |
+| {{z:sommerzeit.1.0}} (Umstellung auf Sommerzeit) | {{z:sommerzeit.1.1}} |
+| {{z:sommerzeit.2.0}} | {{z:sommerzeit.2.1}} |
+| {{z:sommerzeit.3.0}} | {{z:sommerzeit.3.1}} |
+| {{z:sommerzeit.4.0}} (Umstellung auf Winterzeit) | {{z:sommerzeit.4.1}} |
+| {{z:sommerzeit.5.0}} | {{z:sommerzeit.5.1}} |
+
+!achtung Folge für Tagessummen
+Die Energie „pro Tag“ in Ortszeit umfasst am 29. März nur 23 und am 25. Oktober 25 Stunden. Wer Tage vergleicht, muss das wissen. smard-mcp rechnet deshalb immer mit echten Intervallgrenzen statt mit „Start plus 24 Stunden“; dieser Fehler wurde dort in Version 0.9 behoben.
+!ende
+
+## Zeitstempel: Anfang oder Ende?
+
+Ein Stundenwert gehört zu einem Zeitraum, etwa 11:00 bis 12:00. Steht in der Datei dann 11:00 oder 12:00? Beides kommt vor:
+
+- **SMARD** stempelt mit dem **Anfang**: Der Wert mit dem Zeitstempel 11:00 ist die Energie von 11:00 bis 12:00. Die Zeitstempel sind Unix-Zeit in Millisekunden.
+- **Open-Meteo** liefert die Strahlung als **Mittelwert der vorangegangenen Stunde**: Der Wert mit dem Zeitstempel 12:00 ist die mittlere Strahlung von 11:00 bis 12:00. Andere Größen, etwa Wind und Temperatur, sind dagegen **Momentanwerte** zum genannten Zeitpunkt.
+
+!begriff Unix-Zeit: Zahl der Sekunden (bei SMARD: Millisekunden) seit dem 1. Januar 1970, 00:00 UTC. 1.793.638.800 Sekunden entsprechen zum Beispiel dem 2. November 2026, 17:00 UTC. Computer rechnen gern so, weil es keine Zeitzonen und keine Sommerzeit gibt.
+
+Nimmt man beide Zeitstempel naiv als gleich, vergleicht man die Strahlung von 11:00 bis 12:00 mit dem Strom von 12:00 bis 13:00, also mit einer Stunde Versatz. Ob man das richtig gemacht hat, lässt sich mit den Daten selbst prüfen: Man verschiebt die eine Reihe probeweise um −2, −1, 0 und +1 Stunden und schaut, bei welcher Verschiebung Strahlung und Solarstrom am stärksten zusammenhängen. Das Maß dafür ist die Korrelation (Kapitel 9); 1 hieße perfekter Zusammenhang.
+
+[abb l_zeitversatz | Korrelation zwischen der mittleren Strahlungsvorhersage (21 Solar-Orte, Tag 1) und der Solarerzeugung bei verschiedenen Verschiebungen. Bei −1 Stunde ist sie am höchsten: Der Strahlungswert mit Zeitstempel 12:00 gehört zur SMARD-Stunde ab 11:00.]
+
+Bei einer Verschiebung von −1 Stunde liegt die Korrelation bei {{z:versatz.-1:3}}, ohne Verschiebung nur bei {{z:versatz.0:3}}. Der Unterschied sieht klein aus, ist aber groß: Der Anteil der unerklärten Schwankung (1 − r², Kapitel 9) sinkt dadurch auf weniger als ein Viertel.
+
+!praxis Eine Zeile Code mit großer Wirkung
+In Phase 2 wird jede Strahlungsgröße vor dem Zusammenführen um eine Stunde nach vorn geschoben (`shift(-1)` in pandas): Der Wert, der bei 12:00 steht, landet in der Zeile 11:00. Für Wind und Temperatur, die Momentanwerte sind, wird in Phase 2 dieselbe Prüfung gemacht; in Phase 0 war der Unterschied dort gering (Korrelation 0,925 gegenüber 0,923), weil sich Wind innerhalb einer Stunde wenig ändert.
+!ende
+
+!merke
+Alles intern in UTC. Vor dem Zusammenführen prüfen, ob Zeitstempel Anfang, Ende oder Mitte eines Intervalls meinen, und das mit den Daten selbst bestätigen.
+!ende
+
+# Das deutsche Stromsystem in Kürze
+
+Dieses Kapitel erklärt die Begriffe aus der Energiewirtschaft, die im Projekt vorkommen.
+
+## Erzeugung, Verbrauch und Netz
+
+Strom lässt sich in großen Mengen kaum speichern. In jedem Augenblick muss deshalb so viel erzeugt werden, wie verbraucht wird (plus Austausch mit den Nachbarländern). Gerät das aus dem Gleichgewicht, ändert sich die Netzfrequenz, die in Europa bei 50 Hertz liegt.
+
+!begriff Übertragungsnetzbetreiber: die vier Unternehmen, die in Deutschland das Höchstspannungsnetz betreiben und für das Gleichgewicht verantwortlich sind: 50Hertz (Nordosten), Amprion (Westen), TenneT (Mitte und Norden) und TransnetBW (Baden-Württemberg). Ihr jeweiliges Gebiet heißt Regelzone.
+
+Wind und Sonne lassen sich nicht nach Bedarf einschalten. Deshalb brauchen die Netzbetreiber Prognosen, wie viel davon kommen wird, und veröffentlichen eine davon bei SMARD.
+
+## Die Prognose der Netzbetreiber
+
+!begriff Day-Ahead-Prognose: die Vorhersage der Netzbetreiber für den Folgetag, erstellt am Vortag. SMARD veröffentlicht sie stündlich je Energieträger (Reihen `forecast_generation_*`). Sie ist für Tag 1 die stärkste Messlatte, an der sich smard-forecast messen lassen muss.
+
+Diese Prognose ist gut. Über alle Tagesstunden seit 2024 liegt ihr mittlerer absoluter Fehler (Kapitel 9) bei Solar bei {{z:nb_solar_mae:2}} GW und bei Wind an Land bei {{z:nb_wind_onshore_mae:2}} GW. Kapitel 17 zeigt eine Beispielwoche.
+
+## Der Strommarkt und negative Preise
+
+!begriff Day-Ahead-Markt: die tägliche Auktion an der Strombörse, in der für jede Stunde (seit Oktober 2025 jede Viertelstunde) des Folgetags ein Preis ermittelt wird. Ergebnisse gibt es gegen 12 Uhr.
+
+Wenn an einem sonnigen Feiertag viel Solarstrom auf wenig Verbrauch trifft, kann der Preis unter null fallen: Wer Strom ins Netz drückt, muss dafür zahlen. Viele Anlagen werden dann gedrosselt.
+
+!begriff Abregelung: das absichtliche Drosseln von Anlagen, obwohl Wind oder Sonne mehr hergäben. Gründe sind negative Preise, Engpässe im Netz oder Anweisungen der Netzbetreiber. Für ein Prognosemodell ist Abregelung tückisch: Das Wetter verspricht viel Strom, gemessen wird weniger.
+
+!praxis Abregelung im Modell
+Das Modell bekommt Wochentag und Feiertag als Merkmale (Kapitel 14), damit es lernen kann, dass an sonnigen Feiertagen weniger eingespeist wird als das Wetter erwarten ließe. Ganz verschwinden wird dieser Fehler nicht; das Tool weist in seinen Hinweisen darauf hin.
+!ende
+
+## Woher die installierte Leistung kommt
+
+!begriff Marktstammdatenregister: das amtliche Register der Bundesnetzagentur, in dem jede Stromerzeugungsanlage in Deutschland mit Leistung, Standort und Inbetriebnahme eingetragen sein muss, auch jede Balkon-Solaranlage. Es ist die Grundlage für alle Angaben zur installierten Leistung.
+
+SMARD veröffentlicht daraus nur einen Wert pro Jahr. Energy-Charts, ein Angebot des Fraunhofer-Instituts für Solare Energiesysteme (ISE), veröffentlicht Monatswerte. Kapitel 18 zeigt, warum dieser Unterschied für das Projekt entscheidend war.
