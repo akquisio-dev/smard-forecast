@@ -9,6 +9,29 @@ import urllib.request
 PREVIOUS_RUNS = "https://previous-runs-api.open-meteo.com/v1/forecast"
 MODELL = "icon_seamless"
 VORLAUFTAGE = range(1, 7)  # previous_day7 gibt es im Archiv nicht
+# Variablen je Ortstyp (cloud_cover_low und snow_depth fehlen im Archiv, siehe docs/phase0.md)
+VARIABLEN = {
+    "solar": ["shortwave_radiation", "direct_radiation", "diffuse_radiation",
+              "temperature_2m", "cloud_cover", "wind_speed_10m"],
+    "wind": ["wind_speed_10m", "wind_speed_100m", "wind_direction_100m",
+             "wind_gusts_10m", "temperature_2m", "surface_pressure"],
+}
+VARIABLEN["offshore"] = VARIABLEN["wind"]
+
+
+def variablen_fuer(typen) -> list[str]:
+    """Vereinigung der Variablen aller Typen eines Ortes, Reihenfolge stabil."""
+    aus: list[str] = []
+    for t in typen:
+        aus += [v for v in VARIABLEN[t] if v not in aus]
+    return aus
+
+
+def gewicht(spalten: int, tage: int, orte: int = 1) -> float:
+    """Zaehlweise von Open-Meteo: ab 10 Variablen bzw. 14 Tagen anteilig mehr."""
+    return orte * max(1.0, spalten / 10) * max(1.0, tage / 14)
+
+
 USER_AGENT = "smard-forecast (+https://github.com/akquisio-dev/smard-forecast)"
 
 

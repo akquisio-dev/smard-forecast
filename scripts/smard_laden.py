@@ -1,4 +1,4 @@
-"""Phase 0: SMARD-Ist-Werte, Netzbetreiber-Prognose und installierte Leistung ab 2024.
+"""SMARD-Ist-Werte, Netzbetreiber-Prognose und installierte Leistung ab 2024 laden (Phase 0 und 1).
 
 Speichert die Reihen als data/smard/<schluessel>.parquet (wird in Phase 1 weiterverwendet)
 und schreibt data/phase0/smard_luecken.csv.

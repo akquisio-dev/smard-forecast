@@ -1,0 +1,30 @@
+[Unit]
+Description=smard-forecast: ICON-Vorhersagen archivieren
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=smard-forecast
+Group=smard-forecast
+ExecStart=/usr/bin/python3 -I /opt/smard-forecast-archiv/archiv.py
+Environment=ARCHIV_DIR=/var/lib/smard-forecast/archiv
+Environment=ORTE_JSON=/opt/smard-forecast-archiv/orte.json
+StateDirectory=smard-forecast
+StateDirectoryMode=0750
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+MemoryMax=256M
+TimeoutStartSec=15min

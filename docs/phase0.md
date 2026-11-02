@@ -1,6 +1,6 @@
 # Phase 0: Ergebnisse der Datenprüfung
 
-Stand: 2026-11-02. Skripte: `scripts/phase0_wetter.py`, `scripts/phase0_smard.py`.
+Stand: 2026-11-02. Skripte: `scripts/phase0_wetter.py`, `scripts/smard_laden.py`.
 Rohdaten und CSV-Ergebnisse liegen unter `data/` (nicht im Git).
 
 ## Wetter (Open-Meteo Previous Runs API, `icon_seamless`)
