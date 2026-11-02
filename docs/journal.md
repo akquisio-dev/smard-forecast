@@ -211,3 +211,8 @@ Kapitel der Vorseite; beides behoben.
 **Gelernt:** Abbildungen immer rendern und ansehen, nicht nur erzeugen. Bei öffentlichen
 Repos auch die Lizenz von Hilfsdaten (Kartenumrisse) prüfen. Personennamen gehören nicht in
 öffentliche Dokumente; sie wurden durch „Betreuer" ersetzt.
+
+**Nachtrag:** Der Betreuer möchte das PDF nicht im öffentlichen Repo. Es liegt nur lokal
+(`docs/bericht/*.pdf` steht in `.gitignore`); im Repo bleiben nur die Skripte, die es erzeugen.
+Das Entfernen aus der Git-Geschichte (Force-Push) wurde von der Freigabe-Prüfung von Claude
+Code abgelehnt und bleibt dem Betreuer überlassen.
