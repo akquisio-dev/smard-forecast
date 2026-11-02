@@ -3,3 +3,4 @@ data/
 __pycache__/
 *.pyc
 docs/bericht/abb/
+docs/bericht/*.pdf
