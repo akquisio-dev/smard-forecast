@@ -13,6 +13,7 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from sf.log import log  # noqa: E402
 from sf.openmeteo import previous_runs  # noqa: E402
 from sf.orte import ROOT, lade_orte  # noqa: E402
 
@@ -71,7 +72,7 @@ def main():
         fehl = {k: n for k, n in c.items() if n}
         for (spalte, monat), n in sorted(fehl.items()):
             zeilen.append([ort.name, spalte, monat, n])
-        print(f"{ort.name}: {sum(fehl.values())} fehlende Stunden", flush=True)
+        log(f"{ort.name}: {sum(fehl.values())} fehlende Stunden", flush=True)
     with open(AUS / "wetter_luecken.csv", "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["ort", "spalte", "monat", "fehlend"])
@@ -88,7 +89,7 @@ def main():
                 if k != "time":
                     w.writerow([name, k, sum(v is None for v in werte), len(werte)])
             time.sleep(10)
-    print("fertig", flush=True)
+    log("fertig", flush=True)
 
 
 if __name__ == "__main__":

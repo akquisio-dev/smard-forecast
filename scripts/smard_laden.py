@@ -12,6 +12,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from sf.log import log  # noqa: E402
 from sf.orte import ROOT  # noqa: E402
 from sf.smard import KAPAZITAET, REIHEN, reihe  # noqa: E402
 
@@ -33,7 +34,7 @@ def main():
         da = set(df.dropna().zeit)
         fehlt = [t for t in voll if t not in da]
         mon = pd.Series([t.strftime("%Y-%m") for t in fehlt]).value_counts().sort_index()
-        print(f"{key}: {df.zeit.min():%Y-%m-%d} bis {bis:%Y-%m-%d %H:%M}, "
+        log(f"{key}: {df.zeit.min():%Y-%m-%d} bis {bis:%Y-%m-%d %H:%M}, "
               f"{len(fehlt)} fehlende Stunden {dict(mon)}", flush=True)
         zeilen += [[key, m, n] for m, n in mon.items()]
     with open(ROOT / "data" / "phase0" / "smard_luecken.csv", "w", newline="") as f:
@@ -45,7 +46,7 @@ def main():
         df = pd.DataFrame(p, columns=["ts", "mw"])
         df["jahr"] = pd.to_datetime(df.ts, unit="ms", utc=True).dt.tz_convert("Europe/Berlin").dt.year
         df[["jahr", "mw"]].to_parquet(AUS / f"capacity_{key}.parquet")
-        print(f"capacity_{key}:", dict(zip(df.jahr, df.mw)), flush=True)
+        log(f"capacity_{key}:", dict(zip(df.jahr, df.mw)), flush=True)
 
 
 if __name__ == "__main__":

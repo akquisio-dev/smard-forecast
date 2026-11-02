@@ -13,6 +13,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from sf.log import log  # noqa: E402
 from sf.orte import ROOT  # noqa: E402
 
 URL = ("https://api.energy-charts.info/installed_power?country=de&time_step=monthly"
@@ -30,7 +31,7 @@ def main():
             df[NAMEN[p["name"]]] = [None if v is None else v * 1000 for v in p["data"]]  # GW -> MW
     df = df[df.monat >= "2023-01"].reset_index(drop=True)
     df.to_parquet(ROOT / "data" / "kapazitaet.parquet", index=False)
-    print(df.tail(3).to_string(index=False))
+    log(df.tail(3).to_string(index=False))
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from sf.log import log  # noqa: E402
 from sf.openmeteo import VORLAUFTAGE, gewicht, previous_runs, variablen_fuer  # noqa: E402
 from sf.orte import ROOT, lade_orte  # noqa: E402
 
@@ -49,7 +50,7 @@ def warte_auf_platz(buch: list, w: float):
         mnt = sum(g for ts, g in buch if ts >= t - 60)
         if tag + w > GRENZE["tag"]:
             morgen = heute + 86400 + 300
-            print(f"Tageskontingent erreicht ({tag:.0f}), warte bis "
+            log(f"Tageskontingent erreicht ({tag:.0f}), warte bis "
                   f"{dt.datetime.fromtimestamp(morgen, dt.timezone.utc):%Y-%m-%d %H:%M} UTC",
                   flush=True)
             time.sleep(max(60, morgen - t))
@@ -97,7 +98,7 @@ def main():
             if not datei.exists():
                 offen.append((ort, var, a, b, datei))
     gesamt = sum(gewicht(len(v) * len(VORLAUFTAGE), (b - a).days + 1) for _, v, a, b, _ in offen)
-    print(f"{len(offen)} Stuecke offen, Gewicht etwa {gesamt:.0f}", flush=True)
+    log(f"{len(offen)} Stuecke offen, Gewicht etwa {gesamt:.0f}", flush=True)
     for i, (ort, var, a, b, datei) in enumerate(offen, 1):
         w = gewicht(len(var) * len(VORLAUFTAGE), (b - a).days + 1)
         warte_auf_platz(buch, w)
@@ -110,9 +111,9 @@ def main():
         df.to_parquet(tmp, index=False)
         tmp.rename(datei)
         leer = int(df[var].isna().all(axis=1).sum())
-        print(f"[{i}/{len(offen)}] {ort.name} {a}..{b}: {len(df)} Zeilen, "
+        log(f"[{i}/{len(offen)}] {ort.name} {a}..{b}: {len(df)} Zeilen, "
               f"{leer} ganz leer, Gewicht {w:.0f}", flush=True)
-    print("fertig", flush=True)
+    log("fertig", flush=True)
 
 
 if __name__ == "__main__":

@@ -4,7 +4,8 @@ Probabilistic day-ahead to 6-day forecasts (p10, p50, p90) of German solar, onsh
 offshore wind generation, built for the
 [smard-mcp](https://github.com/akquisio-dev/smard-mcp) tool `forecast_renewables`.
 
-Status: planning. See [docs/PLAN.md](docs/PLAN.md) (German).
+Status: data collection (phase 1). See [docs/PLAN.md](docs/PLAN.md) for the plan and
+[docs/journal.md](docs/journal.md) for a step-by-step project log including failures (both German).
 
 ## Data sources
 
