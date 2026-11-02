@@ -53,8 +53,9 @@ Vorlauftag getrennt aus dem vorhandenen Archiv schätzen.
 - Je Quelle (Solar, Wind an Land, Wind auf See) ein LightGBM-Modell je Quantil (p10, p50,
   p90): neun kleine Modelle, Training auf CPU in Minuten, unter 1 GB RAM.
 - Zielgröße ist die **Auslastung** (Erzeugung geteilt durch installierte Leistung). Im Betrieb
-  wird mit der aktuellen Leistung zurück in GW gerechnet. Installierte Leistung: SMARD
-  `capacity_*` (Jahreswerte), später Monatswerte aus dem Marktstammdatenregister.
+  wird mit der aktuellen Leistung zurück in GW gerechnet. Installierte Leistung: Monatswerte
+  (Energy-Charts oder Marktstammdatenregister), weil die SMARD-Jahreswerte zu niedrig sind
+  (siehe [phase0.md](phase0.md)).
 - Quantile dürfen sich nicht kreuzen: nach der Vorhersage p10 <= p50 <= p90 erzwingen
   (sortieren).
 - Solar nachts: bei Sonnenhöhe unter 0 fest 0, diese Stunden fließen weder ins Training noch
@@ -166,15 +167,8 @@ Termine sind bewusst offen.
 
 ### Prüfliste Phase 0
 
-- [x] Previous Runs API führt `icon_seamless` ab Ende Januar 2024 (Stichproben)
-- [x] Tag 7 ist im Archiv nicht vorhanden
-- [ ] alle Wetterorte über den ganzen Zeitraum auf Lücken prüfen, je Variable und Vorlauftag
-- [ ] Werte von `previous_day1` gegen die Live-Vorhersage desselben Laufs abgleichen
-      (bestätigt die Definition der Vorlaufzeit)
-- [ ] SMARD-Ist-Werte Solar, Wind an Land, Wind auf See stündlich ab 2024 vollständig
-- [ ] SMARD-Netzbetreiber-Prognose je Quelle ab 2024 vollständig
-- [ ] installierte Leistung je Quelle und Jahr aus SMARD
-- [ ] Liste der Wetterorte festlegen (`config/orte.toml`)
+Erledigt am 2026-11-02, Ergebnisse in [phase0.md](phase0.md). Offen ist nur die Lizenz der
+Energy-Charts-Daten für die installierte Leistung.
 
 ## 9. Risiken
 
@@ -182,7 +176,7 @@ Termine sind bewusst offen.
 |---|---|---|
 | Lücken im ICON-Archiv | weniger Trainingsdaten | Prüfung in Phase 0, Rückfallebene aus Abschnitt 2 |
 | Abregelung bei negativen Preisen | Erzeugung unter dem Wetterwert | Wochentag und Feiertag als Merkmal, Hinweis in `notes` |
-| Zubau nur als Jahreswert | systematischer Versatz, vor allem Solar | später Monatswerte aus dem Marktstammdatenregister |
+| Zubau nur als Jahreswert | systematischer Versatz, vor allem Solar | Monatswerte von Anfang an |
 | seltene Wetterlagen | grobe Ausreißer | Quantile, Winter getrennt bewertet |
 | Open-Meteo ändert Bedingungen oder fällt aus | keine Prognose | Cache mit `warnings`, langfristig DWD Open Data als zweite Quelle |
 | Lizenz | freie API nur nicht-kommerziell | smard-mcp bleibt kostenlos und ohne Werbung; sonst API-Key-Tarif |

@@ -1,0 +1,243 @@
+# Wetterorte fuer Version 1. typ: solar, wind (an Land), offshore.
+# Feste Liste nach Schwerpunkten der installierten Leistung; eine Gewichtung
+# aus dem Marktstammdatenregister kommt spaeter.
+
+[[ort]]
+name = "muenchen"
+lat = 48.14
+lon = 11.58
+typ = ["solar"]
+
+[[ort]]
+name = "augsburg"
+lat = 48.37
+lon = 10.90
+typ = ["solar"]
+
+[[ort]]
+name = "kempten"
+lat = 47.73
+lon = 10.31
+typ = ["solar"]
+
+[[ort]]
+name = "landshut"
+lat = 48.54
+lon = 12.15
+typ = ["solar"]
+
+[[ort]]
+name = "regensburg"
+lat = 49.01
+lon = 12.10
+typ = ["solar"]
+
+[[ort]]
+name = "nuernberg"
+lat = 49.45
+lon = 11.08
+typ = ["solar"]
+
+[[ort]]
+name = "wuerzburg"
+lat = 49.79
+lon = 9.95
+typ = ["solar"]
+
+[[ort]]
+name = "ulm"
+lat = 48.40
+lon = 9.99
+typ = ["solar"]
+
+[[ort]]
+name = "stuttgart"
+lat = 48.78
+lon = 9.18
+typ = ["solar"]
+
+[[ort]]
+name = "freiburg"
+lat = 47.99
+lon = 7.85
+typ = ["solar"]
+
+[[ort]]
+name = "mannheim"
+lat = 49.49
+lon = 8.47
+typ = ["solar"]
+
+[[ort]]
+name = "koeln"
+lat = 50.94
+lon = 6.96
+typ = ["solar"]
+
+[[ort]]
+name = "muenster"
+lat = 51.96
+lon = 7.63
+typ = ["solar"]
+
+[[ort]]
+name = "kassel"
+lat = 51.31
+lon = 9.48
+typ = ["solar"]
+
+[[ort]]
+name = "hannover"
+lat = 52.37
+lon = 9.73
+typ = ["solar"]
+
+[[ort]]
+name = "erfurt"
+lat = 50.98
+lon = 11.03
+typ = ["solar"]
+
+[[ort]]
+name = "leipzig"
+lat = 51.34
+lon = 12.37
+typ = ["solar"]
+
+[[ort]]
+name = "potsdam"
+lat = 52.40
+lon = 13.06
+typ = ["solar"]
+
+[[ort]]
+name = "guestrow"
+lat = 53.79
+lon = 12.17
+typ = ["solar"]
+
+[[ort]]
+name = "magdeburg"
+lat = 52.08
+lon = 11.40
+typ = ["solar", "wind"]
+
+[[ort]]
+name = "cottbus"
+lat = 51.76
+lon = 14.33
+typ = ["solar", "wind"]
+
+[[ort]]
+name = "husum"
+lat = 54.48
+lon = 9.05
+typ = ["wind"]
+
+[[ort]]
+name = "dithmarschen"
+lat = 54.19
+lon = 9.10
+typ = ["wind"]
+
+[[ort]]
+name = "fehmarn"
+lat = 54.45
+lon = 11.15
+typ = ["wind"]
+
+[[ort]]
+name = "emden"
+lat = 53.37
+lon = 7.21
+typ = ["wind"]
+
+[[ort]]
+name = "cuxhaven"
+lat = 53.86
+lon = 8.69
+typ = ["wind"]
+
+[[ort]]
+name = "soltau"
+lat = 52.99
+lon = 9.84
+typ = ["wind"]
+
+[[ort]]
+name = "altmark"
+lat = 52.60
+lon = 11.86
+typ = ["wind"]
+
+[[ort]]
+name = "neubrandenburg"
+lat = 53.56
+lon = 13.26
+typ = ["wind"]
+
+[[ort]]
+name = "prenzlau"
+lat = 53.32
+lon = 13.86
+typ = ["wind"]
+
+[[ort]]
+name = "paderborn"
+lat = 51.72
+lon = 8.75
+typ = ["wind"]
+
+[[ort]]
+name = "vogelsberg"
+lat = 50.60
+lon = 9.25
+typ = ["wind"]
+
+[[ort]]
+name = "hunsrueck"
+lat = 49.98
+lon = 7.52
+typ = ["wind"]
+
+[[ort]]
+name = "nordsee_borkum"
+lat = 53.98
+lon = 6.50
+typ = ["offshore"]
+
+[[ort]]
+name = "nordsee_godewind"
+lat = 54.05
+lon = 7.00
+typ = ["offshore"]
+
+[[ort]]
+name = "nordsee_helgoland"
+lat = 54.35
+lon = 7.75
+typ = ["offshore"]
+
+[[ort]]
+name = "nordsee_deutsche_bucht"
+lat = 54.32
+lon = 5.85
+typ = ["offshore"]
+
+[[ort]]
+name = "nordsee_sandbank"
+lat = 55.10
+lon = 7.20
+typ = ["offshore"]
+
+[[ort]]
+name = "ostsee_baltic"
+lat = 54.80
+lon = 13.00
+typ = ["offshore"]
+
+[[ort]]
+name = "ostsee_arkona"
+lat = 54.78
+lon = 14.07
+typ = ["offshore"]

@@ -1,0 +1,10 @@
+[project]
+name = "smard-forecast"
+version = "0.0.0"
+description = "Renewable generation forecasts for smard-mcp"
+requires-python = ">=3.11"
+dependencies = ["pandas>=2.2", "pyarrow>=15"]
+license = "MIT"
+
+[tool.setuptools]
+packages = ["sf"]
