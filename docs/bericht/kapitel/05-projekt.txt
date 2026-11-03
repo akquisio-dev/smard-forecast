@@ -66,7 +66,7 @@ Zielstunde 2. November, 20:00 UTC: L = 8 h, x < 1, also Tag 1. Das ist vorsichti
 Ob die Interpolation die Trefferquote wirklich hält, wird in Abschnitt 23.4 gemessen: Die Single Runs API liefert seit Mai 2026 ganze Läufe mit exaktem Startzeitpunkt. Damit kann man für jeden Vorlauf in Stunden (nicht nur in ganzen Tagen) die Trefferquote ausrechnen, einmal mit Interpolation, einmal mit Abrunden. Diese Prüfung gehört zu Phase 4.
 !ende
 
-Dass Tag 1 nicht exakt passt, liegt sehr wahrscheinlich an ICON-D2-RUC (Kapitel 8). Open-Meteo nutzt für die ersten Stunden inzwischen diese stündlich aktualisierte Variante, und die Single Runs API meldete bei ihren Fehlermeldungen genau dieses Modell. Für das Training ist das unkritisch. Das eigene Archiv (Kapitel 20) speichert die Startzeitpunkte aller ICON-Modelle mit, damit sich die Frage später klären lässt.
+Dass Tag 1 nicht exakt passt, liegt sehr wahrscheinlich an ICON-D2-RUC (Kapitel 8). Open-Meteo nutzt für die ersten Stunden inzwischen diese stündlich aktualisierte Variante, und die Single Runs API meldete bei ihren Fehlermeldungen genau dieses Modell. Für das Training ist das unkritisch. Das eigene Archiv (Kapitel 20) speichert die Startzeitpunkte aller ICON-Modelle mit, damit sich die Frage später klären lässt. Seit dem 3. November 2026 erscheint dort neben ICON-D2, ICON-EU und ICON global ein vierter Lauf, `dwd_icon_d2_ruc_native_15min`, mit stündlichem Start und rund 27 Stunden Reichweite. Damit ist belegt, dass Open-Meteo die RUC-Variante führt; ob und für welche Stunden `icon_seamless` sie verwendet, ist damit noch nicht gezeigt. Klären lässt es sich, indem man archivierte Vorhersagen der ersten Stunden mit den Einzelläufen beider Modelle vergleicht.
 
 ## Warum es Tag 7 nicht gibt
 
@@ -142,7 +142,7 @@ Energy-Charts (Fraunhofer ISE) liefert die installierte Leistung monatlich, abge
 
 !begriff CC BY 4.0: eine freie Lizenz der Organisation Creative Commons. Man darf die Daten nutzen, verändern und weitergeben, auch kommerziell, muss aber die Quelle nennen („Namensnennung“, englisch attribution).
 
-SMARD und Open-Meteo stehen unter CC BY 4.0. Das Tool nennt deshalb in jeder Antwort „Bundesnetzagentur | SMARD.de (CC BY 4.0)“ und „Wetterdaten: Open-Meteo.com (CC BY 4.0), Modelle des DWD“. Die freie Schnittstelle von Open-Meteo ist außerdem nur für nicht-kommerzielle Nutzung ohne Werbung gedacht; smard-mcp ist kostenlos und werbefrei. Die Lizenz der Energy-Charts-Daten ist noch zu klären; der Rückfall wäre, die Monatswerte selbst aus dem Marktstammdatenregister zu berechnen (Lizenz dl-de/by-2-0, ebenfalls mit Namensnennung).
+SMARD und Open-Meteo stehen unter CC BY 4.0. Das Tool nennt deshalb in jeder Antwort „Bundesnetzagentur | SMARD.de (CC BY 4.0)“ und „Wetterdaten: Open-Meteo.com (CC BY 4.0), Modelle des DWD“. Die freie Schnittstelle von Open-Meteo ist außerdem nur für nicht-kommerzielle Nutzung ohne Werbung gedacht; smard-mcp ist kostenlos und werbefrei. Für die Daten von Energy-Charts gilt nach der Beschreibung ihrer Schnittstelle ebenfalls CC BY 4.0, sofern nicht anders angegeben, mit Nennung von Energy-Charts.info als Quelle [@energycharts]; für die installierte Leistung ist nichts anderes angegeben. Das Tool nennt deshalb seit Version 1.4.0 zusätzlich „installed capacity: Energy-Charts.info (CC BY 4.0)“. Der vorbereitete Rückfall, die Monatswerte selbst aus dem Marktstammdatenregister zu berechnen (Lizenz dl-de/by-2-0), wird damit nicht gebraucht.
 
 # Phase 0: Datenprüfung
 
@@ -194,7 +194,7 @@ Die Orte stehen in `config/orte.toml`: 21 Solar-Orte nach den Schwerpunkten der 
 ## Ergebnis
 
 !praxis Phase 0 bestanden
-Trainingsbeginn 22.02.2024, rund 32 Monate, 6 Vorlauftage, 40 Orte. Neu hinzugekommen: Die Strahlung muss um eine Stunde verschoben werden (Kapitel 4). Offen ist nur die Lizenz von Energy-Charts.
+Trainingsbeginn 22.02.2024, rund 32 Monate, 6 Vorlauftage, 40 Orte. Neu hinzugekommen: Die Strahlung muss um eine Stunde verschoben werden (Kapitel 4). Offen war danach nur die Lizenz von Energy-Charts; sie wurde vor dem Ausrollen geklärt (Kapitel 17).
 !ende
 
 # Architektur und Werkzeuge
@@ -727,6 +727,8 @@ Das zweite Tool, `describe_forecast_model`, gibt eine knappe technische Beschrei
 
 Der HTTP-Server von smard-mcp erzeugt für jede Anfrage eine neue Server-Instanz. Ein Wetter-Client je Instanz hätte deshalb bei jeder Anfrage Open-Meteo gefragt, mit Gewicht 40 je Abruf, und nach rund 250 Anfragen am Tag das Tageslimit erreicht. Der Client ist deshalb prozessweit geteilt; ein Test prüft, dass zwei Server-Instanzen mit zwei Anfragen genau einen Abruf auslösen. So wird Open-Meteo etwa einmal je neuem Modelllauf gefragt, rund achtmal am Tag. Die Rechnung selbst (Merkmale und neun Modelle für alle Stunden) dauert etwa 150 ms und wird je Wetterlauf ebenfalls nur einmal ausgeführt.
 
+Seit Version 1.4.1 wiederholt der Client einen fehlgeschlagenen Abruf (keine Antwort, Zeitüberschreitung, HTTP 5xx oder 429) zweimal, nach 2 und nach 5 Sekunden; andere Fehler, etwa eine fehlerhafte Anfrage (HTTP 400), werden sofort weitergegeben. Die Zeitgrenze je Versuch liegt bei 15 Sekunden, ein normaler Abruf dauert unter einer Sekunde; drei Versuche bleiben so unter einer Minute, der üblichen Geduld eines MCP-Clients. Anlass war ein Ausfall unmittelbar nach dem ersten Ausrollen (Kapitel 24).
+
 # Phase 5 und 6: Überwachung, Neu-Training, Ausrollen
 
 Validierung und Abschlusstest schätzen die Güte des Verfahrens unter der Annahme, dass sich die Zukunft verhält wie die Vergangenheit. Im Betrieb kann diese Annahme auf mindestens drei Wegen verletzt werden: durch Änderungen am Wettermodell oder an der Zusammenstellung `icon_seamless`, durch Zubau und Abregelung, die das Verhältnis von Wetter und Erzeugung verschieben, und durch Wetterlagen, die im Trainingszeitraum selten waren. Phase 5 baut deshalb zwei Rückkopplungen: eine tägliche Messung der tatsächlichen Güte und ein monatliches Neu-Training mit Qualitätsschranke. Beide folgen dem Grundsatz der fortlaufenden Prognoseprüfung [@hyndman2021], und beide lassen den letzten Schritt, die Übernahme in den Betrieb, bewusst beim Menschen.
@@ -769,12 +771,43 @@ Ursprünglich war ein GitHub-Workflow geplant, also eine Rechnung auf einem frem
 Der Timer pusht nur einen Branch. Mergen, Ausrollen auf die Web-Maschine und eine Veröffentlichung bei npm bleiben Handarbeit. Auch Änderungen am Verfahren selbst, etwa die Korrektur der Spencer-Konstante (Kapitel 6), kommen nicht über diesen Weg, weil sie Python und TypeScript gleichzeitig ändern müssen.
 !ende
 
-## Ausrollen und Prüfpunkt C
+## Ausrollen
 
-1. Tool auf einem Nebenzweig in smard-mcp, Tests grün, TypeScript gegen Python geprüft.
-2. Ausrollen nur mit `npm run deploy` (verlangt einen sauberen, gepushten Stand, führt die Tests aus, sichert die alte Version, prüft nach dem Start, ob der Dienst antwortet, und rollt sonst automatisch zurück).
-3. Zwei bis vier Wochen den Fehler im Betrieb beobachten.
-4. **Prüfpunkt C:** Ist der Fehler im Betrieb ähnlich wie im Abschlusstest? Dann Veröffentlichung als neue Version bei npm, sonst nachbessern.
+Am 3. November 2026 wurde der Nebenzweig nach `main` übernommen und als smard-mcp 1.4.0 auf den öffentlichen Endpunkt ausgerollt, mit dem Modell aus dem ersten Probelauf des monatlichen Neu-Trainings (Version 2026.11.02, rollierend geprüft bis Oktober 2026). Vor dem Ausrollen wurden drei Dinge nachgezogen: die README beschreibt beide Tools, die Datenschutzangaben nennen die Abrufe bei Open-Meteo (nur die 40 festen Orte, nichts über Nutzer), und der tägliche Funktionstest der GitHub-Action ruft `forecast_renewables` auf, prüft also auch die Erreichbarkeit von Open-Meteo. Eine Probe gegen das echte Open-Meteo mit dem gebauten Server ergab 0,6 bis 0,7 s für die erste Anfrage, 7 ms für jede weitere aus dem Zwischenspeicher und 131 MB Arbeitsspeicher bei einer Grenze des Dienstes von 256 MB.
+
+Ausgerollt wurde in vier Schritten auf zwei Maschinen: der Server selbst mit `npm run deploy`, das erweiterte Archivskript, der Timer der Überwachung auf der Web-Maschine und der Timer des Neu-Trainings auf der Trainingsmaschine. Das npm-Paket bleibt bis Prüfpunkt C bei Version 1.3.0; wer smard-mcp lokal installiert, bekommt das neue Tool also erst nach bestandener Beobachtung.
+
+!praxis Zwei Fehlschläge beim Ausrollen
+**Kein Zwischenspeicher nach dem Neustart.** Der erste Funktionstest gegen den frisch gestarteten Server scheiterte: Open-Meteo antwortete mit HTTP 503, und ein neu gestarteter Prozess hat noch keine Vorhersage, auf die er ausweichen könnte. Wenige Minuten später lief derselbe Abruf fehlerfrei. Die Rückfallebene aus Kapitel 23 (letzte Vorhersage bis 12 Stunden) deckt also gerade den Moment nicht ab, in dem ein Ausfall am wahrscheinlichsten bemerkt wird. Version 1.4.1 wiederholt deshalb fehlgeschlagene Abrufe (Abschnitt „Wetterabruf und Zwischenspeicher“).
+
+**Eine überschriebene Unit-Datei.** Ein beim Kopieren in mehrere Zeilen umgebrochener Befehl führte `scp` ohne Ziel aus; `scp a b` kopiert dann lokal `a` über `b`, hier die Service-Datei der Überwachung über ihre Timer-Datei. Hochgeladen wurde die beschädigte Datei, systemd lehnte sie ab („Timer unit lacks value setting“). Die Datei kam aus Git zurück. Lehre: Befehle mit mehreren Schritten werden als kurzes Skript übergeben, nicht als langer Einzeiler.
+!ende
+
+## Erste Werte im Betrieb
+
+Der erste Lauf der Überwachung am 3. November 2026 um 10:48 UTC wertete 11 archivierte Vorhersagen aus. Weil die Vorhersagen erst seit dem Vortag archiviert werden, liegen nur Werte für Vorlauftag 1 vor:
+
+Tabelle: Überwachung, erster Lauf (Vorlauftag 1)
+| Quelle | Stunden | MAE | Trefferquote p10 bis p90 |
+| Solar | 36 | 3,67 GW (3,0 % der Leistung) | 47,2 % |
+| Wind an Land | 80 | 1,21 GW (1,7 %) | 95,0 % |
+| Wind auf See | 80 | 0,69 GW (5,9 %) | 100,0 % |
+
+Die Windwerte liegen im erwarteten Bereich oder darüber. Solar liegt mit 3,0 % klar über dem MAE der rollierenden Prüfung an Tag 1 ({{z:sol_r_mae_1:2}} %), und weniger als die Hälfte der Messwerte fiel ins Band. Aus 36 Stunden von zwei bis drei Novembertagen lässt sich das nicht deuten: Die Stunden eines Tages sind stark voneinander abhängig, und ein einzelner Tag mit Hochnebel, den das Wettermodell nicht vorhersieht, kann eine solche Zahl allein erklären. Es ist aber genau die Art Abweichung, für die die Überwachung gebaut wurde; sie wird in Prüfpunkt C ausdrücklich bewertet.
+
+## Prüfpunkt C
+
+Prüfpunkt C fragt, ob das Werkzeug im Betrieb ungefähr so gut ist wie geprüft. Die Kriterien wurden vor Beginn der Beobachtung festgelegt, damit sie nicht nach Ansicht der Ergebnisse gewählt werden. Bewertet wird frühestens nach 14, regulär nach 28 Tagen Überwachung, je Quelle und Vorlauftag mit mindestens 7 Tagen vergleichbarer Stunden:
+
+1. Die Trefferquote von p10 bis p90 liegt zwischen 70 und 90 %.
+2. Der MAE beträgt höchstens das 1,5-fache des MAE aus der rollierenden Prüfung.
+3. Der Betrieb ist stabil: der tägliche Funktionstest ist grün, und Warnungen wegen veralteter Wetterdaten gibt es an höchstens zwei Tagen.
+
+Verfehlt ein Vorlauftag Kriterium 1 oder 2, wird seine Gütestufe gesenkt oder er aus dem Tool genommen, bevor das npm-Paket erscheint. Die Entscheidung trifft der Betreuer.
+
+!achtung Ergebnis steht noch aus
+Die Beobachtung begann am 3. November 2026. Das Ergebnis wird in diesem Abschnitt nachgetragen, voraussichtlich Ende November 2026.
+!ende
 
 # Betrieb, Kosten und Risiken
 
@@ -805,8 +838,7 @@ Tabelle: Risiken
 ## Offene Fragen
 
 - Kalibrierung nach Jahreszeit oder Wetterlage statt nur nach Vorlauftag?
-- Ein datumsabhängiger, schon vorher fehlschlagender Test in smard-mcp (`compare_periods`) blockiert `npm run deploy`.
-- Welche Lauffolge liefert icon_seamless in den ersten 48 Stunden genau?
+- Welche Lauffolge liefert icon_seamless in den ersten 48 Stunden genau, insbesondere: nutzt es ICON-D2-RUC (Kapitel 20)?
 - Bundesweite Feiertage oder gewichtet nach Bundesländern?
 - Ab wann Tag 7 aus dem eigenen Archiv (frühestens November 2027)?
 
@@ -819,3 +851,70 @@ Tabelle: Nützliche Befehle
 | Archiv-Timer (Web-Maschine) | `systemctl list-timers smard-forecast-archiv.timer` |
 | Letzte Archiv-Läufe | `journalctl -u smard-forecast-archiv -n 20` |
 | Dieses Dokument neu bauen | `abbildungen.py`, `lehrgrafiken.py`, dann `bericht.py` |
+
+# Diskussion
+
+Dieses Kapitel ordnet die Ergebnisse der Kapitel 21 bis 24 ein: was sie über das Verfahren aussagen, wo sie an ihre Grenzen stoßen und welche Einwände gegen ihre Gültigkeit bestehen.
+
+## Verlauf des Skills über den Vorlauf
+
+Der Skill gegenüber der besseren einfachen Messlatte fällt in der rollierenden Prüfung für alle drei Quellen monoton mit dem Vorlauf: bei Solar von {{z:sol_r_sk_1:2}} an Tag 1 auf {{z:sol_r_sk_6:2}} an Tag 6, bei Wind an Land von {{z:won_r_sk_1:2}} auf {{z:won_r_sk_6:2}}, bei Wind auf See von {{z:wof_r_sk_1:2}} auf {{z:wof_r_sk_6:2}}. Diese Reihenfolge ist physikalisch zu erwarten. Die Vorhersagbarkeit der Atmosphäre nimmt mit dem Vorlauf ab, weil kleine Fehler im Anfangszustand exponentiell wachsen [@lorenz1963; @kalnay2003]; das Modell kann nur die Information weitergeben, die die Wettervorhersage noch enthält. Dass Solar am längsten Skill behält, hat einen einfachen Grund: Ein großer Teil der Solarerzeugung folgt aus der Sonnengeometrie, die exakt berechenbar ist, und nur die Bewölkung ist unsicher. Bei Wind gibt es keinen solchen deterministischen Anteil, und der Fehler der Windgeschwindigkeit wirkt über die kubische Leistungskurve verstärkt auf die Erzeugung (Kapitel 7).
+
+## Tag 1 und die Prognose der Netzbetreiber
+
+Am ersten Vorlauftag bleibt die Day-Ahead-Prognose der Übertragungsnetzbetreiber genauer: In der rollierenden Prüfung liegt ihr MAE bei {{z:sol_r_nb_1:2}} % (Solar), {{z:won_r_nb_1:2}} % (Wind an Land) und {{z:wof_r_nb_1:2}} % (Wind auf See), der des Modells bei {{z:sol_r_mae_1:2}}, {{z:won_r_mae_1:2}} und {{z:wof_r_mae_1:2}} %. Dafür gibt es drei Gründe, von denen nur der letzte eine Schwäche des Verfahrens ist.
+
+1. **Ungleicher Vorlauf.** Tag 1 heißt hier: Die Wettervorhersage begann mindestens 24 Stunden vor der Zielstunde (Kapitel 16). Die Prognose der Netzbetreiber entsteht am Vormittag des Vortags auf Grundlage der jeweils neuesten Läufe; für die Stunden des Folgetags ist ihr Vorlauf im Mittel kürzer. Der Vergleich benachteiligt das Modell also systematisch.
+2. **Mehr Information.** Die Netzbetreiber kennen Messwerte und Anlagendaten in hoher räumlicher Auflösung und kombinieren mehrere Wettermodelle [@pinson2013]. Das Modell sieht 40 Orte und ein einziges Wettermodell.
+3. **Wenig Trainingsdaten.** Zweieinhalb Jahre Daten mit zwei Wintern reichen für die häufigen Wetterlagen, nicht für die seltenen.
+
+Für die Anwendung ist das Ergebnis trotzdem brauchbar. Für den Folgetag gibt das Tool die Prognose der Netzbetreiber ohnehin neben der eigenen aus; sein Beitrag liegt in den Tagen 2 bis 6, für die es keine öffentliche Prognose gibt, und im Unsicherheitsband, das die Netzbetreiber nicht veröffentlichen.
+
+## Wind auf See an den späten Vorlauftagen
+
+Im Abschlusstest (August bis Oktober 2026) fällt der Skill von Wind auf See an Tag 5 und 6 auf {{z:wof_a_sk_5:2}} und {{z:wof_a_sk_6:2}}, praktisch auf die Klimatologie. Ein Teil davon liegt an der Messlatte, deren MAE in den ruhigen Spätsommermonaten von {{z:wof_r_kl_1:1}} auf {{z:wof_a_kl_1:1}} % sinkt (Kapitel 22). Ein anderer Teil ist strukturell: Die Offshore-Leistung konzentriert sich auf wenige Cluster in Nord- und Ostsee. Während sich Vorhersagefehler über viele weit verteilte Anlagen an Land teilweise ausgleichen, betrifft ein Fehler in der Lage eines Tiefs auf See fast die gesamte Leistung zugleich. Hinzu kommen Abschaltungen bei Netzengpässen, die im Wetter nicht sichtbar sind; das ist eine Vermutung, die die Daten dieses Projekts weder bestätigen noch widerlegen. Die Gütestufe „low“ für diese Vorlauftage (Kapitel 22) ist deshalb keine Vorsichtsmaßnahme, sondern eine zutreffende Beschreibung.
+
+## Kalibrierung
+
+Die leckfreie CQR bringt die Trefferquote des Bands in der rollierenden Prüfung je Vorlauftag auf {{z:sol_r_trmin:1}} bis {{z:sol_r_trmax:1}} % (Solar), {{z:won_r_trmin:1}} bis {{z:won_r_trmax:1}} % (Wind an Land) und {{z:wof_r_trmin:1}} bis {{z:wof_r_trmax:1}} % (Wind auf See), bei einem Sollwert von 80 %. Im Mittel über das Jahr ist das Band damit kalibriert. Die Kalibrierung gilt aber nur im Mittel über die Bedingungen, unter denen kalibriert wurde: In den Wintermonaten erreicht Wind auf See nur {{z:wof_w_trmin:1}} bis {{z:wof_w_trmax:1}} %. Das ist die bekannte Grenze der konformen Verfahren, deren Garantie Austauschbarkeit voraussetzt [@barber2023]. Eine nach Jahreszeit oder Wetterlage bedingte Kalibrierung [@gibbs2021] würde das beheben, verlangt aber mehr Daten je Bedingung, als zweieinhalb Jahre liefern.
+
+## Grenzen der Gültigkeit
+
+Gegen die Belastbarkeit der Ergebnisse sprechen fünf Einwände, die hier ausdrücklich genannt werden.
+
+1. **Datenumfang.** Training und Prüfung beruhen auf zweieinhalb Jahren mit zwei Wintern. Extreme Lagen (lange Dunkelflaute, schwere Stürme, großflächiger Schnee auf Modulen) kommen darin kaum oder gar nicht vor. Über die Güte in solchen Lagen sagen die Kennzahlen nichts.
+2. **Mehrfache Nutzung der rollierenden Prüfung.** Der Abschlusstest wurde einmal verwendet und ist damit verbraucht (Kapitel 21). Spätere Entscheidungen, etwa die Wahl der leckfreien CQR, wurden nur noch an der rollierenden Prüfung getroffen. Wer an denselben Daten auswählt und bewertet, überschätzt die Güte leicht [@hastie2009; @bergmeir2012]. Die Zahl der Entscheidungen war klein und die Startwerte blieben unverändert; der Fehler dürfte klein sein, ist aber nicht null.
+3. **Abhängige Stichproben.** Stunden eines Tages und Tage einer Wetterlage sind stark korreliert (Begriff Autokorrelation). Die effektive Stichprobe ist viel kleiner als die Zahl der Stunden. Dieses Dokument gibt deshalb keine Konfidenzintervalle an, statt solche, die zu schmal wären; Unterschiede in der zweiten Nachkommastelle des Skills sind nicht belastbar.
+4. **Installierte Leistung.** Die Auslastung wird auf monatliche Leistungswerte bezogen, deren jüngste Monate fortgeschrieben sind (Kapitel 18). Ein Fehler im Nenner verschiebt alle Vorhersagen einer Quelle gleichsinnig.
+5. **Kein Ensemble.** Das Band stammt aus der Statistik vergangener Fehler, nicht aus der aktuellen Unsicherheit der Atmosphäre. An Tagen mit ungewöhnlich sicherer oder unsicherer Wetterlage ist es deshalb zu breit oder zu schmal; ein Ensemble der Wettermodelle könnte diese Information liefern [@kalnay2003].
+
+## Was der Betrieb zeigen muss
+
+Die Überwachung (Kapitel 24) misst das ausgelieferte Werkzeug, nicht das Verfahren. Sie kann zwei Dinge aufdecken, die keine Rückschau findet: Abweichungen zwischen Training und Betrieb, etwa eine geänderte Zusammenstellung von `icon_seamless`, und Fehler in der Umsetzung, die der Vergleichstest nicht abdeckt. Der auffällige erste Wert für Solar ist dafür ein Prüfstein. Bleibt er über Wochen bestehen, liegt die Ursache eher im Betrieb als im Wetter; zu prüfen wären dann die Zuordnung der Läufe in den ersten Stunden (ICON-D2-RUC, Kapitel 16) und die fortgeschriebene Leistung.
+
+# Fazit und Ausblick
+
+## Fazit
+
+Die Ausgangsfrage war, ob sich aus frei verfügbaren Daten eine offene Wahrscheinlichkeitsprognose der deutschen Solar- und Winderzeugung bis sechs Tage im Voraus bauen lässt, die als Werkzeug für KI-Assistenten taugt. Die Antwort ist ja, mit benannten Einschränkungen.
+
+- Das Verfahren schlägt die einfachen Messlatten an allen Vorlauftagen und für alle drei Quellen; der Skill fällt mit dem Vorlauf so, wie es die Physik erwarten lässt.
+- Das Unsicherheitsband ist im Jahresmittel kalibriert; im Winter ist es für Wind auf See zu schmal.
+- Am ersten Vorlauftag bleibt die Prognose der Netzbetreiber genauer. Wind auf See hat ab Tag 5 kaum noch Skill; das Werkzeug sagt das in jeder Antwort.
+- Die Umsetzung in TypeScript stimmt mit der Python-Referenz auf weniger als 10⁻⁶ überein, und die Überwachung misst seit dem 3. November 2026 das ausgelieferte Werkzeug selbst.
+
+Methodisch wichtiger als jede einzelne Zahl ist die Kette dahinter: Trainingsdaten mit genau dem Vorlauf, den der Betrieb hat; eine Prüfung ohne Blick in die Zukunft; eine Kalibrierung ohne Datenleck; ein einmal verbrauchter Abschlusstest; und eine Rückkopplung aus dem Betrieb, deren letzte Entscheidung beim Menschen bleibt.
+
+## Ausblick
+
+Tabelle: Nächste Schritte
+| Schritt | Erwarteter Nutzen | Voraussetzung |
+| Prüfpunkt C bewerten, dann npm-Veröffentlichung | Werkzeug auch für lokale Installationen | 14 bis 28 Tage Überwachung |
+| Kalibrierung nach Jahreszeit | Band im Winter für Wind auf See richtig breit | mehr Winterdaten, frühestens nach dem Winter 2026/27 |
+| Vorlauftag 7 | eine Woche Vorschau | ein Jahr eigenes Archiv, frühestens November 2027 |
+| Clear-Sky-Index als Ziel für Solar | Sonnengeometrie aus dem gelernten Teil herausnehmen | Neu-Training, Vergleich rollierend |
+| Korrektur der Spencer-Konstante | exakte Sonnenhöhe | beim nächsten Neu-Training in Python und TypeScript zugleich |
+| Ensemble-Merkmale (ICON-EPS) | Band folgt der aktuellen Unsicherheit der Wetterlage | Archiv der Ensemble-Streuung |
+| Prognose der Netzbetreiber als Merkmal für Tag 1 | Tag 1 mindestens so gut wie die Netzbetreiber | Entscheidung des Betreuers; Verfügbarkeit zur Abrufzeit |
+| Regelzonen statt nur Deutschland | regionale Aussagen | Erzeugung je Regelzone bei SMARD, eigene Modelle |
+| Einordnung gegen die Literatur | Maßstab für die Fehlerwerte | Recherche vergleichbarer Studien |

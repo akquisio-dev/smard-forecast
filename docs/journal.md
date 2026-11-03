@@ -607,3 +607,15 @@ durchgereicht. Zeitgrenze je Versuch von 30 auf 15 Sekunden gesenkt, damit drei 
 einer Minute bleiben (normaler Abruf unter 1 s). Zwei neue Tests (503 zweimal, dann Erfolg ohne
 Cache; Aufgabe nach drei Versuchen, 400 ohne Wiederholung), 181 Tests grün. Commit 416611f,
 Ausrollen durch Joey.
+
+### 12:30 Bericht: Stand nach dem Ausrollen, Diskussion, Fazit
+
+**Gemacht:** Veraltete Stellen korrigiert (Version und Toolzahl in Kapitel 2, Phasentabelle,
+Lizenz Energy-Charts an drei Stellen, ICON-D2-RUC jetzt im Archiv sichtbar, Wiederholversuch im
+Abschnitt Wetterabruf, erledigte offene Frage zu `compare_periods` gestrichen). Kapitel 24:
+Abschnitt Ausrollen (1.4.0, 1.4.1, zwei Fehlschläge), erste Werte der Überwachung mit dem
+auffälligen Solarwert, Prüfpunkt C mit vorab festgelegten Kriterien als Platzhalter. Neue Kapitel
+26 Diskussion (Skillverlauf, Tag 1 gegen Netzbetreiber mit ungleichem Vorlauf, Wind auf See,
+Kalibrierung im Winter, fünf Grenzen der Gültigkeit) und 27 Fazit und Ausblick. Kurzfassung und
+Abstract um den Betrieb ergänzt. PDF neu gebaut (nur lokal). Grundlagenteil unverändert.
+Offen: Forschungsstand und Einordnung gegen Literaturwerte (neue Quellen nötig).

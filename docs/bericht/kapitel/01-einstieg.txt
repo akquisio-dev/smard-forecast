@@ -17,7 +17,7 @@ Tabelle: Aufbau des Dokuments
 | II Strom und Zeit | Leistung, Energie, Zeitzonen, das Stromsystem | um Zahlen von SMARD richtig zu lesen |
 | III Physik und Wetter | Sonne, Wind, Wettervorhersage | um zu verstehen, woher die Information kommt |
 | IV Statistik und Lernen | Fehlermaße, Quantile, Bäume, Boosting, Prüfen | um zu verstehen, wie das Modell lernt und wie man es ehrlich bewertet |
-| V Das Projekt | Daten, Phasen, Architektur, Betrieb | was konkret gebaut wird |
+| V Das Projekt | Daten, Phasen, Architektur, Betrieb, Diskussion, Fazit | was konkret gebaut wird und was es taugt |
 | Literatur | alle zitierten Arbeiten, Daten und Dienste | zum Nachprüfen |
 | VI Anhang | Entstehung, Formeln, Glossar, Daten und Lizenzen | zum Nachschlagen |
 
@@ -71,7 +71,7 @@ Dezimalzahlen stehen mit Komma (0,95), Tausender mit Punkt (12.546). In Formeln 
 
 !begriff Tool: im MCP-Sprachgebrauch eine einzelne Funktion, die ein Server anbietet, zum Beispiel `get_generation_mix` („wie wurde in einem Zeitraum Strom erzeugt“). Ein Tool bekommt Eingaben als JSON und liefert ein Ergebnis als JSON zurück.
 
-smard-mcp (Version 1.3.0) bietet elf solcher Tools. Sie beantworten Fragen über **Vergangenheit und Gegenwart**: wie viel Solarstrom gestern erzeugt wurde, wie hoch der Strompreis morgen ist, wann man ein Elektroauto am günstigsten lädt. Was fehlt, ist der Blick weiter nach vorn. Für die Zukunft gibt es bei SMARD nur zwei Dinge: die Prognose der Netzbetreiber für den nächsten Tag und die Preise der Strombörse für den nächsten Tag. Wer wissen will, ob am Wochenende viel Solarstrom kommt oder ob in drei Tagen eine Windflaute droht, bekommt keine Antwort.
+smard-mcp bot bis Version 1.3.0 elf solcher Tools. Sie beantworten Fragen über **Vergangenheit und Gegenwart**: wie viel Solarstrom gestern erzeugt wurde, wie hoch der Strompreis morgen ist, wann man ein Elektroauto am günstigsten lädt. Was fehlt, ist der Blick weiter nach vorn. Für die Zukunft gibt es bei SMARD nur zwei Dinge: die Prognose der Netzbetreiber für den nächsten Tag und die Preise der Strombörse für den nächsten Tag. Wer wissen will, ob am Wochenende viel Solarstrom kommt oder ob in drei Tagen eine Windflaute droht, bekommt keine Antwort.
 
 ## Das Ziel
 
@@ -109,8 +109,8 @@ Tabelle: Was die Phasen tun
 | 2 | Solar-Modell bauen und gegen einfache Messlatten prüfen, dann **Prüfpunkt A** | abgeschlossen am 3.11.2026, Prüfpunkt A bestanden (Kapitel 21) |
 | 3 | Wind-Modelle, dann **Prüfpunkt B** | abgeschlossen am 3.11.2026, Prüfpunkt B mit Auflagen angenommen (Kapitel 22) |
 | 4 | Tool in smard-mcp auf einem Nebenzweig einbauen | Tool fertig; Interpolation an Einzelläufen bestätigt (Kapitel 23) |
-| 5 | tägliche Überwachung, monatliches Neu-Training | geplant |
-| 6 | ausrollen, im Betrieb beobachten, **Prüfpunkt C**, Veröffentlichung | geplant |
+| 5 | tägliche Überwachung, monatliches Neu-Training | abgeschlossen am 3.11.2026 (Kapitel 24) |
+| 6 | ausrollen, im Betrieb beobachten, **Prüfpunkt C**, Veröffentlichung | live seit 3.11.2026 (smard-mcp 1.4.1), Beobachtung läuft |
 
 Die wichtigste Regel: **Code in smard-mcp entsteht erst, wenn das Solar-Modell Prüfpunkt A besteht.** Bis dahin kann das Projekt scheitern, ohne dass am laufenden Server etwas geändert wurde.
 

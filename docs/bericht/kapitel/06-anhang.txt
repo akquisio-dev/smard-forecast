@@ -32,7 +32,7 @@ Tabelle: Zeitleiste am 2. und 3. November 2026 (UTC)
 Tabelle: Fehlschläge
 | Was passiert ist | Ursache | Lösung und Lehre |
 | Die Dokumentation versprach Vorhersagen „ab Januar 2024“; Tag 7 fehlt aber ganz | ICON global reicht nur 180 Stunden | Die riskanteste Annahme eines Plans zuerst an der echten Quelle prüfen, nicht an der Dokumentation |
-| Tag 1 passt zu keinem einzelnen Lauf | vermutlich ICON-D2-RUC | ungeklärte Fragen nicht verdrängen; Laufzeitpunkte aller Modelle archivieren, damit man es später klären kann |
+| Tag 1 passt zu keinem einzelnen Lauf | vermutlich ICON-D2-RUC; seit 3.11.2026 im Archiv als eigener Lauf sichtbar | ungeklärte Fragen nicht verdrängen; Laufzeitpunkte aller Modelle archivieren, damit man es später klären kann |
 | Die Single Runs API wäre ideal, beginnt aber erst im Mai 2026 | Archivtiefe des Dienstes | nur für Prüfungen nutzen |
 | Die Auslastung zeigte einen Scheintrend | SMARD führt die installierte Leistung zu niedrig | Plausibilität über mehrere Jahre prüfen; Monatswerte |
 | Die Lückenprüfung brach nach 11 Orten ab (leere Antwort) | Minutenlimit: bei 3 Sekunden Abstand rund 620 Einheiten pro Minute | Gewichte ausrechnen statt Abrufe zählen; 10 Sekunden Abstand; jede Antwort sofort speichern |
@@ -114,7 +114,7 @@ Tabelle: Daten
 | Quelle | Inhalt | Lizenz |
 | Bundesnetzagentur, SMARD.de [@smard] | Erzeugung, Prognosen der Netzbetreiber, installierte Leistung (Jahreswerte) | CC BY 4.0 |
 | Open-Meteo.com, Modelle des DWD [@openmeteo; @zaengl2015] | Wettervorhersagen ICON, Forecast API, Previous Runs API, Single Runs API | CC BY 4.0, freie Schnittstelle nur nicht-kommerziell |
-| Energy-Charts, Fraunhofer ISE [@energycharts] | installierte Leistung monatlich | noch zu klären |
+| Energy-Charts, Fraunhofer ISE [@energycharts] | installierte Leistung monatlich | CC BY 4.0 (laut Beschreibung der Schnittstelle), Nennung „Energy-Charts.info“ |
 | Natural Earth [@naturalearth] | Ländergrenzen für die Karte | gemeinfrei |
 
 Tabelle: Software
