@@ -88,7 +88,7 @@ $$ L_\tau(y, q) = \tau \max(y - q, 0) + (1 - \tau)\max(q - y, 0) \qquad \mathrm{
 
 $$ \mathrm{Gewinn} = \mathrm{SSE}(M) - \mathrm{SSE}(L) - \mathrm{SSE}(R) \qquad F_m(x) = F_{m-1}(x) + \eta\, h_m(x)
 
-$$ x_{\sin} = \sin\frac{2\pi h}{24} \qquad x_{\cos} = \cos\frac{2\pi h}{24} \qquad \mathrm{Vorlauftag} = \max\left(1, \left\lfloor \frac{t_{\mathrm{Ziel}} - t_{\mathrm{Lauf}}}{24\,\mathrm{h}} \right\rfloor\right)
+$$ x_{\sin} = \sin\frac{2\pi h}{24} \qquad x_{\cos} = \cos\frac{2\pi h}{24}
 
 ### Kalibrierung und Betrieb
 
@@ -106,26 +106,23 @@ Alle Begriffe, die in diesem Dokument in einem Begriffskasten erklärt wurden, a
 
 @glossar
 
-# Quellen und Lizenzen
+# Daten, Software und Lizenzen
+
+Dieser Anhang ordnet die verwendeten Daten und Programme ihren Lizenzen zu. Die vollständigen bibliographischen Angaben aller zitierten Arbeiten, Daten und Dienste stehen im Literaturverzeichnis.
 
 Tabelle: Daten
 | Quelle | Inhalt | Lizenz |
-| Bundesnetzagentur, SMARD.de | Erzeugung, Prognosen der Netzbetreiber, installierte Leistung (Jahreswerte) | CC BY 4.0 |
-| Open-Meteo.com, Modelle des DWD | Wettervorhersagen ICON, Previous Runs API, Single Runs API | CC BY 4.0, freie Schnittstelle nur nicht-kommerziell |
-| Energy-Charts, Fraunhofer ISE | installierte Leistung monatlich | noch zu klären |
-| Natural Earth | Ländergrenzen für die Karte | gemeinfrei |
+| Bundesnetzagentur, SMARD.de [@smard] | Erzeugung, Prognosen der Netzbetreiber, installierte Leistung (Jahreswerte) | CC BY 4.0 |
+| Open-Meteo.com, Modelle des DWD [@openmeteo; @zaengl2015] | Wettervorhersagen ICON, Forecast API, Previous Runs API, Single Runs API | CC BY 4.0, freie Schnittstelle nur nicht-kommerziell |
+| Energy-Charts, Fraunhofer ISE [@energycharts] | installierte Leistung monatlich | noch zu klären |
+| Natural Earth [@naturalearth] | Ländergrenzen für die Karte | gemeinfrei |
 
-Tabelle: Verfahren und Werkzeuge
+Tabelle: Software
 | Name | wofür | Lizenz |
-| LightGBM (Microsoft) | Gradient Boosting | MIT |
-| pandas, numpy | Tabellen und Rechnen | BSD |
-| matplotlib | Diagramme und Formelsatz in diesem Dokument | matplotlib-Lizenz (BSD-artig) |
+| LightGBM [@ke2017] | Gradient Boosting | MIT |
+| pandas [@mckinney2010], NumPy [@harris2020] | Tabellen und Rechnen | BSD |
+| matplotlib [@hunter2007] | Diagramme und Formelsatz in diesem Dokument | matplotlib-Lizenz (BSD-artig) |
 | reportlab | Satz dieses PDFs | BSD |
-| Formel der Sonnendeklination und Zeitgleichung | Kapitel 6 | J. W. Spencer, Search 2 (5), 1971 |
-| Betz-Grenze | Kapitel 7 | A. Betz, 1920 |
-| Lorenz-System | Kapitel 8 | E. N. Lorenz, Journal of the Atmospheric Sciences 20, 1963 |
-| Konforme Quantilregression | Kapitel 21 | Y. Romano, E. Patterson, E. Candès, Conformalized Quantile Regression, NeurIPS 2019 |
-| Entscheidungsregel und Modellformat | Kapitel 23 | LightGBM, Funktion NumericalDecision und dump_model |
-| Gleitkommazahlen | Kapitel 23 | IEEE 754-2019 |
+| Apache Parquet über pyarrow [@parquet] | Speicherformat der Trainingsdaten | Apache 2.0 |
 
 Das Repository steht unter der MIT-Lizenz. Dieses Dokument wird aus den Dateien in `docs/bericht/` erzeugt; das fertige PDF liegt bewusst nicht im öffentlichen Repository.

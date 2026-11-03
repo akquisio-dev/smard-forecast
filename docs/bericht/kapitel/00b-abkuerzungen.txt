@@ -1,0 +1,23 @@
+#* Abkürzungsverzeichnis
+
+| Abkürzung | Bedeutung |
+| AC, DC | Wechselstrom, Gleichstrom |
+| API | Programmierschnittstelle (application programming interface) |
+| CQR | konforme Quantilregression (conformalized quantile regression) |
+| CRPS | continuous ranked probability score |
+| DHI, DNI, GHI | Diffus-, Direktnormal- und Globalstrahlung |
+| DWD | Deutscher Wetterdienst |
+| GW, GWh | Gigawatt, Gigawattstunde |
+| ICON | Icosahedral Nonhydrostatic, Wettermodellsystem des DWD |
+| IEEE | Institute of Electrical and Electronics Engineers |
+| JSON | JavaScript Object Notation |
+| MAE | mittlerer absoluter Fehler (mean absolute error) |
+| MCP | Model Context Protocol |
+| MW, MWh | Megawatt, Megawattstunde |
+| NaN | „not a number“, fehlender Wert in Gleitkommadarstellung |
+| NOCT | nominal operating cell temperature |
+| p10, p50, p90 | 10-, 50- und 90-%-Quantil der Vorhersage |
+| RMSE | Wurzel des mittleren quadratischen Fehlers (root mean squared error) |
+| SMARD | Strommarktdaten-Plattform der Bundesnetzagentur |
+| SSE | Summe der quadrierten Abweichungen (sum of squared errors) |
+| UTC | koordinierte Weltzeit |

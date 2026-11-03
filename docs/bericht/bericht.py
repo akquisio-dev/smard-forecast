@@ -20,7 +20,12 @@ Der Text steht in docs/bericht/kapitel/*.txt in einer kleinen Auszeichnungssprac
     !begriff Name: Erklaerung   Begriffskasten, landet auch im Glossar
     !merke / !rechnen T / !warum T / !achtung T / !praxis T ... !ende   Kaesten
     ```                         Codeblock
-    @orte  @glossar             eingebaute Tabellen
+    @orte  @glossar  @literatur eingebaute Tabellen und Verzeichnisse
+    #* Titel                    Kapitel ohne Nummer (Vorspann, Literaturverzeichnis)
+    [@key] [@key, S. 3] [@a; @b] [@!key]   Zitat aus literatur.toml (Autor-Jahr)
+
+Vorspann: kapitel/00a-*.txt steht vor dem Inhaltsverzeichnis (Kurzfassung, Abstract),
+kapitel/00b-*.txt nach Abbildungs- und Tabellenverzeichnis (Abkuerzungen).
 
 Ergebnis: docs/bericht/smard-forecast-projektbericht.pdf (nicht im Git).
 """
@@ -58,6 +63,91 @@ KAPITEL = HIER / "kapitel"
 ZIEL = HIER / "smard-forecast-projektbericht.pdf"
 STAND = "3. November 2026"
 ZAHLEN = json.loads((ABB / "zahlen.json").read_text())
+LIT = tomllib.loads((HIER / "literatur.toml").read_text())
+ZITIERT: list[str] = []
+
+
+def _nachnamen(e):
+    namen = [a.split(",")[0] for a in e["autoren"]]
+    if len(namen) == 1 and not e.get("weitere"):
+        return namen[0]
+    if len(namen) == 2 and not e.get("weitere"):
+        return f"{namen[0]} und {namen[1]}"
+    return f"{namen[0]} u. a."
+
+
+def _jahre():
+    """Autor-Jahr-Marken; gleiche Marken bekommen a, b, ... in Schluesselreihenfolge."""
+    gruppen = {}
+    for k in sorted(LIT):
+        gruppen.setdefault((_nachnamen(LIT[k]), LIT[k]["jahr"]), []).append(k)
+    aus = {}
+    for (_, jahr), keys in gruppen.items():
+        for i, k in enumerate(keys):
+            aus[k] = f"{jahr}{'abcdefgh'[i] if len(keys) > 1 else ''}"
+    return aus
+
+
+JAHR = _jahre()
+
+
+def zitat(m):
+    """[@a; @b, S. 3] -> (A 2001; B 2002, S. 3); [@!a] -> A (2001)."""
+    teile = []
+    erzaehlend = m.group(1) == "!"
+    for t in m.group(2).split(";"):
+        t = t.strip().lstrip("@")
+        key, _, stelle = t.partition(",")
+        key = key.strip()
+        if key not in LIT:
+            raise KeyError(f"Zitat ohne Literatureintrag: {key}")
+        if key not in ZITIERT:
+            ZITIERT.append(key)
+        stelle = f", {stelle.strip()}" if stelle.strip() else ""
+        if erzaehlend:
+            teile.append(f"{_nachnamen(LIT[key])} ({JAHR[key]}{stelle})")
+        else:
+            teile.append(f"{_nachnamen(LIT[key])} {JAHR[key]}{stelle}")
+    return "; ".join(teile) if erzaehlend else "(" + "; ".join(teile) + ")"
+
+
+def literatureintrag(key):
+    e = LIT[key]
+    a = e["autoren"]
+    autoren = "; ".join(a[:-1]) + " und " + a[-1] if len(a) > 1 else a[0]
+    if e.get("weitere"):
+        autoren = "; ".join(a) + " u. a."
+    t = f"<b>{escape(autoren)}</b> ({JAHR[key]}): "
+    if e["typ"] == "artikel":
+        t += f"{escape(e['titel'])}. In: <i>{escape(e['zeitschrift'])}</i>"
+        if e.get("band"):
+            t += f" {escape(e['band'])}"
+        if e.get("heft"):
+            t += f" ({escape(e['heft'])})"
+        if e.get("seiten"):
+            t += f", {'S. ' if e['seiten'][0].isdigit() else ''}{escape(e['seiten'])}"
+    elif e["typ"] == "konferenz":
+        t += f"{escape(e['titel'])}. In: <i>{escape(e['buchtitel'])}</i>"
+        if e.get("seiten"):
+            t += f", S. {escape(e['seiten'])}"
+    elif e["typ"] in ("buch", "norm"):
+        t += f"<i>{escape(e['titel'])}</i>"
+        if e.get("auflage"):
+            t += f". {e['auflage']}. Aufl"
+        t += f". {escape(e.get('ort', ''))}: {escape(e.get('verlag', ''))}"
+    elif e["typ"] == "web":
+        t += f"<i>{escape(e['titel'])}</i>"
+    t += "."
+    if e.get("url"):
+        t += f" URL: <font face=\"Mono\" size=\"7.5\">{escape(e['url'])}</font>"
+        if e.get("abgerufen"):
+            t += f" (abgerufen am {e['abgerufen']})"
+        t += "."
+    if e.get("hinweis"):
+        t += f" {escape(e['hinweis'])}."
+    return t
+
+
 if (ABB / "zahlen_ergebnisse.json").exists():  # aus ergebnisse.py (Phasen 2 bis 4)
     ZAHLEN.update(json.loads((ABB / "zahlen_ergebnisse.json").read_text()))
 
@@ -108,10 +198,33 @@ S = {
                            textColor=TEXT, leftIndent=8),
     "toc2": ParagraphStyle("toc2", fontName="Sans", fontSize=7.9, leading=11,
                            textColor=TEXT2, leftIndent=22),
+    "literatur": ParagraphStyle("literatur", fontName="Sans", fontSize=8.6, leading=12.2,
+                                leftIndent=16, firstLineIndent=-16, spaceAfter=5,
+                                textColor=TEXT),
     "fnr": ParagraphStyle("fnr", fontName="Sans", fontSize=8, leading=10, textColor=TEXT2,
                           alignment=2),
 }
+S["h1u"] = ParagraphStyle("h1u", parent=S["h1"])
 BREITE = A4[0] - 4.2 * cm
+
+
+class Verzeichnis(TableOfContents):
+    """Abbildungs- oder Tabellenverzeichnis: hoert auf eine eigene Benachrichtigung."""
+
+    def __init__(self, art):
+        super().__init__()
+        self.art = art
+        self.dotsMinLevel = 0
+
+    def notify(self, kind, stuff):
+        if kind == self.art:
+            self.addEntry(*stuff)
+
+
+def kurztitel(text, n=92):
+    """Unterschrift fuer ein Verzeichnis: erster Satz, hoechstens n Zeichen."""
+    t = re.split(r"(?<=[a-zäöüß)])\. ", text, maxsplit=1)[0].rstrip(".")
+    return t if len(t) <= n else t[:n].rsplit(" ", 1)[0] + " …"
 
 
 class Bericht(BaseDocTemplate):
@@ -151,10 +264,22 @@ class Bericht(BaseDocTemplate):
         c.restoreState()
 
     def afterFlowable(self, fl):
-        if isinstance(fl, Paragraph) and fl.style.name in ("teil", "h1", "h2"):
+        if isinstance(fl, Paragraph) and fl.style.name == "inh":
+            self.kapitel = fl.getPlainText()
+            return
+        if isinstance(fl, Paragraph) and fl.style.name == "bild":
             text = fl.getPlainText()
-            stufe = {"teil": 0, "h1": 1, "h2": 2}[fl.style.name]
-            if stufe == 1:
+            m = re.match(r"^(Abbildung|Tabelle) (\d+): (.*)$", text, re.S)
+            if m:
+                key = f"v{id(fl)}"
+                self.canv.bookmarkPage(key)
+                art = "LOF" if m.group(1) == "Abbildung" else "LOT"
+                self.notify(art, (0, f"{m.group(2)}  {kurztitel(m.group(3))}", self.page, key))
+            return
+        if isinstance(fl, Paragraph) and fl.style.name in ("teil", "h1u", "h1", "h2"):
+            text = fl.getPlainText()
+            stufe = {"teil": 0, "h1u": 0, "h1": 1, "h2": 2}[fl.style.name]
+            if fl.style.name in ("h1", "h1u"):
                 self.kapitel = text
             key = f"k{id(fl)}"
             self.canv.bookmarkPage(key)
@@ -194,6 +319,7 @@ def zahl(schluessel, stellen=None):
 
 def inline(t):
     t = re.sub(r"\{\{z:([\w.\-]+)(?::(\d))?\}\}", lambda m: zahl(m.group(1), m.group(2)), t)
+    t = re.sub(r"\[@(!?)([^\]]+)\]", zitat, t)
     teile = re.split(r"(`[^`]+`)", t)
     aus = []
     for x in teile:
@@ -376,6 +502,15 @@ def bloecke(text, im_kasten=False):
             NR["kap"] = 0
             i += 1
             continue
+        if s.startswith("#* "):
+            aus += [PageBreak(), Paragraph(inline(s[3:]), S["h1u"])]
+            NR["kapnr"] = ""
+            i += 1
+            continue
+        if s == "@literatur":
+            aus.append(("LITERATUR",))
+            i += 1
+            continue
         if s.startswith("# "):
             NR["kap"] += 1
             NR["abs"] = 0
@@ -386,8 +521,8 @@ def bloecke(text, im_kasten=False):
             continue
         if s.startswith("## "):
             NR["abs"] += 1
-            aus += [CondPageBreak(5 * cm),
-                    Paragraph(f"{NR['kapnr']}.{NR['abs']}  {inline(s[3:])}", S["h2"])]
+            nummer = f"{NR['kapnr']}.{NR['abs']}  " if NR["kapnr"] else ""
+            aus += [CondPageBreak(5 * cm), Paragraph(f"{nummer}{inline(s[3:])}", S["h2"])]
             i += 1
             continue
         if s.startswith("### "):
@@ -470,15 +605,27 @@ def main():
              Spacer(1, 4.5 * cm)]
     for z in [f"Stand: {STAND}", "Repository: github.com/akquisio-dev/smard-forecast",
               "Zielprojekt: github.com/akquisio-dev/smard-mcp (v1.3.0)",
-              "Status: Phase 0 abgeschlossen, Phase 1 läuft (Download und Archiv)",
+              "Status: Phasen 0 bis 4 abgeschlossen (Tool auf einem Nebenzweig, nicht ausgerollt); "
+              "Prüfung der Vorlauf-Interpolation läuft",
               "Alle Diagramme ohne den Zusatz „Schema“ zeigen echte Daten."]:
         story.append(Paragraph(z, S["klein"]))
-    story += [NextPageTemplate("normal"), PageBreak(),
-              Paragraph("Inhalt", ParagraphStyle("inh", parent=S["h1"]))]
+    story += [NextPageTemplate("normal")]
+    for datei in sorted(KAPITEL.glob("00a-*.txt")):
+        story += bloecke(datei.read_text())
+    titel_stil = ParagraphStyle("inh", parent=S["h1"])
+    story += [PageBreak(), Paragraph("Inhaltsverzeichnis", titel_stil)]
     toc = TableOfContents()
     toc.levelStyles = [S["toc0"], S["toc1"], S["toc2"]]
     story.append(toc)
+    for art, titel in (("LOF", "Abbildungsverzeichnis"), ("LOT", "Tabellenverzeichnis")):
+        v = Verzeichnis(art)
+        v.levelStyles = [S["toc2"]]
+        story += [PageBreak(), Paragraph(titel, titel_stil), v]
+    for datei in sorted(KAPITEL.glob("00b-*.txt")):
+        story += bloecke(datei.read_text())
     for datei in sorted(KAPITEL.glob("*.txt")):
+        if datei.name.startswith("00"):
+            continue
         story += bloecke(datei.read_text())
     fertig = []
     for f in story:
@@ -487,8 +634,15 @@ def main():
                                                   sorted(GLOSSAR.items(),
                                                          key=lambda x: x[0].lower())]
             fertig += tabelle(rows, f"Alle {len(GLOSSAR)} Begriffe aus den Begriffskästen")
+        elif isinstance(f, tuple) and f[0] == "LITERATUR":
+            reihe = sorted(ZITIERT, key=lambda k: (_nachnamen(LIT[k]).lower(), JAHR[k]))
+            for k in reihe:
+                fertig.append(Paragraph(literatureintrag(k), S["literatur"]))
         else:
             fertig.append(f)
+    ungenutzt = sorted(set(LIT) - set(ZITIERT))
+    if ungenutzt:
+        print("nicht zitiert (nicht im Verzeichnis):", ", ".join(ungenutzt))
     Bericht(ZIEL).multiBuild(fertig)
     print(ZIEL, ZIEL.stat().st_size, "Abbildungen", NR["abb"], "Tabellen", NR["tab"],
           "Formeln", NR["formel"], "Begriffe", len(GLOSSAR))

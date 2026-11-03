@@ -18,7 +18,8 @@ Tabelle: Aufbau des Dokuments
 | III Physik und Wetter | Sonne, Wind, Wettervorhersage | um zu verstehen, woher die Information kommt |
 | IV Statistik und Lernen | Fehlermaße, Quantile, Bäume, Boosting, Prüfen | um zu verstehen, wie das Modell lernt und wie man es ehrlich bewertet |
 | V Das Projekt | Daten, Phasen, Architektur, Betrieb | was konkret gebaut wird |
-| VI Anhang | Entstehung, Formeln, Glossar | zum Nachschlagen |
+| Literatur | alle zitierten Arbeiten, Daten und Dienste | zum Nachprüfen |
+| VI Anhang | Entstehung, Formeln, Glossar, Daten und Lizenzen | zum Nachschlagen |
 
 ## Die Kästen
 
@@ -50,6 +51,10 @@ Wo eine Abbildung nur ein Prinzip veranschaulicht und keine echten Messwerte zei
 
 !begriff Repository: ein Ordner mit Dateien, dessen gesamte Änderungsgeschichte von dem Programm Git aufgezeichnet wird. Das Repository von smard-forecast liegt öffentlich bei GitHub unter akquisio-dev/smard-forecast; eine Kopie liegt auf der Maschine, auf der trainiert wird.
 
+## Zitierweise
+
+Aussagen, die auf fremden Arbeiten, Daten oder Diensten beruhen, sind im Autor-Jahr-Verfahren belegt, etwa (Koenker und Bassett 1978). Die vollständigen Angaben stehen im Literaturverzeichnis am Ende von Teil V. Aussagen ohne Beleg sind entweder eigene Messungen an den Projektdaten (dann steht dabei, woraus sie berechnet sind) oder ausdrücklich als Vermutung gekennzeichnet.
+
 ## Schreibweisen
 
 Dezimalzahlen stehen mit Komma (0,95), Tausender mit Punkt (12.546). In Formeln steht der Punkt als Multiplikationszeichen (a · b). Zeiten ohne Zusatz sind **UTC** (die Weltzeit, in Kapitel 4 erklärt); deutsche Ortszeit wird ausdrücklich als „Ortszeit“ oder „Berlin“ bezeichnet. Dateinamen, Befehle und Programmcode stehen in `dieser Schrift`.
@@ -60,9 +65,9 @@ Dezimalzahlen stehen mit Komma (0,95), Tausender mit Punkt (12.546). In Formeln 
 
 **smard-mcp** ist ein kleiner, öffentlicher Server, über den KI-Assistenten deutsche Strommarktdaten abfragen können.
 
-!begriff SMARD: die Strommarktdaten-Plattform der Bundesnetzagentur (smard.de). Sie veröffentlicht stündliche und viertelstündliche Daten zu Stromerzeugung je Energieträger, Verbrauch, Großhandelspreisen und Austausch mit dem Ausland, frei nutzbar unter der Lizenz CC BY 4.0.
+!begriff SMARD: die Strommarktdaten-Plattform der Bundesnetzagentur (smard.de) [@smard]. Sie veröffentlicht stündliche und viertelstündliche Daten zu Stromerzeugung je Energieträger, Verbrauch, Großhandelspreisen und Austausch mit dem Ausland, frei nutzbar unter der Lizenz CC BY 4.0.
 
-!begriff MCP: Model Context Protocol, ein offener Standard, über den ein KI-Assistent (zum Beispiel Claude) Werkzeuge aufrufen kann, die ein anderes Programm anbietet. Ein MCP-Server beschreibt seine Werkzeuge („Tools“) mit Namen, Zweck und Eingaben; der Assistent entscheidet selbst, wann er welches aufruft.
+!begriff MCP: Model Context Protocol, ein offener Standard, über den ein KI-Assistent (zum Beispiel Claude) Werkzeuge aufrufen kann, die ein anderes Programm anbietet [@mcp]. Ein MCP-Server beschreibt seine Werkzeuge („Tools“) mit Namen, Zweck und Eingaben; der Assistent entscheidet selbst, wann er welches aufruft.
 
 !begriff Tool: im MCP-Sprachgebrauch eine einzelne Funktion, die ein Server anbietet, zum Beispiel `get_generation_mix` („wie wurde in einem Zeitraum Strom erzeugt“). Ein Tool bekommt Eingaben als JSON und liefert ein Ergebnis als JSON zurück.
 
@@ -78,7 +83,7 @@ Statt „morgen um 12 Uhr kommen 40 Gigawatt Solarstrom“ soll das Tool sagen: 
 
 Woher soll das Tool das wissen? Aus zwei Quellen:
 
-- **Wettervorhersagen** des Deutschen Wetterdienstes für 40 Orte in Deutschland und auf See, bezogen über den Dienst Open-Meteo.
+- **Wettervorhersagen** des Deutschen Wetterdienstes für 40 Orte in Deutschland und auf See, bezogen über den Dienst Open-Meteo [@openmeteo; @dwdicon].
 - **Gemessene Erzeugung** von SMARD aus den vergangenen knapp drei Jahren.
 
 Ein Lernverfahren (LightGBM, Kapitel 13) schaut sich zehntausende Stunden an, in denen beides vorlag, und lernt daraus: Wenn die Wettervorhersage mit einem bestimmten Vorlauf so und so aussah, kam danach so und so viel Strom. Und es lernt auch, wie stark das schwankt.
@@ -95,15 +100,15 @@ Version 1 ist bewusst klein. Nicht dabei sind: die vier Regelzonen der Netzbetre
 
 Das Projekt läuft in sieben Phasen mit drei Prüfpunkten. An einem Prüfpunkt wird entschieden, ob es weitergeht.
 
-[abb phasen | Die sieben Phasen und drei Prüfpunkte. Blau: erledigt beziehungsweise laufend. Stand 2. November 2026.]
+[abb phasen | Die sieben Phasen und drei Prüfpunkte (Schema, Stand der Planung vom 2. November 2026). Den aktuellen Stand nennt die Tabelle darunter.]
 
 Tabelle: Was die Phasen tun
 | Phase | Inhalt | Stand |
 | 0 | Datenprüfung: tragen die Daten den Plan? | abgeschlossen am 2.11.2026 |
-| 1 | Trainingsdaten laden, eigenes Archiv der Wettervorhersagen starten | läuft seit 2.11.2026 |
-| 2 | Solar-Modell bauen und gegen einfache Messlatten prüfen, dann **Prüfpunkt A** | geplant |
-| 3 | Wind-Modelle, dann **Prüfpunkt B** | geplant |
-| 4 | Tool in smard-mcp auf einem Nebenzweig einbauen | geplant |
+| 1 | Trainingsdaten laden, eigenes Archiv der Wettervorhersagen starten | Download abgeschlossen; Archiv läuft täglich |
+| 2 | Solar-Modell bauen und gegen einfache Messlatten prüfen, dann **Prüfpunkt A** | abgeschlossen am 3.11.2026, Prüfpunkt A bestanden (Kapitel 21) |
+| 3 | Wind-Modelle, dann **Prüfpunkt B** | abgeschlossen am 3.11.2026, Prüfpunkt B mit Auflagen angenommen (Kapitel 22) |
+| 4 | Tool in smard-mcp auf einem Nebenzweig einbauen | Tool fertig, nicht ausgerollt; Prüfung der Interpolation läuft (Kapitel 23) |
 | 5 | tägliche Überwachung, monatliches Neu-Training | geplant |
 | 6 | ausrollen, im Betrieb beobachten, **Prüfpunkt C**, Veröffentlichung | geplant |
 
@@ -116,3 +121,5 @@ Die wichtigste Regel: **Code in smard-mcp entsteht erst, wenn das Solar-Modell P
 - **Die Bundesnetzagentur führt die installierte Leistung zu niedrig.** Für 2026 stehen dort 103 statt rund 120 Gigawatt Solar. Ohne Korrektur hätte das Modell einen Scheintrend gelernt.
 - **Wetterwerte und Stromwerte sind um eine Stunde versetzt beschriftet.** Die Strahlung, die das Wettermodell für 12:00 meldet, gehört zur Stromstunde 11:00 bis 12:00 (Kapitel 4).
 - **Open-Meteo zählt große Abrufe mehrfach.** Der Download der Trainingsdaten muss deshalb über zwei Tage verteilt werden.
+- **Die Modelle schlagen die einfachen Messlatten an allen sechs Vorlauftagen** in der rollierenden Prüfung, an Tag 6 aber nur knapp (Skill {{z:wof_r_sk_6:2}} bis {{z:sol_r_sk_6:2}}). An Tag 1 ist die Prognose der Netzbetreiber genauer (Kapitel 21 und 22).
+- **Die Bandbreiten mussten nachkalibriert werden.** Ohne Korrektur enthielten sie nur rund 70 % statt 80 % der Messwerte; die Ursache sind Unterschiede zwischen den Monaten, nicht ein zu kleines Modell (Kapitel 21).

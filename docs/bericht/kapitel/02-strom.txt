@@ -104,7 +104,7 @@ Die Energie „pro Tag“ in Ortszeit umfasst am 29. März nur 23 und am 25. Okt
 Ein Stundenwert gehört zu einem Zeitraum, etwa 11:00 bis 12:00. Steht in der Datei dann 11:00 oder 12:00? Beides kommt vor:
 
 - **SMARD** stempelt mit dem **Anfang**: Der Wert mit dem Zeitstempel 11:00 ist die Energie von 11:00 bis 12:00. Die Zeitstempel sind Unix-Zeit in Millisekunden.
-- **Open-Meteo** liefert die Strahlung als **Mittelwert der vorangegangenen Stunde**: Der Wert mit dem Zeitstempel 12:00 ist die mittlere Strahlung von 11:00 bis 12:00. Andere Größen, etwa Wind und Temperatur, sind dagegen **Momentanwerte** zum genannten Zeitpunkt.
+- **Open-Meteo** liefert die Strahlung als **Mittelwert der vorangegangenen Stunde**: Der Wert mit dem Zeitstempel 12:00 ist die mittlere Strahlung von 11:00 bis 12:00 [@openmeteo]. Andere Größen, etwa Wind und Temperatur, sind dagegen **Momentanwerte** zum genannten Zeitpunkt.
 
 !begriff Unix-Zeit: Zahl der Sekunden (bei SMARD: Millisekunden) seit dem 1. Januar 1970, 00:00 UTC. 1.793.638.800 Sekunden entsprechen zum Beispiel dem 2. November 2026, 17:00 UTC. Computer rechnen gern so, weil es keine Zeitzonen und keine Sommerzeit gibt.
 
@@ -136,7 +136,7 @@ Wind und Sonne lassen sich nicht nach Bedarf einschalten. Deshalb brauchen die N
 
 ## Die Prognose der Netzbetreiber
 
-!begriff Day-Ahead-Prognose: die Vorhersage der Netzbetreiber für den Folgetag, erstellt am Vortag. SMARD veröffentlicht sie stündlich je Energieträger (Reihen `forecast_generation_*`). Sie ist für Tag 1 die stärkste Messlatte, an der sich smard-forecast messen lassen muss.
+!begriff Day-Ahead-Prognose: die Vorhersage der Netzbetreiber für den Folgetag, erstellt am Vortag [@smard]. SMARD veröffentlicht sie stündlich je Energieträger (Reihen `forecast_generation_*`). Sie ist für Tag 1 die stärkste Messlatte, an der sich smard-forecast messen lassen muss.
 
 Diese Prognose ist gut. Über alle Tagesstunden seit 2024 liegt ihr mittlerer absoluter Fehler (Kapitel 9) bei Solar bei {{z:nb_solar_mae:2}} GW und bei Wind an Land bei {{z:nb_wind_onshore_mae:2}} GW. Kapitel 17 zeigt eine Beispielwoche.
 
@@ -154,6 +154,6 @@ Das Modell bekommt Wochentag und Feiertag als Merkmale (Kapitel 14), damit es le
 
 ## Woher die installierte Leistung kommt
 
-!begriff Marktstammdatenregister: das amtliche Register der Bundesnetzagentur, in dem jede Stromerzeugungsanlage in Deutschland mit Leistung, Standort und Inbetriebnahme eingetragen sein muss, auch jede Balkon-Solaranlage. Es ist die Grundlage für alle Angaben zur installierten Leistung.
+!begriff Marktstammdatenregister: das amtliche Register der Bundesnetzagentur, in dem jede Stromerzeugungsanlage in Deutschland mit Leistung, Standort und Inbetriebnahme eingetragen sein muss, auch jede Balkon-Solaranlage [@mastr]. Es ist die Grundlage für alle Angaben zur installierten Leistung.
 
-SMARD veröffentlicht daraus nur einen Wert pro Jahr. Energy-Charts, ein Angebot des Fraunhofer-Instituts für Solare Energiesysteme (ISE), veröffentlicht Monatswerte. Kapitel 18 zeigt, warum dieser Unterschied für das Projekt entscheidend war.
+SMARD veröffentlicht daraus nur einen Wert pro Jahr. Energy-Charts, ein Angebot des Fraunhofer-Instituts für Solare Energiesysteme (ISE), veröffentlicht Monatswerte [@energycharts]. Kapitel 18 zeigt, warum dieser Unterschied für das Projekt entscheidend war.

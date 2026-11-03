@@ -1,0 +1,5 @@
+#* Literaturverzeichnis
+
+Zitiert wird im Autor-Jahr-Verfahren, etwa (Koenker und Bassett 1978); bei mehr als zwei Verfassern steht „u. a.“. Gleiche Verfasser im selben Jahr werden mit a, b unterschieden. Daten, Dienste und Software sind wie Literatur aufgeführt; Internetquellen mit dem Tag des Abrufs.
+
+@literatur

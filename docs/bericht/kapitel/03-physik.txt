@@ -25,7 +25,7 @@ $$ \gamma = \frac{2\pi}{365}\left(N - 1 + \frac{h - 12}{24}\right)
 
 !begriff Deklination: der Winkel, um den die Sonne über (positiv) oder unter (negativ) dem Himmelsäquator steht. Weil die Erdachse um 23,44° geneigt ist, schwankt die Deklination im Jahr zwischen +23,44° (Sommeranfang) und −23,44° (Winteranfang). Sie ist der Grund für die Jahreszeiten.
 
-Eine genaue Näherung (nach Spencer, 1971) setzt die Deklination δ (delta, in Bogenmaß) aus Kosinus- und Sinus-Wellen zusammen:
+Eine genaue Näherung nach [@!spencer1971] setzt die Deklination δ (delta, in Bogenmaß) aus Kosinus- und Sinus-Wellen zusammen:
 
 $$ \delta = 0{,}006918 - 0{,}399912\cos\gamma + 0{,}070257\sin\gamma - 0{,}006758\cos 2\gamma + \ldots
 
@@ -93,7 +93,7 @@ Ein Modul wird mit seiner **Nennleistung unter Standardbedingungen** angegeben: 
 
 $$ P = P_{\mathrm{STC}} \cdot \frac{G}{1000\,\mathrm{W/m^2}} \cdot \left(1 + \gamma_T \, (T_{\mathrm{Zelle}} - 25\,^\circ\mathrm{C})\right)
 
-Dabei ist G die Einstrahlung auf das Modul und γ_T der **Temperaturkoeffizient**, bei Silizium etwa −0,4 % pro Kelvin: Jedes Grad über 25 °C kostet 0,4 % Leistung. Die Zelltemperatur liegt in der Sonne deutlich über der Lufttemperatur; eine verbreitete Näherung benutzt die Nennbetriebstemperatur (NOCT, typisch 45 °C):
+Dabei ist G die Einstrahlung auf das Modul und γ_T der **Temperaturkoeffizient**, bei Silizium etwa −0,4 % pro Kelvin: Jedes Grad über 25 °C kostet 0,4 % Leistung [@duffie2013]. Die Zelltemperatur liegt in der Sonne deutlich über der Lufttemperatur; eine verbreitete Näherung benutzt die Nennbetriebstemperatur (NOCT, typisch 45 °C):
 
 $$ T_{\mathrm{Zelle}} \approx T_{\mathrm{Luft}} + \frac{G}{800\,\mathrm{W/m^2}} \cdot (\mathrm{NOCT} - 20\,^\circ\mathrm{C})
 
@@ -149,7 +149,7 @@ Halber Wind, ein Achtel der Leistung. Diese Leistung steckt im Wind; eine Anlage
 
 ## Die Betz-Grenze
 
-Eine Windanlage kann dem Wind nicht die gesamte Energie entziehen, sonst stünde die Luft hinter dem Rotor still und es käme keine neue nach. Der Physiker Albert Betz hat 1920 gezeigt, dass höchstens 16/27 ≈ 59,3 % nutzbar sind.
+Eine Windanlage kann dem Wind nicht die gesamte Energie entziehen, sonst stünde die Luft hinter dem Rotor still und es käme keine neue nach. Der Physiker Albert Betz hat 1920 gezeigt, dass höchstens 16/27 ≈ 59,3 % nutzbar sind [@betz1920].
 
 !warum Woher die 16/27 kommen
 Die Luft wird von v₁ vor dem Rotor auf v₂ dahinter abgebremst; durch den Rotor strömt sie mit dem Mittel (v₁ + v₂)/2. Die entzogene Leistung ist dann ½ · ρ · A · (v₁ + v₂)/2 · (v₁² − v₂²). Teilt man durch die Leistung im ungestörten Wind und schreibt x = v₂/v₁, erhält man den Leistungsbeiwert c_p = ½ · (1 + x) · (1 − x²). Leitet man nach x ab und setzt die Ableitung null, liegt das Maximum bei x = 1/3: Die Luft wird auf ein Drittel abgebremst. Eingesetzt: c_p = ½ · (4/3) · (8/9) = 16/27.
@@ -170,7 +170,7 @@ Echte Anlagen folgen der v³-Kurve nur in einem mittleren Bereich:
 
 ## Wind in der Höhe
 
-Am Boden bremst die Reibung den Wind; mit der Höhe nimmt er zu. Eine einfache Näherung ist das **Potenzgesetz**:
+Am Boden bremst die Reibung den Wind; mit der Höhe nimmt er zu. Eine einfache Näherung ist das **Potenzgesetz** [@manwell2009]:
 
 $$ v(h) = v_{\mathrm{ref}} \cdot \left(\frac{h}{h_{\mathrm{ref}}}\right)^{\alpha}
 
@@ -221,7 +221,7 @@ Die Atmosphäre gehorcht physikalischen Gesetzen: Luft bewegt sich, weil Druckun
 In der Praxis geht das so:
 
 1. **Beobachten.** Wetterstationen, Wetterballons, Flugzeuge, Schiffe, Bojen und Satelliten messen Temperatur, Druck, Wind und Feuchte, weltweit Millionen Werte am Tag.
-2. **Anfangszustand bestimmen.** Die Messungen sind lückenhaft und ungenau. Ein Verfahren namens **Datenassimilation** verbindet sie mit der letzten Vorhersage zu einem vollständigen, physikalisch stimmigen Zustand der Atmosphäre auf dem Gitter.
+2. **Anfangszustand bestimmen.** Die Messungen sind lückenhaft und ungenau. Ein Verfahren namens **Datenassimilation** verbindet sie mit der letzten Vorhersage zu einem vollständigen, physikalisch stimmigen Zustand der Atmosphäre auf dem Gitter [@kalnay2003].
 3. **Vorwärtsrechnen.** Von diesem Anfangszustand aus rechnet das Modell Schritt für Schritt in die Zukunft, bei ICON global bis 180 Stunden.
 4. **Ausgeben.** Für jede Stunde und jede Gitterzelle stehen dann Temperatur, Wind, Strahlung, Wolken und vieles mehr fest.
 
@@ -233,7 +233,7 @@ In der Praxis geht das so:
 
 ## Die Modelle des Deutschen Wetterdienstes
 
-Der Deutsche Wetterdienst (DWD) betreibt das Modellsystem ICON in mehreren Ausprägungen. Feinere Gitter sehen mehr Einzelheiten (etwa einzelne Gewitter), kosten aber mehr Rechenzeit und decken deshalb ein kleineres Gebiet und eine kürzere Zeit ab.
+Der Deutsche Wetterdienst (DWD) betreibt das Modellsystem ICON in mehreren Ausprägungen [@zaengl2015; @dwdicon]. Feinere Gitter sehen mehr Einzelheiten (etwa einzelne Gewitter), kosten aber mehr Rechenzeit und decken deshalb ein kleineres Gebiet und eine kürzere Zeit ab.
 
 Tabelle: Die ICON-Modelle des DWD
 | Modell | Gebiet | Gitterabstand | neue Läufe | Vorhersage reicht |
@@ -242,11 +242,11 @@ Tabelle: Die ICON-Modelle des DWD
 | ICON-EU | Europa | 6,5 km | alle 3 h (lange Läufe alle 6 h) | 120 h |
 | ICON (global) | ganze Erde | 13 km | alle 6 h (lange Läufe 00 und 12 UTC) | 180 h |
 
-!begriff icon_seamless: eine Zusammenstellung des Dienstes Open-Meteo. Für jede Stunde wird das feinste verfügbare ICON-Modell genommen: in den ersten Stunden ICON-D2 (seit kurzem auch D2-RUC), danach ICON-EU, danach ICON global. So erhält man eine durchgehende Vorhersage über 7,5 Tage.
+!begriff icon_seamless: eine Zusammenstellung des Dienstes Open-Meteo [@openmeteo]. Für jede Stunde wird das feinste verfügbare ICON-Modell genommen: in den ersten Stunden ICON-D2 (seit kurzem auch D2-RUC), danach ICON-EU, danach ICON global. So erhält man eine durchgehende Vorhersage über 7,5 Tage.
 
 ## Chaos: warum Vorhersagen mit der Zeit schlechter werden
 
-Selbst ein perfektes Modell könnte das Wetter nicht beliebig weit vorhersagen. Der Grund heißt **deterministisches Chaos** und wurde 1963 von dem Meteorologen Edward Lorenz an einem stark vereinfachten Modell der Luftbewegung entdeckt:
+Selbst ein perfektes Modell könnte das Wetter nicht beliebig weit vorhersagen. Der Grund heißt **deterministisches Chaos** und wurde 1963 von dem Meteorologen Edward Lorenz an einem stark vereinfachten Modell der Luftbewegung entdeckt [@lorenz1963]:
 
 $$ \frac{dx}{dt} = \sigma (y - x), \qquad \frac{dy}{dt} = x(\rho - z) - y, \qquad \frac{dz}{dt} = xy - \beta z
 
@@ -260,7 +260,7 @@ Mit σ = 10, ρ = 28 und β = 8/3 verhält sich dieses System chaotisch. Startet
 
 Der Abstand überschreitet hier nach etwa {{z:lorenz_t_abstand_1}} Zeiteinheiten den Wert 1. Die echte Atmosphäre verhält sich ähnlich: Kleine Fehler im Anfangszustand (und die gibt es immer, weil nicht jeder Kubikmeter Luft gemessen wird) wachsen, bis die Vorhersage nach etwa zwei Wochen nicht besser ist als das langjährige Mittel. Für die Größen, die hier zählen, sind die ersten Tage gut und die Güte sinkt danach stetig.
 
-!begriff Ensemble-Vorhersage: viele Läufe desselben Modells mit leicht veränderten Anfangszuständen. Laufen sie auseinander, ist die Lage unsicher; bleiben sie zusammen, ist sie gut vorhersagbar. smard-forecast nutzt keine Ensembles, sondern lernt die Unsicherheit aus der Vergangenheit (Kapitel 10). Ensembles wären eine mögliche spätere Erweiterung.
+!begriff Ensemble-Vorhersage: viele Läufe desselben Modells mit leicht veränderten Anfangszuständen [@kalnay2003]. Laufen sie auseinander, ist die Lage unsicher; bleiben sie zusammen, ist sie gut vorhersagbar. smard-forecast nutzt keine Ensembles, sondern lernt die Unsicherheit aus der Vergangenheit (Kapitel 10). Ensembles wären eine mögliche spätere Erweiterung.
 
 ## Wie stark die Güte mit dem Vorlauf sinkt, an echten Daten
 

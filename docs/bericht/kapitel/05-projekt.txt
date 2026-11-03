@@ -63,7 +63,7 @@ Zielstunde 2. November, 20:00 UTC: L = 8 h, x < 1, also Tag 1. Das ist vorsichti
 !ende
 
 !praxis Wie das geprüft wird
-Ob die Interpolation die Trefferquote wirklich hält, lässt sich messen, sobald es ein Modell gibt: Die Single Runs API liefert seit Mai 2026 ganze Läufe mit exaktem Startzeitpunkt. Damit kann man für jeden Vorlauf in Stunden (nicht nur in ganzen Tagen) die Trefferquote ausrechnen, einmal mit Interpolation, einmal mit Abrunden. Diese Prüfung gehört zu Phase 4.
+Ob die Interpolation die Trefferquote wirklich hält, wird in Abschnitt 23.4 gemessen: Die Single Runs API liefert seit Mai 2026 ganze Läufe mit exaktem Startzeitpunkt. Damit kann man für jeden Vorlauf in Stunden (nicht nur in ganzen Tagen) die Trefferquote ausrechnen, einmal mit Interpolation, einmal mit Abrunden. Diese Prüfung gehört zu Phase 4.
 !ende
 
 Dass Tag 1 nicht exakt passt, liegt sehr wahrscheinlich an ICON-D2-RUC (Kapitel 8). Open-Meteo nutzt für die ersten Stunden inzwischen diese stündlich aktualisierte Variante, und die Single Runs API meldete bei ihren Fehlermeldungen genau dieses Modell. Für das Training ist das unkritisch. Das eigene Archiv (Kapitel 20) speichert die Startzeitpunkte aller ICON-Modelle mit, damit sich die Frage später klären lässt.
@@ -259,7 +259,7 @@ smard-forecast/
 
 ## Parquet: wie die Daten gespeichert werden
 
-!begriff Parquet: ein Dateiformat für Tabellen, das Spalte für Spalte statt Zeile für Zeile speichert. Gleichartige Werte liegen nebeneinander und lassen sich stark komprimieren; außerdem kann man einzelne Spalten lesen, ohne die ganze Datei zu laden.
+!begriff Parquet: ein Dateiformat für Tabellen, das Spalte für Spalte statt Zeile für Zeile speichert [@parquet]. Gleichartige Werte liegen nebeneinander und lassen sich stark komprimieren; außerdem kann man einzelne Spalten lesen, ohne die ganze Datei zu laden.
 
 [abb l_parquet | Zeilenweise gegen spaltenweise Speicherung (Schema).]
 
@@ -354,7 +354,7 @@ Die erste Archivdatei hat unkomprimiert {{z:gzip_roh}} Bytes und mit gzip {{z:gz
 
 # Phase 2: das Solar-Modell
 
-Solar kommt zuerst, weil es am besten vorhersagbar ist und sein Fehler am klarsten zu messen. Schlägt Solar die Messlatten nicht, lohnt sich der Rest nicht. Dieses Kapitel beschreibt Versuchsaufbau, Ergebnisse und die daraus gezogenen methodischen Folgerungen; es ist bewusst im Stil eines Ergebnisteils einer wissenschaftlichen Arbeit geschrieben. Alle Zahlen stammen unmittelbar aus den Ergebnisdateien in `data/phase2/` und werden beim Bau dieses Dokuments eingelesen.
+Solar kommt zuerst, weil es am besten vorhersagbar ist und sein Fehler am klarsten zu messen. Schlägt Solar die Messlatten nicht, lohnt sich der Rest nicht. Dieses Kapitel beschreibt Versuchsaufbau, Ergebnisse und die daraus gezogenen methodischen Folgerungen; es ist bewusst im Stil eines Ergebnisteils einer wissenschaftlichen Arbeit geschrieben. Wahrscheinlichkeitsprognosen für Wind- und Solarleistung sind ein etabliertes Forschungsfeld; einen Überblick über Verfahren und Bewertung geben [@!hong2016], speziell für Photovoltaik [@!antonanzas2016] und für Wind [@!pinson2013]. Das hier verwendete Vorgehen, Gradient Boosting mit Quantilverlust auf Wettermodellausgaben, gehört zu den Verfahren, die in diesem Feld regelmäßig gut abschneiden [@hong2016]. Alle Zahlen stammen unmittelbar aus den Ergebnisdateien in `data/phase2/` und werden beim Bau dieses Dokuments eingelesen.
 
 [abb pipeline | Datenfluss von den Rohdaten bis zum Tool.]
 
@@ -376,7 +376,7 @@ $$ \mathcal{D}_M^{\mathrm{train}} = \{ (x_i, a_i) : t_i < t_M - \Delta \}, \qqua
 
 Getestet wird rollierend über alle Monate von März 2025 bis Juli 2026, dazu einmalig der Abschlusstest August bis Oktober 2026 (Kapitel 15). Hyperparameter sind die Startwerte aus Kapitel 13 (15 Blätter, 300 Bäume, Lernrate 0,05, mindestens 50 Zeilen je Blatt, je 80 % der Merkmale und Zeilen je Baum).
 
-**Kennzahlen.** Neben MAE und Trefferquote (Kapitel 9 und 10) wird der mittlere Pinball-Verlust über die drei Quantile berichtet, in Prozentpunkten der Leistung:
+**Kennzahlen.** Neben MAE und Trefferquote (Kapitel 9 und 10) wird der mittlere Pinball-Verlust über die drei Quantile berichtet, in Prozentpunkten der Leistung [@madsen2005]:
 
 $$ \bar{L} = \frac{1}{3} \sum_{\tau \in \{0{,}1;\ 0{,}5;\ 0{,}9\}} \frac{1}{n} \sum_{i=1}^{n} L_\tau\left(a_i, \hat{q}_\tau(x_i)\right)
 
@@ -433,9 +433,9 @@ Die größeren Modelle verbessern den Median kaum, machen die Bänder aber drast
 
 ## Konforme Quantilregression
 
-Die Diagnose verlangt eine Korrektur der Bandbreite, die aus Fehlern außerhalb der Trainingsdaten gelernt wird. Das Standardverfahren dafür ist die konforme Quantilregression nach Romano, Patterson und Candès (2019).
+Die Diagnose verlangt eine Korrektur der Bandbreite, die aus Fehlern außerhalb der Trainingsdaten gelernt wird. Das Standardverfahren dafür ist die konforme Quantilregression nach [@!romano2019]; eine Einführung geben [@!angelopoulos2023].
 
-!begriff Konforme Vorhersage: eine Familie von Verfahren, die ein beliebiges Vorhersagemodell nachträglich so korrigiert, dass seine Intervalle eine vorgegebene Trefferquote einhalten. Grundlage ist allein die Rangfolge von Fehlern auf Daten, die das Modell nicht gesehen hat. Englisch: conformal prediction.
+!begriff Konforme Vorhersage: eine Familie von Verfahren, die ein beliebiges Vorhersagemodell nachträglich so korrigiert, dass seine Intervalle eine vorgegebene Trefferquote einhalten [@vovk2005; @angelopoulos2023]. Grundlage ist allein die Rangfolge von Fehlern auf Daten, die das Modell nicht gesehen hat. Englisch: conformal prediction.
 
 !begriff CQR: konforme Quantilregression (conformalized quantile regression). Die Bandbreite aus p10 und p90 wird an beiden Seiten um denselben Betrag verbreitert oder verengt, sodass auf einer Kalibriermenge genau der gewünschte Anteil der Werte hineinfällt.
 
@@ -453,12 +453,12 @@ und das korrigierte Intervall lautet
 
 $$ C(x) = \left[\hat{q}_{0{,}1}(x) - \hat{Q},\ \hat{q}_{0{,}9}(x) + \hat{Q}\right] \cap [0, 1]
 
-Der Faktor (1 + 1/n) ist eine Endlichkeitskorrektur. Sind Kalibrier- und Testdaten austauschbar, garantiert die Konstruktion P(a ∈ C(x)) ≥ 1 − α, unabhängig davon, wie gut das zugrunde liegende Modell ist. Ist das Band zu breit, wird der Zuschlag negativ und verengt es.
+Der Faktor (1 + 1/n) ist eine Endlichkeitskorrektur. Sind Kalibrier- und Testdaten austauschbar, garantiert die Konstruktion P(a ∈ C(x)) ≥ 1 − α, unabhängig davon, wie gut das zugrunde liegende Modell ist [@romano2019]. Ist das Band zu breit, wird der Zuschlag negativ und verengt es.
 
-!begriff Austauschbarkeit: eine Folge von Zufallsgrößen ist austauschbar, wenn ihre gemeinsame Verteilung sich nicht ändert, wenn man die Reihenfolge vertauscht. Unabhängige, gleich verteilte Daten sind austauschbar, Zeitreihen im Allgemeinen nicht. Englisch: exchangeability.
+!begriff Austauschbarkeit: eine Folge von Zufallsgrößen ist austauschbar, wenn ihre gemeinsame Verteilung sich nicht ändert, wenn man die Reihenfolge vertauscht [@vovk2005]. Unabhängige, gleich verteilte Daten sind austauschbar, Zeitreihen im Allgemeinen nicht. Englisch: exchangeability.
 
 !achtung Die Garantie gilt hier nur näherungsweise
-Stündliche Energiedaten sind autokorreliert und saisonal, also nicht austauschbar. Die Überdeckungsgarantie gilt deshalb formal nicht; ob die Korrektur trägt, muss empirisch geprüft werden. Genau das leisten die rollierende Prüfung und später die Überwachung im Betrieb.
+Stündliche Energiedaten sind autokorreliert und saisonal, also nicht austauschbar. Die Überdeckungsgarantie gilt deshalb formal nicht; ob die Korrektur trägt, muss empirisch geprüft werden [@barber2023]. Genau das leisten die rollierende Prüfung und später die Überwachung im Betrieb.
 !ende
 
 **Leckfreie Umsetzung.** Die Korrektur für Testmonat M wird ausschließlich aus Vorhersagen der rollierenden Monate vor M gelernt, und zwar je Vorlauftag getrennt, weil die Unsicherheit mit dem Vorlauf wächst. Der erste rollierende Monat dient nur als Kalibriermenge und wird nicht bewertet. Damit ist jede berichtete Trefferquote eine echte Vorhersage: Weder Modell noch Korrektur haben den bewerteten Monat gesehen.
@@ -480,14 +480,14 @@ Tabelle: Solar, rollierend mit leckfreier CQR (April 2025 bis Juli 2026)
 
 Die Werte der Klimatologie und der Persistenz sind die MAE der beiden einfachen Messlatten in % der Leistung; der Skill bezieht sich auf die bessere der beiden. An allen sechs Vorlauftagen bleibt das Modell über der Schwelle 0,2; an Tag 6 knapp. In den Wintermonaten Dezember bis Februar liegt die Trefferquote bei {{z:sol_w_trmin:1}} bis {{z:sol_w_trmax:1}} %.
 
-Gegen die Day-Ahead-Prognose der Netzbetreiber verliert das Modell an Tag 1 deutlich (Tabelle in Phase 3). Das ursprüngliche Kriterium „an Tag 1 höchstens 20 % mehr Fehler als die Netzbetreiber“ war damit verfehlt.
+Gegen die Day-Ahead-Prognose der Netzbetreiber verliert das Modell an Tag 1 deutlich (Tabelle in Phase 3) [@smard]. Das ursprüngliche Kriterium „an Tag 1 höchstens 20 % mehr Fehler als die Netzbetreiber“ war damit verfehlt.
 
 !praxis Entscheidung zu Prüfpunkt A (3. November 2026)
 Der Betreuer hat entschieden, dieses Kriterium zu streichen und den Vergleich nur noch zu berichten. Begründung: Das Tool zeigt die Prognose der Netzbetreiber für Tag 1 ohnehin daneben; sein eigentlicher Wert liegt bei Tag 2 bis 6, für die keine öffentliche Prognose existiert. Damit war Prüfpunkt A für Solar bestanden. Das geänderte Kriterium steht in Kapitel 15.
 !ende
 
 !warum Warum sind die Netzbetreiber an Tag 1 so viel besser?
-Das ist im Projekt nicht untersucht; die folgenden Punkte sind Hypothesen, keine Befunde. (1) Die Netzbetreiber verwenden aktuelle Messungen aus dem Netz und können ihre Prognose kurz vor dem Liefertag nachführen. (2) Sie kennen den Anlagenbestand anlagenscharf mit Standort, Ausrichtung und Leistung statt nur an 21 Orten. (3) Ein Teil der veröffentlichten Ist-Werte für Solar ist selbst eine Hochrechnung der Netzbetreiber; Prognose und „Messung“ könnten deshalb verwandte Fehler teilen. Hypothese (3) ließe sich prüfen, indem man die Fehler beider Verfahren gegen eine unabhängige Messung vergleicht.
+Das ist im Projekt nicht untersucht; die folgenden Punkte sind Hypothesen, keine Befunde. (1) Die Netzbetreiber verwenden aktuelle Messungen aus dem Netz und können ihre Prognose kurz vor dem Liefertag nachführen [@pinson2013]. (2) Sie kennen den Anlagenbestand anlagenscharf mit Standort, Ausrichtung und Leistung statt nur an 21 Orten. (3) Ein Teil der veröffentlichten Ist-Werte für Solar ist selbst eine Hochrechnung der Netzbetreiber; Prognose und „Messung“ könnten deshalb verwandte Fehler teilen. Hypothese (3) ließe sich prüfen, indem man die Fehler beider Verfahren gegen eine unabhängige Messung vergleicht.
 !ende
 
 # Phase 3: Wind an Land und auf See
@@ -538,7 +538,7 @@ Tabelle: Tag 1 gegen die Day-Ahead-Prognose der Netzbetreiber (rollierend, MAE i
 
 ## Fehlerwachstum mit dem Vorlauf
 
-Von Tag 1 bis Tag 6 wächst der MAE für Solar auf das {{z:sol_faktor:1}}-fache, für Wind an Land auf das {{z:won_faktor:1}}-fache und für Wind auf See auf das {{z:wof_faktor:1}}-fache. Der Unterschied ist physikalisch plausibel: Bei Solar bestimmt der Sonnenstand einen großen, exakt vorhersagbaren Teil des Signals, nur die Bewölkung ist unsicher. Bei Wind hängt praktisch alles an der Lage und Stärke von Tiefdruckgebieten, deren Vorhersagbarkeit nach wenigen Tagen chaotisch zerfällt (Kapitel 8). Hinzu kommt die steile Leistungskurve: Weil die Leistung im Teillastbereich mit der dritten Potenz der Windgeschwindigkeit steigt (Kapitel 7), wird ein Fehler der Windvorhersage in der Leistung verstärkt.
+Von Tag 1 bis Tag 6 wächst der MAE für Solar auf das {{z:sol_faktor:1}}-fache, für Wind an Land auf das {{z:won_faktor:1}}-fache und für Wind auf See auf das {{z:wof_faktor:1}}-fache. Der Unterschied ist physikalisch plausibel: Bei Solar bestimmt der Sonnenstand einen großen, exakt vorhersagbaren Teil des Signals, nur die Bewölkung ist unsicher. Bei Wind hängt praktisch alles an der Lage und Stärke von Tiefdruckgebieten, deren Vorhersagbarkeit nach wenigen Tagen chaotisch zerfällt (Kapitel 8) [@lorenz1963]. Hinzu kommt die steile Leistungskurve: Weil die Leistung im Teillastbereich mit der dritten Potenz der Windgeschwindigkeit steigt (Kapitel 7), wird ein Fehler der Windvorhersage in der Leistung verstärkt [@manwell2009].
 
 [abb e_beispielwoche | Eine Woche des Abschlusstests (12. bis 18. Oktober 2026), Wind an Land, mit Vorlauf 1 Tag (oben) und 5 Tagen (unten).]
 
@@ -546,7 +546,7 @@ Die Beispielwoche zeigt beide Seiten. Mit einem Tag Vorlauf folgt der Median dem
 
 ## Wind auf See im Abschlusstest
 
-Für Wind auf See fällt der Abschlusstest deutlich schlechter aus als die rollierende Prüfung, an Tag 6 bis fast auf die Klimatologie. Der Grund liegt weniger beim Modell als bei der Messlatte: Der MAE der Klimatologie sinkt von {{z:wof_r_kl_1:1}} % (rollierend) auf {{z:wof_a_kl_1:1}} % (August bis Oktober), weil die Spätsommermonate auf See ruhig und damit gut durch ein Mittel beschreibbar sind. Der MAE des Modells ändert sich dagegen kaum. Gleichzeitig sind die Bänder mit {{z:wof_a_trmin:1}} bis {{z:wof_a_trmax:1}} % Trefferquote etwas zu breit, weil die Kalibrierung aus allen rollierenden Monaten einschließlich der stürmischen Wintermonate gelernt wurde. Umgekehrt ist sie im Winter selbst zu schmal ({{z:wof_w_trmin:1}} bis {{z:wof_w_trmax:1}} %). Beides ist dieselbe Ursache: Die Unsicherheit hängt von der Jahreszeit ab, der Zuschlag der CQR aber nur vom Vorlauftag. Eine nach Jahreszeit oder Wetterlage bedingte Kalibrierung wäre die naheliegende Verbesserung.
+Für Wind auf See fällt der Abschlusstest deutlich schlechter aus als die rollierende Prüfung, an Tag 6 bis fast auf die Klimatologie. Der Grund liegt weniger beim Modell als bei der Messlatte: Der MAE der Klimatologie sinkt von {{z:wof_r_kl_1:1}} % (rollierend) auf {{z:wof_a_kl_1:1}} % (August bis Oktober), weil die Spätsommermonate auf See ruhig und damit gut durch ein Mittel beschreibbar sind. Der MAE des Modells ändert sich dagegen kaum. Gleichzeitig sind die Bänder mit {{z:wof_a_trmin:1}} bis {{z:wof_a_trmax:1}} % Trefferquote etwas zu breit, weil die Kalibrierung aus allen rollierenden Monaten einschließlich der stürmischen Wintermonate gelernt wurde. Umgekehrt ist sie im Winter selbst zu schmal ({{z:wof_w_trmin:1}} bis {{z:wof_w_trmax:1}} %). Beides ist dieselbe Ursache: Die Unsicherheit hängt von der Jahreszeit ab, der Zuschlag der CQR aber nur vom Vorlauftag. Eine nach Jahreszeit oder Wetterlage bedingte Kalibrierung wäre die naheliegende Verbesserung [@gibbs2021].
 
 [abb e_monate | MAE je Testmonat für Tag 1 und Tag 6 (rollierend). Der Fehler in % der Leistung hängt stark von der Jahreszeit ab; bei Solar ist er im Winter klein, weil auch die Erzeugung klein ist.]
 
@@ -558,12 +558,12 @@ Der MAE in % der installierten Leistung ist bei Solar im Dezember klein, nicht w
 
 [abb e_wichtigkeit | Gain-Wichtigkeit der zehn wichtigsten Merkmale der Median-Modelle im Betrieb (Anteil am gesamten Gewinn aller Teilungen).]
 
-!begriff Gain-Wichtigkeit: die Summe der Verlustminderungen aller Teilungen eines Baum-Ensembles, die ein bestimmtes Merkmal verwenden, als Anteil an der Summe über alle Merkmale. Sie zeigt, worauf sich das Modell stützt, aber nicht, was ursächlich wirkt.
+!begriff Gain-Wichtigkeit: die Summe der Verlustminderungen aller Teilungen eines Baum-Ensembles, die ein bestimmtes Merkmal verwenden, als Anteil an der Summe über alle Merkmale [@hastie2009]. Sie zeigt, worauf sich das Modell stützt, aber nicht, was ursächlich wirkt.
 
 Die Gewichte sind physikalisch stimmig. Das Solar-Modell stützt sich zu {{z:wicht_solar_top_pct:0}} % auf die mittlere Globalstrahlung über alle Orte, danach auf den Sonnenstand. Beide Wind-Modelle stützen sich vor allem auf die mittlere Windgeschwindigkeit in 100 m Höhe ({{z:wicht_wind_onshore_top_pct:0}} % an Land, {{z:wicht_wind_offshore_top_pct:0}} % auf See), also die Größe, die der Nabenhöhe am nächsten kommt. Der Vorlauftag selbst ist bei Wind unter den wichtigsten Merkmalen: Das Modell lernt, dass dieselbe vorhergesagte Windgeschwindigkeit mit wachsendem Vorlauf weniger verlässlich ist und zieht seine Vorhersage dann zum Mittel hin.
 
 !achtung Grenzen der Gain-Wichtigkeit
-Stark korrelierte Merkmale teilen sich die Wichtigkeit beliebig: Die Windgeschwindigkeit an 16 Orten und ihr Mittel tragen fast dieselbe Information, und welches Merkmal ein Baum wählt, ist teilweise Zufall. Außerdem bevorzugt das Maß stetige Merkmale mit vielen möglichen Schwellen. Für kausale Aussagen braucht man andere Verfahren, etwa Permutationstests auf zurückgehaltenen Daten.
+Stark korrelierte Merkmale teilen sich die Wichtigkeit beliebig: Die Windgeschwindigkeit an 16 Orten und ihr Mittel tragen fast dieselbe Information, und welches Merkmal ein Baum wählt, ist teilweise Zufall. Außerdem bevorzugt das Maß stetige Merkmale mit vielen möglichen Schwellen [@strobl2007]. Für kausale Aussagen braucht man andere Verfahren, etwa Permutationstests auf zurückgehaltenen Daten.
 !ende
 
 ## Prüfpunkt B
@@ -610,7 +610,7 @@ Liegt eine Stunde zwischen zwei Vorlauftagen (Interpolation, Kapitel 16), gilt d
 1. Wetter holen: ein Abruf der Forecast API für alle 40 Orte (Gewicht 40), zwischengespeichert, bis `meta.json` eines der drei ICON-Modelle einen neueren Lauf meldet.
 2. Für jede Stunde den Lauf bestimmen, der sie abdeckt: ICON-D2, solange dessen Daten reichen, dann ICON-EU, dann ICON global. Der Vorlauf L ist die Stunde minus den Start dieses Laufs.
 3. Merkmale bauen, genau wie im Training (gleiche Ausrichtung, gleiche Spaltenreihenfolge aus der Modelldatei).
-4. Für die beiden benachbarten Vorlauftage je drei Quantile auswerten, sortieren, auf [0, 1] begrenzen, mit der CQR verbreitern und linear mischen (Kapitel 16). Solar nachts auf 0.
+4. Für die beiden benachbarten Vorlauftage je drei Quantile auswerten, sortieren [@chernozhukov2010], auf [0, 1] begrenzen, mit der CQR verbreitern und linear mischen (Kapitel 16). Solar nachts auf 0.
 5. Mit der installierten Leistung des Monats in GW umrechnen; je Tag zu GWh summieren.
 6. Die Prognose der Netzbetreiber daneben stellen, soweit veröffentlicht.
 7. Ausgabe mit Hinweis, Gütestufen, Modellversion und Wetterläufen.
@@ -642,7 +642,7 @@ smard-mcp soll keine neue Abhängigkeit bekommen und rechnet die Modelle deshalb
                 "v": [-0.0123, 0.004, ...] } ] }       // Blattwerte
 ```
 
-**Entscheidungsregel.** An jedem Knoten folgt die Auswertung der Regel von LightGBM: Ein fehlender Wert (NaN) zählt als 0, außer der Knoten behandelt NaN gesondert; ein fehlender Wert im Sinn des Knotens geht in die Standardrichtung; sonst gilt x ≤ Schwelle → links. Die Vorhersage ist die Summe der erreichten Blattwerte über alle Bäume:
+**Entscheidungsregel.** An jedem Knoten folgt die Auswertung der Regel von LightGBM: Ein fehlender Wert (NaN) zählt als 0, außer der Knoten behandelt NaN gesondert; ein fehlender Wert im Sinn des Knotens geht in die Standardrichtung; sonst gilt x ≤ Schwelle → links [@lightgbmdoc]. Die Vorhersage ist die Summe der erreichten Blattwerte über alle Bäume:
 
 $$ \hat{q}_\tau(x) = \sum_{k=1}^{K} v_k\left(l_k(x)\right)
 
@@ -666,7 +666,7 @@ export function predictTree(tree: CompactTree, x: ArrayLike<number>): number {
 
 **Vergleichstest.** Das Skript `phase4_vergleich.py` holt die aktuelle Vorhersage aller 40 Orte, genau den Abruf, den das Tool macht, und rechnet sie mit Python durch: Merkmale, beide Vorlauftage, CQR, Mischung, Nachtmaske. Eingabe und Ergebnis werden gespeichert; der Test in smard-mcp rechnet dieselbe Eingabe in TypeScript nach. Kriterium: Für alle 192 Stunden und alle drei Quellen weichen p10, p50 und p90 um weniger als 10⁻⁶ ab.
 
-!begriff Gleitkommazahl: die Darstellung reeller Zahlen im Rechner nach dem Standard IEEE 754, als Vorzeichen, Mantisse und Exponent. Eine float32-Zahl hat 24 Bit Mantisse (relative Genauigkeit etwa 6·10⁻⁸), eine float64-Zahl 53 Bit (etwa 1·10⁻¹⁶). JavaScript rechnet immer in float64; pandas behält float32, wenn die Daten so gespeichert sind.
+Gleitkommazahlen (Begriff in Kapitel 19) folgen dem Standard IEEE 754: Vorzeichen, Mantisse und Exponent zur Basis 2 [@ieee754; @goldberg1991]. Eine float32-Zahl hat 24 Bit Mantisse (relative Genauigkeit etwa 6·10⁻⁸), eine float64-Zahl 53 Bit (etwa 1·10⁻¹⁶). JavaScript rechnet immer in float64; pandas behält float32, wenn die Daten so gespeichert sind.
 
 Der erste Vergleich zeigte für Solar Übereinstimmung, für Wind aber Abweichungen bis 0,7 % der Leistung. Ursache war die Mittelung über alle Orte: pandas summiert float32-Spalten in float32, TypeScript rechnete in float64. Beim Luftdruck genügen wenige Bit, um eine Schwelle zu kippen:
 
@@ -707,11 +707,11 @@ Tabelle: Verhalten in Grenzfällen
 
 ## Tagesenergie als Summe von Quantilen
 
-Die Tageswerte p10 und p90 sind Summen der stündlichen Quantile. Das ist eine Näherung. Quantile sind im Allgemeinen nicht additiv; exakt gilt die Summenregel nur bei Komonotonie:
+Die Tageswerte p10 und p90 sind Summen der stündlichen Quantile. Das ist eine Näherung. Quantile sind im Allgemeinen nicht additiv; exakt gilt die Summenregel nur bei Komonotonie [@dhaene2002]:
 
 $$ q_\tau\left(\sum_h X_h\right) = \sum_h q_\tau\left(X_h\right) \quad \mathrm{falls}\ X_1, \ldots, X_{24}\ \mathrm{komonoton}
 
-!begriff Komonotonie: mehrere Zufallsgrößen heißen komonoton, wenn sie alle steigende Funktionen ein und derselben Zufallsgröße sind; sie bewegen sich dann immer gemeinsam in dieselbe Richtung. Für Prognosefehler hieße das: Liegt die Vorhersage um 10 Uhr zu hoch, liegt sie auch um 11 und um 12 Uhr im selben Maß zu hoch.
+!begriff Komonotonie: mehrere Zufallsgrößen heißen komonoton, wenn sie alle steigende Funktionen ein und derselben Zufallsgröße sind; sie bewegen sich dann immer gemeinsam in dieselbe Richtung [@dhaene2002]. Für Prognosefehler hieße das: Liegt die Vorhersage um 10 Uhr zu hoch, liegt sie auch um 11 und um 12 Uhr im selben Maß zu hoch.
 
 Die Fehler aufeinanderfolgender Stunden sind stark positiv abhängig, weil sie meist auf dieselbe falsch vorhergesagte Wetterlage zurückgehen (Kapitel 9, Autokorrelation), aber nicht vollständig. Bei schwächerer Abhängigkeit gleichen sich Fehler teilweise aus, und das wahre Band der Tagessumme ist in aller Regel schmaler als die Summe der stündlichen Bänder. Die ausgegebenen Tagesbänder sind also eher zu breit als zu schmal; das Tool sagt das in `notes`. Ob ihre Trefferquote tatsächlich über 80 % liegt, lässt sich im Betrieb messen.
 

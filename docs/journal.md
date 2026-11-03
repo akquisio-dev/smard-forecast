@@ -465,3 +465,28 @@ Zeitleiste, Fehlschläge, Formelsammlung und Quellen sind nachgezogen.
 
 **Offen im Bericht:** das Ergebnis der Interpolationsprüfung (Abschnitt 23.4 sagt ausdrücklich,
 dass es aussteht; die Grafik entsteht erst ab 12 geladenen Läufen).
+
+### 10:30 Bericht: wissenschaftlicher Apparat
+
+**Gemacht:** Der Bericht hat jetzt die Bestandteile einer wissenschaftlichen Arbeit:
+
+- Kurzfassung und englisches Abstract vor dem Inhaltsverzeichnis (Zahlen aus den Ergebnisdateien).
+- Abbildungs-, Tabellen- und Abkürzungsverzeichnis.
+- Zitate im Autor-Jahr-Verfahren (`[@schluessel]` im Text, `docs/bericht/literatur.toml` mit
+  46 Einträgen: Fachliteratur zu Quantilregression, Bewertung von Wahrscheinlichkeitsprognosen,
+  Entscheidungsbäumen und Boosting, konformer Vorhersage, Validierung von Zeitreihen,
+  Energieprognose, Solar- und Windphysik, Wettermodellen, Gleitkommaarithmetik sowie Daten,
+  Dienste und Software). Ein unbekannter Schlüssel bricht den Bau ab; nicht zitierte Einträge
+  werden gemeldet und nicht aufgeführt.
+- Literaturverzeichnis am Ende von Teil V; der Anhang „Quellen und Lizenzen“ heißt jetzt „Daten,
+  Software und Lizenzen“ und verweist auf das Verzeichnis.
+- Zitierweise in Kapitel 1 erklärt; Stand der Phasen und wichtigste Befunde aktualisiert.
+
+**Fehlschlag:** Das erste Einsetzen der Zitate brach nach der Hälfte ab, weil ein Anker doppelt
+vorkam: Der Begriff „Gleitkommazahl“ war schon in Kapitel 19 erklärt, Kapitel 23 hatte einen
+zweiten Begriffskasten dafür. Kapitel aus Git zurückgeholt, der zweite Kasten ist jetzt normaler
+Text mit Rückverweis. Danach verlangte das PDF-Inhaltsverzeichnis (Outline), dass Kapitel ohne
+Nummer auf der obersten Ebene stehen; eigene Stufe dafür.
+
+**Grundsatz:** Ins Literaturverzeichnis kamen nur Arbeiten, deren bibliographische Angaben
+sicher bekannt sind; wo Seitenzahlen unsicher waren (Konferenzbände), fehlen sie lieber.

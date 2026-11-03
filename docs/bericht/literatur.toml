@@ -1,0 +1,440 @@
+# Literatur und Quellen des Projektberichts.
+# Zitiert wird im Text mit [@schluessel], [@schluessel, S. 12], [@a; @b] (in Klammern)
+# oder [@!schluessel] (im Satz: "Koenker und Bassett (1978)"). Ins Verzeichnis kommen nur
+# zitierte Eintraege; ein unbekannter Schluessel bricht den Bau ab.
+# typ: artikel, buch, konferenz, norm, web
+
+# Quantile, Bewertung von Wahrscheinlichkeitsprognosen ----------------------------
+
+[koenker1978]
+typ = "artikel"
+autoren = ["Koenker, R.", "Bassett, G."]
+jahr = 1978
+titel = "Regression Quantiles"
+zeitschrift = "Econometrica"
+band = "46"
+heft = "1"
+seiten = "33–50"
+
+[koenker2005]
+typ = "buch"
+autoren = ["Koenker, R."]
+jahr = 2005
+titel = "Quantile Regression"
+ort = "Cambridge"
+verlag = "Cambridge University Press"
+
+[chernozhukov2010]
+typ = "artikel"
+autoren = ["Chernozhukov, V.", "Fernández-Val, I.", "Galichon, A."]
+jahr = 2010
+titel = "Quantile and Probability Curves Without Crossing"
+zeitschrift = "Econometrica"
+band = "78"
+heft = "3"
+seiten = "1093–1125"
+
+[gneiting2007a]
+typ = "artikel"
+autoren = ["Gneiting, T.", "Raftery, A. E."]
+jahr = 2007
+titel = "Strictly Proper Scoring Rules, Prediction, and Estimation"
+zeitschrift = "Journal of the American Statistical Association"
+band = "102"
+heft = "477"
+seiten = "359–378"
+
+[gneiting2007b]
+typ = "artikel"
+autoren = ["Gneiting, T.", "Balabdaoui, F.", "Raftery, A. E."]
+jahr = 2007
+titel = "Probabilistic Forecasts, Calibration and Sharpness"
+zeitschrift = "Journal of the Royal Statistical Society: Series B"
+band = "69"
+heft = "2"
+seiten = "243–268"
+
+[murphy1988]
+typ = "artikel"
+autoren = ["Murphy, A. H."]
+jahr = 1988
+titel = "Skill Scores Based on the Mean Square Error and Their Relationships to the Correlation Coefficient"
+zeitschrift = "Monthly Weather Review"
+band = "116"
+heft = "12"
+seiten = "2417–2424"
+
+[wilks2011]
+typ = "buch"
+autoren = ["Wilks, D. S."]
+jahr = 2011
+titel = "Statistical Methods in the Atmospheric Sciences"
+auflage = "3"
+ort = "Amsterdam"
+verlag = "Academic Press"
+
+# Lernverfahren ------------------------------------------------------------------
+
+[breiman1984]
+typ = "buch"
+autoren = ["Breiman, L.", "Friedman, J. H.", "Olshen, R. A.", "Stone, C. J."]
+jahr = 1984
+titel = "Classification and Regression Trees"
+ort = "Belmont"
+verlag = "Wadsworth"
+
+[friedman2001]
+typ = "artikel"
+autoren = ["Friedman, J. H."]
+jahr = 2001
+titel = "Greedy Function Approximation: A Gradient Boosting Machine"
+zeitschrift = "The Annals of Statistics"
+band = "29"
+heft = "5"
+seiten = "1189–1232"
+
+[ke2017]
+typ = "konferenz"
+autoren = ["Ke, G.", "Meng, Q.", "Finley, T.", "Wang, T.", "Chen, W.", "Ma, W.", "Ye, Q.", "Liu, T.-Y."]
+jahr = 2017
+titel = "LightGBM: A Highly Efficient Gradient Boosting Decision Tree"
+buchtitel = "Advances in Neural Information Processing Systems 30"
+
+[hastie2009]
+typ = "buch"
+autoren = ["Hastie, T.", "Tibshirani, R.", "Friedman, J."]
+jahr = 2009
+titel = "The Elements of Statistical Learning: Data Mining, Inference, and Prediction"
+auflage = "2"
+ort = "New York"
+verlag = "Springer"
+
+[strobl2007]
+typ = "artikel"
+autoren = ["Strobl, C.", "Boulesteix, A.-L.", "Zeileis, A.", "Hothorn, T."]
+jahr = 2007
+titel = "Bias in Random Forest Variable Importance Measures: Illustrations, Sources and a Solution"
+zeitschrift = "BMC Bioinformatics"
+band = "8"
+seiten = "Artikel 25"
+
+# Konforme Vorhersage -----------------------------------------------------------
+
+[vovk2005]
+typ = "buch"
+autoren = ["Vovk, V.", "Gammerman, A.", "Shafer, G."]
+jahr = 2005
+titel = "Algorithmic Learning in a Random World"
+ort = "New York"
+verlag = "Springer"
+
+[romano2019]
+typ = "konferenz"
+autoren = ["Romano, Y.", "Patterson, E.", "Candès, E. J."]
+jahr = 2019
+titel = "Conformalized Quantile Regression"
+buchtitel = "Advances in Neural Information Processing Systems 32"
+
+[angelopoulos2023]
+typ = "artikel"
+autoren = ["Angelopoulos, A. N.", "Bates, S."]
+jahr = 2023
+titel = "Conformal Prediction: A Gentle Introduction"
+zeitschrift = "Foundations and Trends in Machine Learning"
+band = "16"
+heft = "4"
+seiten = "494–591"
+
+[barber2023]
+typ = "artikel"
+autoren = ["Barber, R. F.", "Candès, E. J.", "Ramdas, A.", "Tibshirani, R. J."]
+jahr = 2023
+titel = "Conformal Prediction Beyond Exchangeability"
+zeitschrift = "The Annals of Statistics"
+band = "51"
+heft = "2"
+seiten = "816–845"
+
+[gibbs2021]
+typ = "konferenz"
+autoren = ["Gibbs, I.", "Candès, E. J."]
+jahr = 2021
+titel = "Adaptive Conformal Inference Under Distribution Shift"
+buchtitel = "Advances in Neural Information Processing Systems 34"
+
+[dhaene2002]
+typ = "artikel"
+autoren = ["Dhaene, J.", "Denuit, M.", "Goovaerts, M. J.", "Kaas, R.", "Vyncke, D."]
+jahr = 2002
+titel = "The Concept of Comonotonicity in Actuarial Science and Finance: Theory"
+zeitschrift = "Insurance: Mathematics and Economics"
+band = "31"
+heft = "1"
+seiten = "3–33"
+
+# Prüfen von Vorhersagen -----------------------------------------------------------
+
+[bergmeir2012]
+typ = "artikel"
+autoren = ["Bergmeir, C.", "Benítez, J. M."]
+jahr = 2012
+titel = "On the Use of Cross-Validation for Time Series Predictor Evaluation"
+zeitschrift = "Information Sciences"
+band = "191"
+seiten = "192–213"
+
+[hyndman2021]
+typ = "buch"
+autoren = ["Hyndman, R. J.", "Athanasopoulos, G."]
+jahr = 2021
+titel = "Forecasting: Principles and Practice"
+auflage = "3"
+ort = "Melbourne"
+verlag = "OTexts"
+url = "https://otexts.com/fpp3/"
+
+[kaufman2012]
+typ = "artikel"
+autoren = ["Kaufman, S.", "Rosset, S.", "Perlich, C.", "Stitelman, O."]
+jahr = 2012
+titel = "Leakage in Data Mining: Formulation, Detection, and Avoidance"
+zeitschrift = "ACM Transactions on Knowledge Discovery from Data"
+band = "6"
+heft = "4"
+seiten = "Artikel 15"
+
+# Energieprognose ------------------------------------------------------------------
+
+[hong2016]
+typ = "artikel"
+autoren = ["Hong, T.", "Pinson, P.", "Fan, S.", "Zareipour, H.", "Troccoli, A.", "Hyndman, R. J."]
+jahr = 2016
+titel = "Probabilistic Energy Forecasting: Global Energy Forecasting Competition 2014 and Beyond"
+zeitschrift = "International Journal of Forecasting"
+band = "32"
+heft = "3"
+seiten = "896–913"
+
+[pinson2013]
+typ = "artikel"
+autoren = ["Pinson, P."]
+jahr = 2013
+titel = "Wind Energy: Forecasting Challenges for Its Operational Management"
+zeitschrift = "Statistical Science"
+band = "28"
+heft = "4"
+seiten = "564–585"
+
+[madsen2005]
+typ = "artikel"
+autoren = ["Madsen, H.", "Pinson, P.", "Kariniotakis, G.", "Nielsen, H. A.", "Nielsen, T. S."]
+jahr = 2005
+titel = "Standardizing the Performance Evaluation of Short-Term Wind Power Prediction Models"
+zeitschrift = "Wind Engineering"
+band = "29"
+heft = "6"
+seiten = "475–489"
+
+[antonanzas2016]
+typ = "artikel"
+autoren = ["Antonanzas, J.", "Osorio, N.", "Escobar, R.", "Urraca, R.", "Martinez-de-Pison, F. J.", "Antonanzas-Torres, F."]
+jahr = 2016
+titel = "Review of Photovoltaic Power Forecasting"
+zeitschrift = "Solar Energy"
+band = "136"
+seiten = "78–111"
+
+# Physik und Meteorologie ----------------------------------------------------------
+
+[spencer1971]
+typ = "artikel"
+autoren = ["Spencer, J. W."]
+jahr = 1971
+titel = "Fourier Series Representation of the Position of the Sun"
+zeitschrift = "Search"
+band = "2"
+heft = "5"
+seiten = "172"
+
+[duffie2013]
+typ = "buch"
+autoren = ["Duffie, J. A.", "Beckman, W. A."]
+jahr = 2013
+titel = "Solar Engineering of Thermal Processes"
+auflage = "4"
+ort = "Hoboken"
+verlag = "Wiley"
+
+[betz1920]
+typ = "artikel"
+autoren = ["Betz, A."]
+jahr = 1920
+titel = "Das Maximum der theoretisch möglichen Ausnützung des Windes durch Windmotoren"
+zeitschrift = "Zeitschrift für das gesamte Turbinenwesen"
+band = "26"
+seiten = "307–309"
+
+[manwell2009]
+typ = "buch"
+autoren = ["Manwell, J. F.", "McGowan, J. G.", "Rogers, A. L."]
+jahr = 2009
+titel = "Wind Energy Explained: Theory, Design and Application"
+auflage = "2"
+ort = "Chichester"
+verlag = "Wiley"
+
+[lorenz1963]
+typ = "artikel"
+autoren = ["Lorenz, E. N."]
+jahr = 1963
+titel = "Deterministic Nonperiodic Flow"
+zeitschrift = "Journal of the Atmospheric Sciences"
+band = "20"
+heft = "2"
+seiten = "130–141"
+
+[kalnay2003]
+typ = "buch"
+autoren = ["Kalnay, E."]
+jahr = 2003
+titel = "Atmospheric Modeling, Data Assimilation and Predictability"
+ort = "Cambridge"
+verlag = "Cambridge University Press"
+
+[zaengl2015]
+typ = "artikel"
+autoren = ["Zängl, G.", "Reinert, D.", "Rípodas, P.", "Baldauf, M."]
+jahr = 2015
+titel = "The ICON (ICOsahedral Non-hydrostatic) Modelling Framework of DWD and MPI-M: Description of the Non-hydrostatic Dynamical Core"
+zeitschrift = "Quarterly Journal of the Royal Meteorological Society"
+band = "141"
+heft = "687"
+seiten = "563–579"
+
+# Numerik -----------------------------------------------------------------------------
+
+[ieee754]
+typ = "norm"
+autoren = ["IEEE"]
+jahr = 2019
+titel = "IEEE Standard for Floating-Point Arithmetic (IEEE Std 754-2019)"
+ort = "New York"
+verlag = "IEEE"
+
+[goldberg1991]
+typ = "artikel"
+autoren = ["Goldberg, D."]
+jahr = 1991
+titel = "What Every Computer Scientist Should Know About Floating-Point Arithmetic"
+zeitschrift = "ACM Computing Surveys"
+band = "23"
+heft = "1"
+seiten = "5–48"
+
+# Software ----------------------------------------------------------------------------
+
+[mckinney2010]
+typ = "konferenz"
+autoren = ["McKinney, W."]
+jahr = 2010
+titel = "Data Structures for Statistical Computing in Python"
+buchtitel = "Proceedings of the 9th Python in Science Conference"
+seiten = "56–61"
+
+[harris2020]
+typ = "artikel"
+autoren = ["Harris, C. R.", "Millman, K. J.", "van der Walt, S. J."]
+weitere = true
+jahr = 2020
+titel = "Array Programming with NumPy"
+zeitschrift = "Nature"
+band = "585"
+seiten = "357–362"
+
+[hunter2007]
+typ = "artikel"
+autoren = ["Hunter, J. D."]
+jahr = 2007
+titel = "Matplotlib: A 2D Graphics Environment"
+zeitschrift = "Computing in Science & Engineering"
+band = "9"
+heft = "3"
+seiten = "90–95"
+
+[lightgbmdoc]
+typ = "web"
+autoren = ["Microsoft"]
+jahr = 2026
+titel = "LightGBM Documentation"
+url = "https://lightgbm.readthedocs.io"
+abgerufen = "3.11.2026"
+
+[parquet]
+typ = "web"
+autoren = ["Apache Software Foundation"]
+jahr = 2026
+titel = "Apache Parquet: File Format Documentation"
+url = "https://parquet.apache.org"
+abgerufen = "3.11.2026"
+
+[mcp]
+typ = "web"
+autoren = ["Model Context Protocol"]
+jahr = 2026
+titel = "Model Context Protocol: Specification"
+url = "https://modelcontextprotocol.io"
+abgerufen = "3.11.2026"
+
+# Daten und Dienste ---------------------------------------------------------------------
+
+[smard]
+typ = "web"
+autoren = ["Bundesnetzagentur"]
+jahr = 2026
+titel = "SMARD: Strommarktdaten für Deutschland (Erzeugung, Prognosen, installierte Leistung)"
+url = "https://www.smard.de"
+abgerufen = "3.11.2026"
+hinweis = "Lizenz CC BY 4.0"
+
+[mastr]
+typ = "web"
+autoren = ["Bundesnetzagentur"]
+jahr = 2026
+titel = "Marktstammdatenregister"
+url = "https://www.marktstammdatenregister.de"
+abgerufen = "3.11.2026"
+
+[openmeteo]
+typ = "web"
+autoren = ["Open-Meteo"]
+jahr = 2026
+titel = "Open-Meteo Weather API: Forecast API, Previous Runs API und Single Runs API"
+url = "https://open-meteo.com/en/docs"
+abgerufen = "3.11.2026"
+hinweis = "Daten CC BY 4.0; freie Schnittstelle nur für nicht-kommerzielle Nutzung"
+
+[dwdicon]
+typ = "web"
+autoren = ["Deutscher Wetterdienst"]
+jahr = 2026
+titel = "Numerische Wettervorhersage: Modellsystem ICON"
+url = "https://www.dwd.de"
+abgerufen = "3.11.2026"
+
+[energycharts]
+typ = "web"
+autoren = ["Fraunhofer ISE"]
+jahr = 2026
+titel = "Energy-Charts: Installierte Netto-Leistung zur Stromerzeugung in Deutschland"
+url = "https://www.energy-charts.info"
+abgerufen = "3.11.2026"
+hinweis = "Lizenz noch zu klären"
+
+[naturalearth]
+typ = "web"
+autoren = ["Natural Earth"]
+jahr = 2026
+titel = "Natural Earth: Free Vector and Raster Map Data, Admin 0 Countries"
+url = "https://www.naturalearthdata.com"
+abgerufen = "3.11.2026"
+hinweis = "gemeinfrei"

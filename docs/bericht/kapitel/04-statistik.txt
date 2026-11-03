@@ -26,7 +26,7 @@ Der Ausreißer hat den Mittelwert verfünffacht, den Median nicht berührt.
 
 Der Median ist ein Sonderfall eines allgemeineren Begriffs.
 
-!begriff Quantil: das τ-Quantil (τ, gesprochen „tau“, eine Zahl zwischen 0 und 1) ist der Wert, unter dem ein Anteil τ aller Werte liegt. Das 0,5-Quantil ist der Median, das 0,1-Quantil liegt so, dass 10 % der Werte kleiner sind. Statt „0,1-Quantil“ sagt man auch „10. Perzentil“ oder kurz p10.
+!begriff Quantil: das τ-Quantil (τ, gesprochen „tau“, eine Zahl zwischen 0 und 1) ist der Wert, unter dem ein Anteil τ aller Werte liegt [@koenker2005]. Das 0,5-Quantil ist der Median, das 0,1-Quantil liegt so, dass 10 % der Werte kleiner sind. Statt „0,1-Quantil“ sagt man auch „10. Perzentil“ oder kurz p10.
 
 !rechnen Quantile aus zehn Zahlen
 Zehn sortierte Fehler: −3, −2, −1, −1, 0, 0, 1, 1, 2, 5.
@@ -64,7 +64,7 @@ Mittelwert und Median liegen nahe null: Die Netzbetreiber liegen im Mittel weder
 
 $$ \mathrm{Bias} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)
 
-!begriff MAE: mean absolute error, mittlerer absoluter Fehler. Man nimmt von jedem Fehler den Betrag (lässt das Vorzeichen weg) und mittelt. Ein MAE von 1,2 GW heißt: Im Mittel liegt man 1,2 GW daneben, egal in welche Richtung.
+!begriff MAE: mean absolute error, mittlerer absoluter Fehler [@wilks2011]. Man nimmt von jedem Fehler den Betrag (lässt das Vorzeichen weg) und mittelt. Ein MAE von 1,2 GW heißt: Im Mittel liegt man 1,2 GW daneben, egal in welche Richtung.
 
 $$ \mathrm{MAE} = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
 
@@ -118,7 +118,7 @@ Eine hohe Korrelation sagt nur, dass zwei Größen gemeinsam schwanken. Bei Stra
 
 ## Autokorrelation: das Gedächtnis einer Zeitreihe
 
-!begriff Autokorrelation: die Korrelation einer Zeitreihe mit sich selbst, um k Schritte verschoben. Sie misst, wie ähnlich ein Wert dem Wert k Stunden später ist.
+!begriff Autokorrelation: die Korrelation einer Zeitreihe mit sich selbst, um k Schritte verschoben [@hyndman2021]. Sie misst, wie ähnlich ein Wert dem Wert k Stunden später ist.
 
 [abb l_autokorrelation | Autokorrelation der Auslastung, berechnet aus den echten Stundenwerten seit 2024, für Abstände von 0 bis 168 Stunden (eine Woche).]
 
@@ -134,7 +134,7 @@ Erstens erklärt die Kurve, warum die Messlatte „Persistenz“ (morgen wie heu
 
 Eine einzelne Zahl („morgen 40 GW“) verschweigt, wie sicher sie ist. Für jemanden, der ein Elektroauto laden oder eine Wärmepumpe steuern will, macht es einen großen Unterschied, ob 40 GW „ziemlich sicher“ oder „irgendwo zwischen 10 und 60“ heißt.
 
-!begriff Wahrscheinlichkeitsprognose: eine Prognose, die nicht nur einen Wert, sondern eine Verteilung möglicher Werte angibt. Die einfachste Form sind einige Quantile, etwa p10, p50 und p90. Englisch: probabilistic forecast.
+!begriff Wahrscheinlichkeitsprognose: eine Prognose, die nicht nur einen Wert, sondern eine Verteilung möglicher Werte angibt [@gneiting2007b]. Die einfachste Form sind einige Quantile, etwa p10, p50 und p90. Englisch: probabilistic forecast.
 
 smard-forecast sagt drei Quantile voraus. Die Aussage „p10 = 31, p50 = 40, p90 = 46 GW“ bedeutet:
 
@@ -151,7 +151,7 @@ Wie bringt man einem Lernverfahren bei, statt eines Mittelwerts ein Quantil vorh
 
 !begriff Verlustfunktion: eine Formel, die jedem Paar aus echtem Wert y und Vorhersage q eine Strafe zuordnet. Lernen heißt: die Vorhersagen so wählen, dass die mittlere Strafe über alle Trainingsdaten möglichst klein wird. Englisch: loss function.
 
-Für das τ-Quantil benutzt man den **Pinball-Verlust** (auch Quantilverlust):
+Für das τ-Quantil benutzt man den **Pinball-Verlust** (auch Quantilverlust) [@koenker1978]:
 
 $$ L_\tau(y, q) = \tau \cdot \max(y - q,\ 0) \ +\ (1 - \tau) \cdot \max(q - y,\ 0)
 
@@ -199,7 +199,7 @@ Tabelle: Wo das Minimum liegt und wo das abgezählte Quantil liegt (GW)
 Die kleinen Unterschiede kommen nur daher, dass q in Schritten von 0,05 GW ausprobiert wurde.
 
 !merke
-Wer den Pinball-Verlust mit τ minimiert, schätzt automatisch das τ-Quantil. Das gilt nicht nur für eine Konstante, sondern auch für ein ganzes Modell, das für jede Stunde eine eigene Vorhersage macht: Es lernt das τ-Quantil **unter der Bedingung** der jeweiligen Merkmale.
+Wer den Pinball-Verlust mit τ minimiert, schätzt automatisch das τ-Quantil [@koenker1978; @koenker2005]. Das gilt nicht nur für eine Konstante, sondern auch für ein ganzes Modell, das für jede Stunde eine eigene Vorhersage macht: Es lernt das τ-Quantil **unter der Bedingung** der jeweiligen Merkmale.
 !ende
 
 ## Kalibrierung: stimmen die Wahrscheinlichkeiten?
@@ -208,9 +208,9 @@ Eine Bandbreite von p10 bis p90 verspricht: In 80 % der Stunden liegt der echte 
 
 !begriff Trefferquote: der Anteil der Stunden, in denen der echte Wert zwischen p10 und p90 lag. Englisch: coverage. Soll-Wert: 80 %.
 
-!begriff Kalibrierung: ein Prognoseverfahren ist gut kalibriert, wenn seine Wahrscheinlichkeiten stimmen: Was mit 80 % angekündigt wird, tritt in 80 % der Fälle ein. Liegt die Trefferquote deutlich darunter, ist die Bandbreite zu schmal (das Verfahren ist zu selbstsicher); liegt sie deutlich darüber, ist sie unnötig breit.
+!begriff Kalibrierung: ein Prognoseverfahren ist gut kalibriert, wenn seine Wahrscheinlichkeiten stimmen: Was mit 80 % angekündigt wird, tritt in 80 % der Fälle ein [@gneiting2007b]. Liegt die Trefferquote deutlich darunter, ist die Bandbreite zu schmal (das Verfahren ist zu selbstsicher); liegt sie deutlich darüber, ist sie unnötig breit.
 
-!begriff Schärfe: wie schmal eine Bandbreite ist. Eine Prognose „zwischen 0 und 60 GW“ ist fast immer richtig, aber nutzlos. Ziel ist die schärfste Bandbreite, die noch gut kalibriert ist.
+!begriff Schärfe: wie schmal eine Bandbreite ist [@gneiting2007b]. Eine Prognose „zwischen 0 und 60 GW“ ist fast immer richtig, aber nutzlos. Ziel ist die schärfste Bandbreite, die noch gut kalibriert ist.
 
 Ein echtes Lernbeispiel zeigt, wie man das prüft. Aus der Prognose der Netzbetreiber für Wind an Land wird eine Bandbreite gebaut: Für die Jahre 2024 und 2025 wird je Prognoseklasse (in Schritten von 2 GW) abgezählt, wie weit die Fehler streuten, und das 10- und 90-%-Quantil gemerkt. Für 2026 wird dann jede Prognose um diese Fehlerquantile ergänzt, und es wird abgezählt, wie oft der echte Wert darin lag.
 
@@ -223,7 +223,7 @@ An Prüfpunkt A muss die Trefferquote zwischen 75 und 85 % liegen, für jeden Vo
 !ende
 
 !warum Gibt es ein Maß für die ganze Verteilung?
-Ja: den CRPS (continuous ranked probability score). Er ist im Prinzip der Pinball-Verlust, gemittelt über alle Quantile von 0 bis 1. Mit nur drei Quantilen lässt er sich grob annähern, indem man die drei Pinball-Verluste mittelt; das Projekt nennt diese Zahl einfach „mittlerer Pinball-Verlust“.
+Ja: den CRPS (continuous ranked probability score) [@gneiting2007a]. Er ist im Prinzip der Pinball-Verlust, gemittelt über alle Quantile von 0 bis 1. Mit nur drei Quantilen lässt er sich grob annähern, indem man die drei Pinball-Verluste mittelt; das Projekt nennt diese Zahl einfach „mittlerer Pinball-Verlust“.
 !ende
 
 # Was es heißt, dass ein Modell lernt
@@ -254,7 +254,7 @@ Das eigentliche Ziel ist nicht, die Trainingsdaten gut zu treffen, sondern **neu
 
 !begriff Generalisierung: die Fähigkeit eines Modells, auf neuen Daten ähnlich gut zu sein wie auf den Trainingsdaten.
 
-!begriff Überanpassung: ein Modell hat die Trainingsdaten auswendig gelernt, einschließlich ihres zufälligen Rauschens, statt die allgemeine Regel. Es ist dann auf den Trainingsdaten sehr gut und auf neuen Daten schlechter. Englisch: overfitting.
+!begriff Überanpassung: ein Modell hat die Trainingsdaten auswendig gelernt, einschließlich ihres zufälligen Rauschens, statt die allgemeine Regel [@hastie2009]. Es ist dann auf den Trainingsdaten sehr gut und auf neuen Daten schlechter. Englisch: overfitting.
 
 Ein echtes Lernbeispiel: Ein Modell bekommt die Strahlungsvorhersagen der 21 Solar-Orte und die Sonnenhöhe, aber nur **{{z:overfit.train_h}} Stunden** Trainingsdaten (sechs Wochen im Frühjahr 2025). Es darf viele große Bäume bauen (Kapitel 13). Geprüft wird an {{z:overfit.test_h}} Stunden aus April und Mai 2026.
 
@@ -274,7 +274,7 @@ Fehler auf neuen Daten haben zwei Quellen. Ein zu einfaches Modell (etwa eine ei
 
 ## Aufbau
 
-!begriff Entscheidungsbaum: ein Modell aus hintereinander geschalteten Ja-Nein-Fragen über die Merkmale („Strahlung ≤ 274 W/m²?“). Jede Antwort führt zur nächsten Frage, bis man an einem Blatt ankommt, in dem eine Vorhersage steht. Englisch: decision tree.
+!begriff Entscheidungsbaum: ein Modell aus hintereinander geschalteten Ja-Nein-Fragen über die Merkmale („Strahlung ≤ 274 W/m²?“) [@breiman1984]. Jede Antwort führt zur nächsten Frage, bis man an einem Blatt ankommt, in dem eine Vorhersage steht. Englisch: decision tree.
 
 !begriff Knoten und Blatt: ein Knoten ist eine Frage im Baum, ein Blatt das Ende eines Wegs mit einer festen Vorhersage. Ein Baum mit 4 Blättern teilt alle möglichen Eingaben in 4 Gruppen und sagt für jede Gruppe einen festen Wert voraus.
 
@@ -292,7 +292,7 @@ Der Baum entsteht von oben nach unten, und an jedem Knoten wird nach derselben R
 
 $$ \mathrm{SSE}(M) = \sum_{i \in M} (y_i - \bar{y}_M)^2
 
-!begriff SSE: sum of squared errors, die Summe der quadrierten Abstände der Werte einer Gruppe M von ihrem Mittelwert. Je kleiner, desto einheitlicher die Gruppe.
+!begriff SSE: sum of squared errors, die Summe der quadrierten Abstände der Werte einer Gruppe M von ihrem Mittelwert [@breiman1984]. Je kleiner, desto einheitlicher die Gruppe.
 
 Eine Frage „x ≤ s?“ teilt die Gruppe in L (links, ja) und R (rechts, nein). Der **Gewinn** einer Frage ist, um wie viel die SSE dadurch sinkt:
 
@@ -328,7 +328,7 @@ Ihre Schwäche: Ein einzelner Baum ist entweder grob (wenige Blätter, Treppenst
 
 ## Die Idee: viele kleine Korrekturen
 
-!begriff Gradient Boosting: ein Lernverfahren, das viele kleine Entscheidungsbäume nacheinander baut. Jeder neue Baum wird darauf trainiert, die verbleibenden Fehler aller bisherigen Bäume zu verkleinern. Die Vorhersage ist die Summe aller Bäume.
+!begriff Gradient Boosting: ein Lernverfahren, das viele kleine Entscheidungsbäume nacheinander baut [@friedman2001]. Jeder neue Baum wird darauf trainiert, die verbleibenden Fehler aller bisherigen Bäume zu verkleinern. Die Vorhersage ist die Summe aller Bäume.
 
 Der Ablauf, Schritt für Schritt:
 
@@ -365,7 +365,7 @@ Der negative Gradient ist also genau das Residuum y − F. „Einen Baum auf die
 
 ## Boosting für Quantile
 
-Für den Pinball-Verlust (Kapitel 10) ist die Ableitung nach F besonders einfach:
+Für den Pinball-Verlust (Kapitel 10) ist die Ableitung nach F besonders einfach [@friedman2001]:
 
 $$ -\frac{\partial L_\tau}{\partial F} = \tau \ \ \mathrm{falls}\ y > F, \qquad -\frac{\partial L_\tau}{\partial F} = -(1 - \tau) \ \ \mathrm{falls}\ y < F
 
@@ -381,17 +381,17 @@ Weil die drei Quantile von drei getrennten Modellen gelernt werden, kann es in s
 
 ## Was LightGBM besonders macht
 
-!begriff LightGBM: eine freie Software-Bibliothek von Microsoft für Gradient Boosting mit Entscheidungsbäumen. Sie ist besonders schnell, braucht wenig Speicher und kann Quantile direkt lernen. Lizenz MIT.
+!begriff LightGBM: eine freie Software-Bibliothek von Microsoft für Gradient Boosting mit Entscheidungsbäumen [@ke2017; @lightgbmdoc]. Sie ist besonders schnell, braucht wenig Speicher und kann Quantile direkt lernen. Lizenz MIT.
 
 LightGBM unterscheidet sich in einigen Punkten vom Grundverfahren:
 
 - **Histogramme.** Statt jeden einzelnen Wert als Schwelle zu probieren, sortiert LightGBM die Werte jedes Merkmals einmal in höchstens 255 Fächer (Klassen). Gesucht wird nur zwischen den Fächern. Das macht die Suche um ein Vielfaches schneller und schadet der Genauigkeit kaum.
-- **Blattweises Wachstum.** Andere Verfahren bauen Bäume Ebene für Ebene. LightGBM teilt immer das Blatt, dessen Teilung den größten Gewinn bringt, wo immer es im Baum liegt. So entstehen mit gleicher Blattzahl genauere Bäume; begrenzt wird über die Zahl der Blätter (`num_leaves`).
+- **Blattweises Wachstum.** Andere Verfahren bauen Bäume Ebene für Ebene [@ke2017]. LightGBM teilt immer das Blatt, dessen Teilung den größten Gewinn bringt, wo immer es im Baum liegt. So entstehen mit gleicher Blattzahl genauere Bäume; begrenzt wird über die Zahl der Blätter (`num_leaves`).
 - **Fehlende Werte.** Fehlt ein Wert (etwa im April 2026 bei einem Ausfall), lernt LightGBM an jedem Knoten, ob solche Stunden besser links oder rechts weiterlaufen. Man muss fehlende Werte also nicht erfinden.
 - **Regularisierung.** Mehrere Stellschrauben verhindern Überanpassung: Mindestzahl der Stunden je Blatt, nur ein Teil der Merkmale und der Zeilen je Baum, Strafen für große Blattwerte.
 - **Frühes Stoppen.** Während des Trainings wird nach jedem Baum der Fehler auf Prüfdaten gemessen; wird er über viele Bäume nicht mehr besser, hört das Training auf. Das ist die automatische Antwort auf Abbildung „Überanpassung“ in Kapitel 11.
 
-!begriff Regularisierung: alle Maßnahmen, die ein Modell absichtlich einschränken, damit es weniger auswendig lernt und besser generalisiert.
+!begriff Regularisierung: alle Maßnahmen, die ein Modell absichtlich einschränken, damit es weniger auswendig lernt und besser generalisiert [@hastie2009].
 
 !begriff Hyperparameter: Einstellungen eines Lernverfahrens, die nicht aus den Daten gelernt, sondern vorher festgelegt werden, etwa Lernrate, Blattzahl oder Zahl der Bäume. Man findet gute Werte durch Ausprobieren auf Prüfdaten.
 
@@ -463,9 +463,9 @@ Ein Modell ist nur so viel wert wie die Prüfung, die es bestanden hat. Bei Zeit
 
 ## Die Falle der zufälligen Aufteilung
 
-Die übliche Methode im maschinellen Lernen: 80 % der Zeilen zufällig zum Training, 20 % zum Prüfen. Bei Zeitreihen ist das falsch.
+Die übliche Methode im maschinellen Lernen: 80 % der Zeilen zufällig zum Training, 20 % zum Prüfen. Bei Zeitreihen ist das falsch [@bergmeir2012].
 
-!begriff Datenleck: eine Situation, in der beim Prüfen Information verfügbar ist, die es im echten Betrieb nicht gäbe. Das Modell sieht dann besser aus, als es ist. Englisch: data leakage.
+!begriff Datenleck: eine Situation, in der beim Prüfen Information verfügbar ist, die es im echten Betrieb nicht gäbe [@kaufman2012]. Das Modell sieht dann besser aus, als es ist. Englisch: data leakage.
 
 Die Autokorrelation (Kapitel 9) zeigt warum: Die Stunde 11:00 ist fast gleich der Stunde 12:00. Liegt 11:00 im Training und 12:00 in der Prüfung, kennt das Modell die Antwort praktisch schon. Im Betrieb dagegen soll es Stunden vorhersagen, die alle in der Zukunft liegen.
 
@@ -480,7 +480,7 @@ Die zufällige Aufteilung macht das Modell um etwa 15 % besser, als es tatsächl
 
 Das Projekt prüft deshalb nur zeitlich, und zwar mehrfach:
 
-!begriff Rollierende Validierung: man trainiert mit allen Daten bis zum Monat M und prüft am Monat M+1; dann trainiert man bis M+1 und prüft an M+2, und so weiter. So entstehen viele Prüfungen, die alle so ablaufen wie im Betrieb: Das Modell kennt nur die Vergangenheit. Englisch: rolling oder walk-forward validation.
+!begriff Rollierende Validierung: man trainiert mit allen Daten bis zum Monat M und prüft am Monat M+1; dann trainiert man bis M+1 und prüft an M+2, und so weiter [@hyndman2021; @bergmeir2012]. So entstehen viele Prüfungen, die alle so ablaufen wie im Betrieb: Das Modell kennt nur die Vergangenheit. Englisch: rolling oder walk-forward validation.
 
 [abb validierung | Rollierende Validierung mit den echten Monaten des Projekts. Die erste Prüfrunde beginnt nach 12 Monaten Training, damit jede Jahreszeit einmal gesehen wurde.]
 
@@ -490,7 +490,7 @@ Das Projekt prüft deshalb nur zeitlich, und zwar mehrfach:
 
 Ein MAE von 3 % sagt allein nichts. Ist das gut? Man vergleicht deshalb mit Verfahren, die man ohne jedes Lernen hätte:
 
-!begriff Messlatte: ein einfaches Vergleichsverfahren. Ein Modell taugt nur, wenn es die Messlatten deutlich schlägt. Englisch: baseline.
+!begriff Messlatte: ein einfaches Vergleichsverfahren [@wilks2011]. Ein Modell taugt nur, wenn es die Messlatten deutlich schlägt. Englisch: baseline.
 
 Tabelle: Die drei Messlatten
 | Messlatte | Vorschrift | gilt für |
@@ -500,13 +500,13 @@ Tabelle: Die drei Messlatten
 
 [abb klimatologie | So sieht die Messlatte Klimatologie für Solar aus, berechnet aus allen Stunden von 2024 und 2025 mit den monatlichen Leistungswerten.]
 
-!begriff Klimatologie: im Wetterbereich das langjährige Mittel. Als Messlatte sagt sie für jeden Junitag um 13 Uhr dasselbe voraus, egal welches Wetter angekündigt ist.
+!begriff Klimatologie: im Wetterbereich das langjährige Mittel [@wilks2011]. Als Messlatte sagt sie für jeden Junitag um 13 Uhr dasselbe voraus, egal welches Wetter angekündigt ist.
 
 !begriff Persistenz: die Annahme, dass es so bleibt, wie es ist. Für Wind über ein, zwei Stunden sehr gut, für mehrere Tage schlecht (Kapitel 9, Autokorrelation).
 
 ## Der Skill-Score
 
-!begriff Skill-Score: der Anteil, um den ein Modell den Fehler einer Messlatte verkleinert. 0 heißt: nicht besser als die Messlatte. 1 hieße: perfekt. Negativ heißt: schlechter als die Messlatte.
+!begriff Skill-Score: der Anteil, um den ein Modell den Fehler einer Messlatte verkleinert [@murphy1988; @wilks2011]. 0 heißt: nicht besser als die Messlatte. 1 hieße: perfekt. Negativ heißt: schlechter als die Messlatte.
 
 $$ \mathrm{Skill} = 1 - \frac{\mathrm{MAE}_{\mathrm{Modell}}}{\mathrm{MAE}_{\mathrm{Messlatte}}}
 
