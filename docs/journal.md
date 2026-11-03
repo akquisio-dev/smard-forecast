@@ -598,3 +598,12 @@ kopierte dabei lokal `forecast-monitor.service` über `forecast-monitor.timer`; 
 die kaputte Datei hoch („Timer unit lacks value setting“). Datei aus Git wiederhergestellt,
 erneut installiert. Lehre: Befehle für Joey als kurze Skriptdatei übergeben, nicht als langen
 Einzeiler.
+
+### 12:00 smard-mcp 1.4.1: Wiederholversuch bei Open-Meteo
+
+**Gemacht:** Fehlgeschlagene Abrufe bei Open-Meteo (keine Antwort, Zeitüberschreitung, HTTP 5xx
+oder 429) werden zweimal wiederholt, nach 2 und 5 Sekunden; andere Fehler (z. B. 400) sofort
+durchgereicht. Zeitgrenze je Versuch von 30 auf 15 Sekunden gesenkt, damit drei Versuche unter
+einer Minute bleiben (normaler Abruf unter 1 s). Zwei neue Tests (503 zweimal, dann Erfolg ohne
+Cache; Aufgabe nach drei Versuchen, 400 ohne Wiederholung), 181 Tests grün. Commit 416611f,
+Ausrollen durch Joey.
