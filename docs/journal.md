@@ -324,3 +324,27 @@ betroffen, weil Klimatologie an diesen Tagen ohnehin die bessere Messlatte war.
 nur noch auf den rollierenden Monaten; ein späterer Blick auf August bis Oktober wird
 ausdrücklich als zweiter Blick gekennzeichnet. Wirklich unberührt sind ab jetzt erst die Daten
 ab November 2026.
+
+### 07:15 Phase 2, Abstimmung auf den rollierenden Monaten
+
+**Gemacht:** `scripts/phase2_abstimmung.py`: 7 Tage Abstand zwischen Trainingsende und
+Testmonat; Diagnose; Raster aus vier Einstellungen auf jedem dritten Monat; danach alle
+rollierenden Monate mit der besten Einstellung und leckfreie Kalibrierung der Bandbreite
+(konforme Quantilregression: Monat M lernt die Korrektur nur aus den Monaten davor).
+Ergebnisse in `data/phase2/solar_abstimmung.json`. Laufzeit 10 Minuten.
+
+**Ergebnis:**
+
+- Diagnose: Mit den Startwerten liegt die Trefferquote im Training bei 81 %, im Testmonat März
+  2026 bei 80,5 %. Die Quantile sind also gelernt; die zu schmalen Bänder in anderen Monaten
+  kommen von Unterschieden zwischen den Monaten, nicht von zu wenig Training.
+- Größere Modelle (31 oder 63 Blätter, 800 Bäume) sind schlechter: kaum besserer Median, aber
+  viel schmalere Bänder (Trefferquote 55 bis 61 %). Die Startwerte bleiben.
+- Mit Kalibrierung steigt die Trefferquote von 69 bis 73 % auf 84 bis 86 %, ohne dass sich der
+  Median ändert; der Pinball-Verlust bleibt gleich oder wird minimal besser.
+- Tag 1 gegen die Netzbetreiber bleibt unverändert: 1,76 % gegen 1,20 % (Skill −0,47).
+
+**Stand Prüfpunkt A (rollierend, mit Kalibrierung):** Kriterium 1 erfüllt (Skill 0,57 bis 0,21),
+Kriterium 3 erfüllt bis knapp darüber (83,7 bis 85,9 %), Kriterium 2 klar verfehlt. Ob
+Kriterium 2 gelockert wird oder die Netzbetreiber-Prognose für Tag 1 als Merkmal dient,
+entscheidet der Betreuer.
