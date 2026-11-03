@@ -583,3 +583,18 @@ dem frisch gestarteten Server mit HTTP 503, und ohne Cache gibt es dann keine R�
 Wenige Minuten später lief derselbe Abruf von der Web-Maschine fehlerfrei; vorübergehende Störung
 bei Open-Meteo. Die Units für `forecast-monitor` sind auf der Web-Maschine noch nicht installiert,
 `recent_accuracy` bleibt bis dahin `null`.
+
+### 11:50 Überwachung läuft
+
+**Gemacht:** Timer `forecast-monitor` auf der Web-Maschine aktiv (täglich 05:20 UTC), erster
+Lauf erfolgreich; `recent_accuracy` erscheint live in `forecast_renewables`. Erste Werte, nur
+Tag 1, 11 archivierte Vorhersagen: Wind an Land 80 h, MAE 1,21 GW, Treffer 95 %; Wind auf See
+80 h, MAE 0,69 GW, Treffer 100 %; Solar 36 h, MAE 3,67 GW (3,0 % der Leistung), Treffer 47 %.
+Solar liegt damit klar unter der Prüfung (Tag 1 um 1,5 bis 2 %, Treffer um 80 %); 36 Stunden
+aus zwei bis drei Novembertagen sind aber zu wenig für einen Schluss. Beobachten.
+
+**Fehlschlag:** Joeys erster, beim Kopieren umgebrochener Befehl führte `scp` ohne Ziel aus und
+kopierte dabei lokal `forecast-monitor.service` über `forecast-monitor.timer`; das Skript lud
+die kaputte Datei hoch („Timer unit lacks value setting“). Datei aus Git wiederhergestellt,
+erneut installiert. Lehre: Befehle für Joey als kurze Skriptdatei übergeben, nicht als langen
+Einzeiler.
