@@ -725,17 +725,45 @@ Der HTTP-Server von smard-mcp erzeugt für jede Anfrage eine neue Server-Instanz
 
 # Phase 5 und 6: Überwachung, Neu-Training, Ausrollen
 
+Validierung und Abschlusstest schätzen die Güte des Verfahrens unter der Annahme, dass sich die Zukunft verhält wie die Vergangenheit. Im Betrieb kann diese Annahme auf mindestens drei Wegen verletzt werden: durch Änderungen am Wettermodell oder an der Zusammenstellung `icon_seamless`, durch Zubau und Abregelung, die das Verhältnis von Wetter und Erzeugung verschieben, und durch Wetterlagen, die im Trainingszeitraum selten waren. Phase 5 baut deshalb zwei Rückkopplungen: eine tägliche Messung der tatsächlichen Güte und ein monatliches Neu-Training mit Qualitätsschranke. Beide folgen dem Grundsatz der fortlaufenden Prognoseprüfung [@hyndman2021], und beide lassen den letzten Schritt, die Übernahme in den Betrieb, bewusst beim Menschen.
+
 ## Tägliche Überwachung
 
-Ein täglicher Job nimmt die archivierten Vorhersagen, rechnet mit dem aktuellen Modell die Prognose, die das Tool damals ausgegeben hätte, und vergleicht sie mit den inzwischen veröffentlichten SMARD-Werten. Geplant ist, MAE und Trefferquote der letzten 30 Tage je Vorlauftag in jeder Antwort des Tools auszugeben; die erste Fassung enthält nur die Werte aus der Prüfung. So sähe jeder Nutzer, wie verlässlich die Zahlen gerade sind, nicht nur wie gut sie im Test waren. Das Lernbeispiel zur Kalibrierung (Kapitel 10) zeigt, warum das nötig ist: Fehler können sich von Jahr zu Jahr verändern.
+**Prinzip.** Das eigene Archiv (Kapitel 20) speichert jede Wettervorhersage, die das Tool zu einem Zeitpunkt benutzt hätte, mit den Startzeiten und seit dem 3. November 2026 auch dem Datenende der beteiligten ICON-Läufe. Ein täglicher Lauf in smard-mcp (`dist/monitor.js`) liest die archivierten Vorhersagen der letzten 37 Tage, rechnet mit genau dem ausgelieferten Code und den ausgelieferten Modellen nach, was `forecast_renewables` daraus geantwortet hätte, und vergleicht jede Stunde mit der inzwischen von SMARD veröffentlichten Erzeugung. Gemessen wird damit nicht ein nachgebautes Verfahren, sondern das Werkzeug selbst, einschließlich Wetterabruf, Vorlaufbestimmung, Interpolation, Kalibrierung und Umrechnung mit der installierten Leistung.
+
+**Kennzahlen.** Für jede Quelle und jeden Vorlauftag N werden alle Paare aus ausgegebener Vorhersage und Messwert der letzten 30 Tage zusammengefasst; der Vorlauftag ist hier im Sinn des Nutzers definiert, als Stunde innerhalb der ersten, zweiten, ... 24 Stunden nach dem Laufstart:
+
+$$ N(L) = \min\left(6,\ \max\left(1,\ \lceil L / 24\,\mathrm{h} \rceil\right)\right)
+
+Berichtet werden MAE in GW und in Prozent der Leistung sowie die Trefferquote von p10 bis p90. Nachtstunden ohne Sonne an allen Solar-Orten zählen bei Solar nicht mit, wie in der Prüfung. Da das Tool etwa achtmal am Tag eine neue Vorhersage holt, geht jede Zielstunde mehrfach ein, einmal je ausgegebener Vorhersage; die Kennzahl beschreibt also den Fehler, den ein Nutzer im Mittel gesehen hätte.
+
+**Ausgabe.** Das Ergebnis steht in einer Datei, die der Server liest; `forecast_renewables` und `describe_forecast_model` geben es als `recent_accuracy` aus. Vorlauftage mit weniger als 24 vergleichbaren Stunden werden weggelassen, Berichte, die älter als drei Tage sind, ignoriert. Solange es keine Daten gibt, sagt das Tool das ausdrücklich. Ein erster Lauf auf dem Archiv vom 2. und 3. November ergab nur Werte für Tag 1, weil die längeren Vorläufe dieser Vorhersagen noch in der Zukunft lagen.
+
+!achtung Überwachung ist keine zweite Validierung
+Die Werte der Überwachung sind über wenige Wochen gemittelt und hängen stark von der Wetterlage dieser Wochen ab (Abbildung zum Fehler je Testmonat in Kapitel 22). Sie zeigen, ob das Werkzeug im Betrieb ungefähr so gut ist wie geprüft; für Entscheidungen über das Verfahren bleibt die rollierende Prüfung maßgeblich.
+!ende
 
 ## Monatliches Neu-Training
 
-[abb workflow | Automatisch bis zum Pull Request, gemergt wird nur von Hand.]
+Jeder Monat bringt rund 700 neue Stunden je Quelle und Vorlauftag. Das Neu-Training nutzt sie, ohne das Prüfschema aufzuweichen. Es läuft am 3. jedes Monats als systemd-Timer auf der Trainingsmaschine (`scripts/monatlich.sh`), in derselben Sandbox wie alle Läufe zuvor:
 
-!begriff GitHub Actions: ein Dienst von GitHub, der Programme automatisch ausführt, etwa zu festen Zeiten oder nach jedem Push. Eine Beschreibung in einer Datei (Workflow) legt fest, was wann läuft.
+1. **Nachladen.** Nur die neuen Tage der Wettervorhersagen werden als eigenes Stück angehängt; SMARD und installierte Leistung werden neu geladen.
+2. **Rollierende Prüfung über alle Monate.** Für jeden Monat ab März 2025 bis zum letzten vollständigen Monat wird wie in Phase 2 und 3 ein Modell nur mit Daten bis sieben Tage vor Monatsbeginn trainiert und am Monat geprüft, mit leckfreier CQR. Die Prüfung wird jedes Mal vollständig neu gerechnet statt fortgeschrieben; so bleibt sie reproduzierbar, auch wenn sich ältere Daten bei SMARD nachträglich ändern.
+3. **Schranke.** Der neueste Monat muss je Quelle und Vorlauftag eine Trefferquote zwischen 65 und 95 % haben, sein MAE darf höchstens das 1,6-fache des mittleren Monats-MAE davor betragen, und der Skill über alle Monate muss positiv sein. Verfehlt eine Quelle die Schranke, wird kein neues Modell erzeugt; die Gründe stehen in `data/betrieb/status.json`.
+4. **Export.** Das Betriebsmodell wird auf allen Daten trainiert; Kennzahlen, Gütestufen und Breitenzuschläge kommen aus der fortgeschriebenen rollierenden Prüfung, der Abschlusstest bleibt als historischer Wert erhalten.
+5. **Vergleichstest und Übergabe.** Die Vergleichsdaten für den TypeScript-Test werden neu erzeugt. Erst wenn die Tests von smard-mcp mit den neuen Dateien bestehen, wird ein Branch `modelle/<version>` nach smard-mcp gepusht. Den Pull Request öffnet und mergt der Betreuer.
+
+[abb workflow | Automatisch bis zum Branch mit neuen Modellen, gemergt wird nur von Hand (Schema; der Ablauf läuft heute als systemd-Timer statt als GitHub-Workflow).]
 
 !begriff Pull Request: ein Vorschlag, Änderungen in den Hauptzweig eines Repositorys zu übernehmen. Man kann ihn ansehen, kommentieren und dann übernehmen (mergen) oder ablehnen.
+
+!warum Warum nicht GitHub Actions?
+Ursprünglich war ein GitHub-Workflow geplant, also eine Rechnung auf einem fremden Rechner, die GitHub zu festen Zeiten startet. Dagegen sprach dreierlei: Die Trainingsdaten liegen bewusst nicht im öffentlichen Repository; ein frischer Rechner müsste das ganze Wetterarchiv jeden Monat neu laden, rund 10.000 Einheiten des Open-Meteo-Kontingents; und die Sandbox der Trainingsmaschine, in der jeder Lauf nur in `data/` schreiben darf, gäbe es dort nicht.
+!ende
+
+!praxis Was absichtlich nicht automatisch passiert
+Der Timer pusht nur einen Branch. Mergen, Ausrollen auf die Web-Maschine und eine Veröffentlichung bei npm bleiben Handarbeit. Auch Änderungen am Verfahren selbst, etwa die Korrektur der Spencer-Konstante (Kapitel 6), kommen nicht über diesen Weg, weil sie Python und TypeScript gleichzeitig ändern müssen.
+!ende
 
 ## Ausrollen und Prüfpunkt C
 

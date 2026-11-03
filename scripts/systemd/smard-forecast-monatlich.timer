@@ -1,0 +1,11 @@
+[Unit]
+Description=smard-forecast: monatliches Neu-Training am 3. jedes Monats
+
+[Timer]
+# Am 3.: SMARD hat den Vormonat dann vollstaendig, Open-Meteo alle Vorlauftage.
+OnCalendar=*-*-03 03:30:00 UTC
+Persistent=true
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

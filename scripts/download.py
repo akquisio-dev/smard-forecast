@@ -62,8 +62,9 @@ def warte_auf_platz(buch: list, w: float):
             return
 
 
-def stuecke(bis: dt.date):
-    a = START
+def stuecke(bis: dt.date, ab: dt.date = START):
+    """Stuecke je Kalenderjahr von ab bis bis."""
+    a = ab
     while a <= bis:
         b = min(dt.date(a.year, 12, 31), bis)
         yield a, b
@@ -93,7 +94,12 @@ def main():
     offen = []
     for ort in lade_orte():
         var = variablen_fuer(ort.typ)
-        for a, b in stuecke(args.bis):
+        # Nur anhaengen: Stuecke beginnen nach dem Ende des letzten vorhandenen Stuecks,
+        # damit beim Nachladen kein Zeitraum doppelt vorkommt (merkmale.py liest alle Stuecke).
+        enden = [dt.date.fromisoformat(f.stem.split("_")[1])
+                 for f in (ZIEL / ort.name).glob("*.parquet")]
+        ab = max(enden) + dt.timedelta(days=1) if enden else START
+        for a, b in stuecke(args.bis, ab):
             datei = ZIEL / ort.name / f"{a.isoformat()}_{b.isoformat()}.parquet"
             if not datei.exists():
                 offen.append((ort, var, a, b, datei))

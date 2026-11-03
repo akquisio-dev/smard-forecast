@@ -185,6 +185,24 @@ Technik:
   Fehlerbericht. Gemergt wird von Hand. Die Übernahme in smard-mcp ist ein eigener, bewusster
   Schritt.
 
+**Umgesetzt in Phase 5 (2026-11-03), mit zwei Abweichungen:**
+
+- Das Neu-Training läuft nicht als GitHub-Workflow, sondern als systemd-Timer auf der
+  Trainingsmaschine (`scripts/monatlich.sh`, am 3. jedes Monats). Gründe: Die Trainingsdaten
+  liegen nicht im Repository, ein frischer Runner müsste jeden Monat das ganze Archiv neu
+  laden (rund 10.000 Einheiten Open-Meteo), und das Training braucht die Sandbox der Maschine.
+  Ablauf: nur neue Tage nachladen, rollierende Prüfung über alle Monate, Schranke für den
+  neuesten Monat (Trefferquote 65 bis 95 %, MAE höchstens das 1,6-fache des Mittels, Skill über
+  alle Monate positiv), Export, Vergleichsdaten. Besteht alles, pusht das Skript einen Branch
+  `modelle/<version>` nach smard-mcp, nachdem dort die Tests mit den neuen Dateien gelaufen
+  sind. Statt eines Pull Requests (der Deploy-Key kann keine anlegen) öffnet der Betreuer ihn.
+- Das Monitoring rechnet in smard-mcp selbst (`dist/monitor.js`, täglicher Timer auf der
+  Web-Maschine): Es nimmt die archivierten Vorhersagen, rechnet mit genau dem ausgelieferten
+  Code nach, was das Tool geantwortet hätte, und vergleicht mit SMARD. Ergebnis als
+  `recent_accuracy` in `forecast_renewables` und `describe_forecast_model`. Das Archiv speichert
+  dafür seit 2026-11-03 auch das Datenende jedes Laufs (`laeufe_ende`); ältere Dateien nutzen
+  den Fahrplan des DWD.
+
 ## 8. Phasen
 
 | Phase | Inhalt | smard-mcp betroffen |

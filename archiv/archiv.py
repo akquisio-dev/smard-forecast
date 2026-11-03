@@ -42,18 +42,22 @@ def hole(url):
 
 
 def laeufe():
-    aus = {}
+    """Startzeit und Datenende des neuesten Laufs je Modell (Datenende fuer den Vorlauf im
+    Monitoring: welcher Lauf deckt welche Stunde ab)."""
+    aus, ende = {}, {}
     for m in AUSLOESER + NUR_MERKEN:
         meta = hole(f"https://api.open-meteo.com/data/{m}/static/meta.json")
-        aus[m] = dt.datetime.fromtimestamp(meta["last_run_initialisation_time"],
-                                           dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
-    return aus
+        fmt = lambda s: dt.datetime.fromtimestamp(s, dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ")  # noqa: E731
+        aus[m] = fmt(meta["last_run_initialisation_time"])
+        if "data_end_time" in meta:
+            ende[m] = fmt(meta["data_end_time"])
+    return aus, ende
 
 
 def main():
     os.makedirs(ARCHIV, exist_ok=True)
     stand_datei = os.path.join(ARCHIV, "letzter_stand.json")
-    l = laeufe()
+    l, l_ende = laeufe()
     vorher = json.load(open(stand_datei)) if os.path.exists(stand_datei) else {}
     if all(vorher.get(m) == l[m] for m in AUSLOESER) and "--immer" not in sys.argv:
         print("kein neuer Lauf:", {m: l[m] for m in AUSLOESER})
@@ -75,6 +79,7 @@ def main():
         "abgerufen": jetzt.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "modell": "icon_seamless",
         "laeufe": l,
+        "laeufe_ende": l_ende,
         "orte": [{"name": o["name"], "lat": o["lat"], "lon": o["lon"],
                   "elevation": d.get("elevation"), "hourly": d["hourly"]}
                  for o, d in zip(orte, daten)],

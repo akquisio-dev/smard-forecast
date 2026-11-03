@@ -1,0 +1,12 @@
+[Unit]
+Description=smard-forecast: monatliches Neu-Training und Branch mit neuen Modellen
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# git push ueber den SSH-Alias github-smard-mcp (/root/.ssh/config), Node aus nvm
+Environment=HOME=/root
+Environment=PATH=/root/.nvm/versions/node/v22.22.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/srv/smard-forecast/scripts/monatlich.sh
+TimeoutStartSec=6h

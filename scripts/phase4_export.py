@@ -24,6 +24,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import phase2_abstimmung as A  # noqa: E402
 import phase2_solar as P  # noqa: E402
 from sf.log import log  # noqa: E402
 from sf.merkmale import tabelle_solar, tabelle_wind  # noqa: E402
@@ -74,9 +75,22 @@ def kompakt(booster: lgb.Booster, merk: list[str]) -> dict:
     return {"merkmale": merk, "baeume": baeume}
 
 
+BETRIEB = ROOT / "data" / "betrieb"
+
+
+def betrieb_roh(quelle):
+    """Rollierende Pruefung des monatlichen Neu-Trainings (scripts/monatlich.py), falls vorhanden."""
+    f = BETRIEB / f"{quelle}_rollierend.parquet"
+    return pd.read_parquet(f) if f.exists() else None
+
+
 def cqr_betrieb(quelle) -> dict:
     """Breitenzuschlag je Vorlauftag aus allen Vorhersagen ausserhalb der Stichprobe."""
-    if quelle == "solar":
+    roh = betrieb_roh(quelle)
+    if roh is not None:
+        e = roh.copy()
+        e["s"] = np.maximum(e.p10 - e.a, e.a - e.p90)
+    elif quelle == "solar":
         e = pd.concat([pd.read_parquet(PH / "solar_rollierend_bester.parquet"),
                        pd.read_parquet(PH / "solar_vorhersagen.parquet").query("teil == 'abschluss'")])
         e["s"] = np.maximum(e.p10 - e.a, e.a - e.p90)
@@ -91,6 +105,13 @@ def cqr_betrieb(quelle) -> dict:
 
 def pruefung(quelle) -> dict:
     """Wie die Kennzahlen entstanden sind (fuer die Modellbeschreibung, nicht von Hand)."""
+    roh = betrieb_roh(quelle)
+    if roh is not None:
+        monate = sorted(roh.monat.unique())[1:]  # der erste Monat dient nur der Kalibrierung
+        return {"rollierend_von": monate[0], "rollierend_bis": monate[-1], "abstand_tage": 7,
+                "abschluss_von": P.ABSCHLUSS[0], "abschluss_bis": P.ABSCHLUSS[-1],
+                "abschluss_kalibriert": quelle != "solar",
+                "abschluss_abstand_tage": 0 if quelle == "solar" else 7}
     if quelle == "solar":
         e = pd.read_parquet(PH / "solar_rollierend_bester.parquet")
         monate = sorted(e.monat.unique())[1:]  # der erste Monat dient nur der Kalibrierung
@@ -113,6 +134,9 @@ def kennzahlen(quelle) -> dict:
     else:
         w = json.loads((PH / "wind_kennzahlen.json").read_text())[quelle]
         roll, absch, absch_cqr = w["rollierend"], w["abschluss"], True
+    roh = betrieb_roh(quelle)
+    if roh is not None:  # fortgeschriebene rollierende Pruefung ersetzt die aus Phase 2 und 3
+        roll = {str(n): r for n, r in P.kennzahlen(A.cqr(roh)).items()}
     tage = {}
     for n in range(1, 7):
         r, a = roll[str(n)], absch[str(n)]

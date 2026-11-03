@@ -512,3 +512,29 @@ nach einer späteren Korrektur des Verfassers muss sie 0,0000075 lauten. `sf/son
 Sekunde, Sonnenhöhe weniger als 0,004°; ohne Bedeutung für die Modelle. Die Konstante bleibt
 bis zum nächsten Neu-Training (Training und Betrieb müssen identisch rechnen), Kommentar im
 Code und Hinweis in Kapitel 6 des Berichts.
+
+### 09:50 Phase 5: monatliches Neu-Training und Überwachung
+
+**Gemacht:**
+
+- `scripts/monatlich.py` (Sandbox): lädt neue Tage nach (download.py hängt nur noch an), prüft
+  rollierend über alle Monate ab 03/2025 bis zum letzten vollständigen Monat, legt die Schranke an
+  (Trefferquote 65 bis 95 %, MAE höchstens 1,6 × Mittel der Vormonate, Skill > 0 je Vorlauftag),
+  exportiert danach Modell und Vergleichsdaten. Status in `data/betrieb/status.json`.
+- `phase4_export.py` nimmt Kennzahlen, CQR und Zeitraum aus `data/betrieb/<quelle>_rollierend.parquet`,
+  wenn vorhanden.
+- `scripts/monatlich.sh`: baut in smard-mcp den Branch `modelle/<version>` auf `origin/forecast`,
+  lässt tsc und die Paritäts-/Tooltests laufen und pusht nur, wenn sie bestehen. Gemergt wird von Hand.
+- systemd-Timer `smard-forecast-monatlich` (3. jedes Monats, 03:30 UTC) in `scripts/systemd/`.
+- Überwachung in smard-mcp (0233a8f): `forecast-monitor` rechnet täglich aus dem Archiv nach, was das
+  Tool geantwortet hätte, vergleicht mit SMARD, Ergebnis als `recent_accuracy` in beiden Tools.
+- `archiv/archiv.py` speichert zusätzlich das Datenende je ICON-Lauf (`laeufe_ende`).
+
+**Probelauf** (`monatlich.sh --ohne-nachladen --ohne-push`): Exit 0, 571 s Python-Teil, Modell
+2026.11.02 mit Prüfung bis 2026-10, 12/12 Tests im Branch bestanden, Commit c89ca7d nur lokal.
+Oktober 2026 Tag 1/6: Wind an Land Skill 0,83/0,35, Wind auf See 0,61/0,10, alle Trefferquoten
+zwischen 70 und 90 %.
+
+**Fehlschlag:** Timer konnte nicht aus der Sitzung installiert werden (Freigabe fehlt); Joey
+installiert ihn. Unter systemd fehlen HOME (SSH-Alias für den Push) und der nvm-Pfad für npx;
+beides in der Unit gesetzt.
