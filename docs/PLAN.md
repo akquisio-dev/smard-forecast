@@ -36,10 +36,20 @@ Folgen:
 
 ## 2. Vorlaufzeit
 
-`previous_dayN` ist der Wert aus dem Lauf, der etwa N mal 24 h vor der jeweiligen Stunde
-gerechnet wurde. Im Betrieb wird die Vorlaufzeit genauso bestimmt: **Stunde minus Zeitpunkt
-des ICON-Laufs**, abgerundet auf ganze Tage. „Morgen = Tag 1" wäre falsch, weil dann Training
-und Betrieb verschiedene Dinge meinen.
+`previous_dayN` ist der Wert aus dem neuesten Lauf, der mindestens N mal 24 h vor der Stunde
+startete; im Training hat Tag N also etwa N·24 bis N·24+6 h Vorlauf (Mitte etwa N·24+3 h).
+
+**Korrigiert am 2026-11-03** (Hinweis des Betreuers): Im Betrieb hat die neueste Vorhersage für
+eine Stunde einen beliebigen Vorlauf L in Stunden. Abrunden auf ganze Tage (frühere Fassung)
+hätte z. B. 95 h als „Tag 3“ behandelt, obwohl Tag 3 nur mit 72 bis 77 h gelernt wurde; die
+Bandbreiten wären zu schmal. Stattdessen wird zwischen den beiden benachbarten Vorlauftagen
+interpoliert:
+
+    x = (L - 3 h) / 24 h,  N = floor(x),  w = x - N
+    Vorhersage = (1 - w) · Modell(Tag N) + w · Modell(Tag N+1)    (x < 1 -> Tag 1, x > 6 -> Tag 6)
+
+danach p10 <= p50 <= p90 erzwingen. Prüfung in Phase 4: mit der Single Runs API (Läufe ab Mai
+2026) die Trefferquote je Vorlauf in Stunden messen, mit Interpolation gegen Abrunden.
 
 Die Vorlaufzeit (1 bis 6) ist ein Merkmal. Ein Modell je Quelle und Quantil deckt alle
 Vorlauftage ab und lernt selbst, dass Tag 6 unsicherer ist als Tag 1.

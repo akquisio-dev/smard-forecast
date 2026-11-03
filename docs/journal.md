@@ -254,3 +254,73 @@ Kästen bestehen jetzt aus einer Tabellenzeile je Baustein und können umbrechen
 22.02.2024 bis 01.11.2026), kein Stück ganz leer. Der Download hat am 2.11. um 19:42 UTC das
 Tageskontingent erreicht, selbst bis 00:05 UTC gewartet und den Rest ohne Fehler geladen.
 Protokoll: `data/logs/download.log`.
+
+### 07:06 Prüfliste des Betreuers eingearbeitet (vier Punkte)
+
+**Ziel:** Vier Einwände des Betreuers zu Plan und Bericht prüfen und umsetzen.
+
+**1. Vorlauf Training gegen Betrieb (berechtigt, Fehler im Plan):** Im Training hat Tag N etwa
+N·24 bis N·24+6 h Vorlauf. Der Plan wollte im Betrieb den Vorlauf auf ganze Tage abrunden; dann
+wäre z. B. eine 95 h alte Vorhersage als Tag 3 (gelernt mit 72 bis 77 h) behandelt worden, mit
+zu schmalen Bandbreiten. **Korrigiert:** zwischen Tag N und N+1 interpolieren,
+x = (L − 3 h)/24 h. Geändert in `docs/PLAN.md` (Abschnitt 2), `docs/phase0.md` und im Bericht
+(Kapitel „Das Vorlaufzeit-Problem“, neuer Abschnitt mit Rechenbeispielen; Phase 4 Schritt 3).
+Die Prüfung mit der Single Runs API (Trefferquote je Vorlauf in Stunden) ist für Phase 4
+eingeplant.
+
+**2. Installierte Leistung der letzten Monate (berechtigt):** Energy-Charts meldete für 11/2026
+genau den Wert von 10/2026. `scripts/kapazitaet.py` speichert jetzt jeden Abruf unverändert
+unter `data/kapazitaet_staende/` (um spätere Korrekturen zu messen) und schreibt Solar und Wind
+an Land nach dem letzten echten Zuwachs (mindestens 20 % des typischen) mit dem Mittel der 6
+Monate davor fort (Spalten `geschaetzt_*`). Wind auf See wird nicht fortgeschrieben: Dort kommt
+Zubau in Sprüngen, und monatelanger Stillstand ist echt (06/2025 = 12/2024).
+**Fehlschlag:** Die erste Fassung erkannte bei Solar 2 MW Änderung im November als „echten
+Zuwachs“; ersetzt durch eine relative Schwelle.
+
+**3. Nachtgrenze Solar (berechtigt):** Die Sonnenhöhe nur für 51° N/10° O ließ 563 Stunden mit
+Solarstrom bei „Nacht“ weg (0,126 % der Energie). Neu: `sf/sonne.py` mit `max_sonnenhoehe()`
+über alle 21 Solar-Orte; ausgeschlossen wird nur, wenn an keinem Ort die Sonne auf ist.
+
+**4. Läufe als root (berechtigt):** Das Repository liegt jetzt unter `/srv/smard-forecast`
+(`/root/smard-forecast` ist ein Verweis darauf). Systembenutzer `smard-forecast` (ohne
+Anmeldung) besitzt nur `data/`. `scripts/als-dienst.sh` startet jedes Skript als dieser Benutzer
+in einer systemd-Sandbox: nur `data/` beschreibbar, kein Zugriff auf Home-Verzeichnisse, keine
+neuen Rechte, höchstens 4 GB Speicher und 6 Kerne. Probelauf erfolgreich.
+
+### 07:08 Phase 2, erster Lauf mit den Startwerten
+
+**Gemacht:** `sf/merkmale.py` (Trainingstabelle: 21 Solar-Orte × 6 Variablen zeitlich
+ausgerichtet, Strahlung auf S+1 h, Momentanwerte auf die Stundenmitte gemittelt; Mittel über
+Orte; Stunde und Tag im Jahr als Sinus/Kosinus; Sonnenhöhe Mitte und Maximum; Wochentag;
+bundesweite Feiertage über `sf/kalender.py`), `scripts/phase2_solar.py` (je Quantil ein
+LightGBM-Modell mit den Startwerten aus dem Plan; rollierend 03/2025 bis 07/2026; Abschluss
+08 bis 10/2026). Laufzeit 147 s in der Sandbox.
+
+**Ergebnis (Abschlusstest, erster und damit gültiger Blick, eingefroren in
+`data/phase2/solar_kennzahlen_lauf1_startwerte.json`):**
+
+| Tag | MAE % | Treffer % | Skill gegen Klima/Persistenz |
+|---|---|---|---|
+| 1 | 1,50 | 77,7 | 0,64 (Netzbetreiber: 1,01 %, Skill −0,50) |
+| 2 | 1,75 | 76,4 | 0,58 |
+| 3 | 2,03 | 75,2 | 0,51 |
+| 4 | 2,30 | 75,5 | 0,45 |
+| 5 | 2,83 | 76,1 | 0,32 |
+| 6 | 3,37 | 69,0 | 0,19 |
+
+Rollierend (17 Monate): MAE Tag 1 1,75 % bis Tag 6 3,28 %, Trefferquote nur 69 bis 73 %,
+Netzbetreiber an Tag 1 1,22 % (Skill −0,44).
+
+**Prüfpunkt A mit Startwerten: nicht bestanden.** Kriterium 1 (Skill ≥ 0,2) erfüllt, im
+Abschluss Tag 6 knapp darunter (0,19). Kriterium 2 (Tag 1 höchstens 20 % schlechter als die
+Netzbetreiber) klar verfehlt. Kriterium 3 (Trefferquote 75 bis 85 %) rollierend verfehlt.
+
+**Fehlschlag:** Die Persistenz-Messlatte zeigte an Tag 5 und 6 rund 20 % Fehler. Ursache:
+`vorlauf_tag` ist int8, und `(n + 1) * 24` lief bei 144 und 168 über (−112, −88); verglichen
+wurde dadurch mit Nachtstunden. Behoben (`astype("int64")`). Die Skill-Werte waren nicht
+betroffen, weil Klimatologie an diesen Tagen ohnehin die bessere Messlatte war.
+
+**Festgelegt:** Der Abschlusstest ist damit verbraucht. Alle weiteren Entscheidungen fallen
+nur noch auf den rollierenden Monaten; ein späterer Blick auf August bis Oktober wird
+ausdrücklich als zweiter Blick gekennzeichnet. Wirklich unberührt sind ab jetzt erst die Daten
+ab November 2026.

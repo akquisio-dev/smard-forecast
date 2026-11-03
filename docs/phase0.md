@@ -37,8 +37,9 @@ neueste Lauf, der mindestens N mal 24 h vor der Stunde gerechnet wurde.
 | 6 | 144 bis 150 h (Läufe alle 12 h, ICON global) |
 | 1 | weicht von jedem Einzellauf um wenige Zehntel ab; die Werte stammen aus ICON-D2, aber aus einer Lauffolge, die die Single Runs API nicht führt |
 
-Im Betrieb: Vorlaufzeit = Stunde minus Zeitpunkt des Laufs, abgerundet auf ganze Tage,
-Stunden unter 24 h werden wie Tag 1 behandelt.
+Im Betrieb: Vorlaufzeit L = Stunde minus Zeitpunkt des Laufs, in Stunden; zwischen den
+benachbarten Vorlauftagen wird interpoliert (seit 2026-11-03, siehe PLAN.md Abschnitt 2; die
+frühere Fassung „abgerundet auf ganze Tage“ war falsch).
 
 Offen für das eigene Archiv: welche Lauffolge `icon_seamless` in den ersten 48 h im Betrieb
 liefert (ICON-D2 oder ICON-D2-RUC). Das Archiv speichert deshalb den Laufzeitpunkt mit.

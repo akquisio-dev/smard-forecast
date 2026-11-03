@@ -37,15 +37,33 @@ Tabelle: Ergebnis des Abgleichs
 | previous_day6 | dem ICON-global-Lauf 6 Tage vorher | 144 bis 150 h |
 | previous_day1 | keinem Einzellauf genau; Abweichung wenige Zehntel Grad | etwa 24 bis 27 h |
 
-Daraus folgt die Regel, die in Training und Betrieb gleich gilt: **Tag N ist der neueste Lauf, der mindestens N mal 24 Stunden vor der Zielstunde gestartet ist.** Die Vorlaufzeit liegt also zwischen N · 24 Stunden und N · 24 Stunden plus dem Abstand zwischen zwei Läufen.
+Daraus folgt, was „Tag N“ im Training bedeutet: **der neueste Lauf, der mindestens N mal 24 Stunden vor der Zielstunde gestartet ist.** Die Vorlaufzeit liegt also zwischen N · 24 Stunden und N · 24 Stunden plus dem Abstand zwischen zwei Läufen (3 bis 6 Stunden), im Mittel etwa bei N · 24 + 3 Stunden.
 
-$$ \mathrm{Vorlauftag} = \max\left(1,\ \left\lfloor \frac{t_{\mathrm{Ziel}} - t_{\mathrm{Lauf}}}{24\,\mathrm{h}} \right\rfloor\right)
+## Vom Training in den Betrieb: interpolieren statt abrunden
 
-!begriff Abrunden ⌊x⌋: die größte ganze Zahl, die nicht größer als x ist. ⌊2,9⌋ = 2. Stunden mit weniger als 24 Stunden Vorlauf werden im Betrieb wie Tag 1 behandelt (das „max(1, ...)“).
+Im Betrieb nimmt das Tool für jede Zielstunde die neueste verfügbare Vorhersage. Deren Vorlauf L kann jede Stundenzahl haben, zum Beispiel 95 Stunden. Die erste Fassung dieses Plans wollte L einfach auf ganze Tage abrunden: 95/24 = 3,96, abgerundet Tag 3. Das wäre falsch gewesen, und der Betreuer hat den Fehler bei der Durchsicht gefunden: Tag 3 wurde nur mit Vorhersagen von 72 bis 77 Stunden gelernt. Eine 95 Stunden alte Vorhersage ist fast so unsicher wie Tag 4. Das Modell hätte ihr zu sehr vertraut, und die Bandbreite wäre zu schmal geworden. Genau das Problem, das dieses Kapitel vermeiden will, wäre durch die Hintertür zurückgekommen.
 
-!rechnen Vorlauftag im Betrieb
-Der neueste ICON-Lauf begann am 2. November um 12:00 UTC. Für die Zielstunde 5. November, 15:00 UTC: Abstand = 3 Tage und 3 Stunden = 75 Stunden. 75/24 = 3,125, abgerundet 3. Das Modell bekommt also „Vorlauftag 3“, genau wie in den Trainingsdaten, wo `previous_day3` Vorläufe von 72 bis 77 Stunden hat.
-Für die Zielstunde 2. November, 20:00 UTC: Abstand 8 Stunden, 8/24 = 0,33, abgerundet 0, durch max(1, ...) wird daraus Tag 1.
+Die Lösung ist, zwischen den beiden benachbarten Vorlauftagen zu **interpolieren**:
+
+$$ x = \frac{L - 3\,\mathrm{h}}{24\,\mathrm{h}}, \qquad N = \lfloor x \rfloor, \qquad w = x - N
+
+$$ \hat{y} = (1 - w)\cdot f(\mathrm{Tag}\ N) + w \cdot f(\mathrm{Tag}\ N{+}1)
+
+!begriff Interpolation: einen Wert zwischen zwei bekannten Werten schätzen. Linear interpolieren heißt: auf der geraden Linie zwischen beiden. Liegt x zu 83 % des Wegs von 3 nach 4, nimmt man 17 % des Werts bei 3 und 83 % des Werts bei 4.
+
+!begriff Abrunden ⌊x⌋: die größte ganze Zahl, die nicht größer als x ist. ⌊3,83⌋ = 3.
+
+Darin ist f(Tag N) die Vorhersage des Modells, wenn man ihm „Vorlauftag N“ als Merkmal gibt, und die 3 Stunden ziehen den mittleren Versatz der Trainingsdaten ab. Liegt x unter 1, wird Tag 1 genommen; über 6 gibt es keine Vorhersage. Nach dem Interpolieren werden p10, p50 und p90 wieder der Größe nach sortiert.
+
+!rechnen Zwei Zielstunden im Betrieb
+Der neueste ICON-Lauf begann am 2. November um 12:00 UTC.
+Zielstunde 5. November, 15:00 UTC: L = 75 h. x = (75 − 3)/24 = 3,0, also N = 3 und w = 0. Das Modell bekommt reinen Tag 3, genau wie im Training.
+Zielstunde 6. November, 11:00 UTC: L = 95 h. x = (95 − 3)/24 = 3,83, also N = 3 und w = 0,83. Vorhersage = 0,17 · f(Tag 3) + 0,83 · f(Tag 4). Abgerundet hätte man reinen Tag 3 genommen.
+Zielstunde 2. November, 20:00 UTC: L = 8 h, x < 1, also Tag 1. Das ist vorsichtig: Eine 8 Stunden alte Vorhersage ist besser als eine mit 24 Stunden Vorlauf, das Modell nimmt also eher eine zu breite Bandbreite an.
+!ende
+
+!praxis Wie das geprüft wird
+Ob die Interpolation die Trefferquote wirklich hält, lässt sich messen, sobald es ein Modell gibt: Die Single Runs API liefert seit Mai 2026 ganze Läufe mit exaktem Startzeitpunkt. Damit kann man für jeden Vorlauf in Stunden (nicht nur in ganzen Tagen) die Trefferquote ausrechnen, einmal mit Interpolation, einmal mit Abrunden. Diese Prüfung gehört zu Phase 4.
 !ende
 
 Dass Tag 1 nicht exakt passt, liegt sehr wahrscheinlich an ICON-D2-RUC (Kapitel 8). Open-Meteo nutzt für die ersten Stunden inzwischen diese stündlich aktualisierte Variante, und die Single Runs API meldete bei ihren Fehlermeldungen genau dieses Modell. Für das Training ist das unkritisch. Das eigene Archiv (Kapitel 20) speichert die Startzeitpunkte aller ICON-Modelle mit, damit sich die Frage später klären lässt.
@@ -392,7 +410,7 @@ Prüfpunkt B wendet dieselben Kriterien je Quelle an. Wind auf See wird es am sc
 
 1. Eingaben prüfen: Zeitraum höchstens 6 Tage ab jetzt, nicht in der Vergangenheit.
 2. Wetter holen: ein Abruf für alle 40 Orte, zwischengespeichert, bis `meta.json` einen neueren Lauf meldet.
-3. Für jede Zielstunde die Vorlaufzeit bestimmen (Kapitel 16).
+3. Für jede Zielstunde die Vorlaufzeit L in Stunden bestimmen und zwischen den benachbarten Vorlauftagen interpolieren (Kapitel 16).
 4. Merkmale bauen, genau wie im Training (die Spaltenliste steht in der Modelldatei).
 5. Drei Modelle je Quelle auswerten, sortieren, auf 0 bis 1 begrenzen.
 6. Mit der installierten Leistung des aktuellen Monats in GW umrechnen; je Tag zu GWh summieren.
