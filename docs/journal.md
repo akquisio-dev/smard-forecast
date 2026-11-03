@@ -245,3 +245,12 @@ matplotlib nicht; umgeschrieben. Kästen, die länger als eine Seite waren, brac
 Kästen bestehen jetzt aus einer Tabellenzeile je Baustein und können umbrechen.
 
 **Gelernt:** Erklären zwingt zum Nachrechnen; beim Nachrechnen fiel der Zeitversatz auf.
+
+## 2026-11-03
+
+### 01:12 Trainingsdownload fertig
+
+**Ergebnis:** Alle 120 Stücke geladen (40 Orte, je drei Kalenderjahre, Tag 1 bis 6,
+22.02.2024 bis 01.11.2026), kein Stück ganz leer. Der Download hat am 2.11. um 19:42 UTC das
+Tageskontingent erreicht, selbst bis 00:05 UTC gewartet und den Rest ohne Fehler geladen.
+Protokoll: `data/logs/download.log`.
