@@ -43,6 +43,10 @@ Darin ist λ (lambda) die geografische Länge in Grad Ost: Jedes Grad nach Osten
 
 !begriff Zeitgleichung: der Unterschied zwischen der Uhrzeit, zu der die Sonne tatsächlich am höchsten steht, und 12 Uhr mittlerer Ortszeit. Weil die Erdbahn elliptisch und die Erdachse geneigt ist, schwankt er übers Jahr zwischen etwa −14 und +16 Minuten.
 
+!achtung Ein Druckfehler in der Originalquelle
+Bei der Prüfung der Literatur für dieses Dokument fiel auf: In der gedruckten Fassung von Spencer steht in der Reihe für die Zeitgleichung die Konstante 0,000075; nach einer späteren Korrektur des Verfassers muss sie 0,0000075 lauten. Projektcode und smard-mcp verwenden den gedruckten Wert. Der Unterschied beträgt 229,18 · 0,0000675 ≈ 0,0155 Minuten, also knapp eine Sekunde. Weil die Sonne ihre Höhe um höchstens etwa 0,25° pro Minute ändert, verschiebt sich die Sonnenhöhe um weniger als 0,004°. Für die Modelle ist das ohne Bedeutung; die Konstante bleibt, damit Training und Betrieb identisch rechnen, und wird beim nächsten Neu-Training gemeinsam in Python und TypeScript korrigiert.
+!ende
+
 ### Schritt 4: die Sonnenhöhe
 
 Aus Breitengrad φ (phi), Deklination δ und Stundenwinkel ω folgt die Sonnenhöhe α über eine Formel der Kugelgeometrie:

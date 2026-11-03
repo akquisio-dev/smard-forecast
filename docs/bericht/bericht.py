@@ -134,10 +134,12 @@ def literatureintrag(key):
         t += f"<i>{escape(e['titel'])}</i>"
         if e.get("auflage"):
             t += f". {e['auflage']}. Aufl"
-        t += f". {escape(e.get('ort', ''))}: {escape(e.get('verlag', ''))}"
+        t += f". {escape(e['ort'])}: {escape(e['verlag'])}" if e.get("ort") else f". {escape(e['verlag'])}"
     elif e["typ"] == "web":
         t += f"<i>{escape(e['titel'])}</i>"
     t += "."
+    if e.get("doi"):
+        t += f" DOI: <font face=\"Mono\" size=\"7.5\">{escape(e['doi'])}</font>."
     if e.get("url"):
         t += f" URL: <font face=\"Mono\" size=\"7.5\">{escape(e['url'])}</font>"
         if e.get("abgerufen"):

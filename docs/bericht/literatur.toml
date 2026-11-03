@@ -1,4 +1,6 @@
 # Literatur und Quellen des Projektberichts.
+# Geprueft am 3.11.2026: Artikel und Buecher mit DOI gegen Crossref, Konferenzbeitraege gegen
+# die NeurIPS-Proceedings, Internetquellen per Abruf.
 # Zitiert wird im Text mit [@schluessel], [@schluessel, S. 12], [@a; @b] (in Klammern)
 # oder [@!schluessel] (im Satz: "Koenker und Bassett (1978)"). Ins Verzeichnis kommen nur
 # zitierte Eintraege; ein unbekannter Schluessel bricht den Bau ab.
@@ -7,6 +9,7 @@
 # Quantile, Bewertung von Wahrscheinlichkeitsprognosen ----------------------------
 
 [koenker1978]
+doi = "10.2307/1913643"
 typ = "artikel"
 autoren = ["Koenker, R.", "Bassett, G."]
 jahr = 1978
@@ -17,6 +20,7 @@ heft = "1"
 seiten = "33–50"
 
 [koenker2005]
+doi = "10.1017/CBO9780511754098"
 typ = "buch"
 autoren = ["Koenker, R."]
 jahr = 2005
@@ -25,6 +29,7 @@ ort = "Cambridge"
 verlag = "Cambridge University Press"
 
 [chernozhukov2010]
+doi = "10.3982/ECTA7880"
 typ = "artikel"
 autoren = ["Chernozhukov, V.", "Fernández-Val, I.", "Galichon, A."]
 jahr = 2010
@@ -35,6 +40,7 @@ heft = "3"
 seiten = "1093–1125"
 
 [gneiting2007a]
+doi = "10.1198/016214506000001437"
 typ = "artikel"
 autoren = ["Gneiting, T.", "Raftery, A. E."]
 jahr = 2007
@@ -45,6 +51,7 @@ heft = "477"
 seiten = "359–378"
 
 [gneiting2007b]
+doi = "10.1111/j.1467-9868.2007.00587.x"
 typ = "artikel"
 autoren = ["Gneiting, T.", "Balabdaoui, F.", "Raftery, A. E."]
 jahr = 2007
@@ -55,6 +62,7 @@ heft = "2"
 seiten = "243–268"
 
 [murphy1988]
+doi = "10.1175/1520-0493(1988)116<2417:SSBOTM>2.0.CO;2"
 typ = "artikel"
 autoren = ["Murphy, A. H."]
 jahr = 1988
@@ -84,6 +92,7 @@ ort = "Belmont"
 verlag = "Wadsworth"
 
 [friedman2001]
+doi = "10.1214/aos/1013203451"
 typ = "artikel"
 autoren = ["Friedman, J. H."]
 jahr = 2001
@@ -99,8 +108,10 @@ autoren = ["Ke, G.", "Meng, Q.", "Finley, T.", "Wang, T.", "Chen, W.", "Ma, W.",
 jahr = 2017
 titel = "LightGBM: A Highly Efficient Gradient Boosting Decision Tree"
 buchtitel = "Advances in Neural Information Processing Systems 30"
+seiten = "3146–3154"
 
 [hastie2009]
+doi = "10.1007/978-0-387-84858-7"
 typ = "buch"
 autoren = ["Hastie, T.", "Tibshirani, R.", "Friedman, J."]
 jahr = 2009
@@ -110,17 +121,20 @@ ort = "New York"
 verlag = "Springer"
 
 [strobl2007]
+doi = "10.1186/1471-2105-8-25"
 typ = "artikel"
 autoren = ["Strobl, C.", "Boulesteix, A.-L.", "Zeileis, A.", "Hothorn, T."]
 jahr = 2007
 titel = "Bias in Random Forest Variable Importance Measures: Illustrations, Sources and a Solution"
 zeitschrift = "BMC Bioinformatics"
 band = "8"
+heft = "1"
 seiten = "Artikel 25"
 
 # Konforme Vorhersage -----------------------------------------------------------
 
 [vovk2005]
+doi = "10.1007/b106715"
 typ = "buch"
 autoren = ["Vovk, V.", "Gammerman, A.", "Shafer, G."]
 jahr = 2005
@@ -134,8 +148,10 @@ autoren = ["Romano, Y.", "Patterson, E.", "Candès, E. J."]
 jahr = 2019
 titel = "Conformalized Quantile Regression"
 buchtitel = "Advances in Neural Information Processing Systems 32"
+seiten = "3543–3553"
 
 [angelopoulos2023]
+doi = "10.1561/2200000101"
 typ = "artikel"
 autoren = ["Angelopoulos, A. N.", "Bates, S."]
 jahr = 2023
@@ -146,6 +162,7 @@ heft = "4"
 seiten = "494–591"
 
 [barber2023]
+doi = "10.1214/23-AOS2276"
 typ = "artikel"
 autoren = ["Barber, R. F.", "Candès, E. J.", "Ramdas, A.", "Tibshirani, R. J."]
 jahr = 2023
@@ -163,6 +180,7 @@ titel = "Adaptive Conformal Inference Under Distribution Shift"
 buchtitel = "Advances in Neural Information Processing Systems 34"
 
 [dhaene2002]
+doi = "10.1016/S0167-6687(02)00134-8"
 typ = "artikel"
 autoren = ["Dhaene, J.", "Denuit, M.", "Goovaerts, M. J.", "Kaas, R.", "Vyncke, D."]
 jahr = 2002
@@ -175,6 +193,7 @@ seiten = "3–33"
 # Prüfen von Vorhersagen -----------------------------------------------------------
 
 [bergmeir2012]
+doi = "10.1016/j.ins.2011.12.028"
 typ = "artikel"
 autoren = ["Bergmeir, C.", "Benítez, J. M."]
 jahr = 2012
@@ -194,6 +213,7 @@ verlag = "OTexts"
 url = "https://otexts.com/fpp3/"
 
 [kaufman2012]
+doi = "10.1145/2382577.2382579"
 typ = "artikel"
 autoren = ["Kaufman, S.", "Rosset, S.", "Perlich, C.", "Stitelman, O."]
 jahr = 2012
@@ -206,6 +226,7 @@ seiten = "Artikel 15"
 # Energieprognose ------------------------------------------------------------------
 
 [hong2016]
+doi = "10.1016/j.ijforecast.2016.02.001"
 typ = "artikel"
 autoren = ["Hong, T.", "Pinson, P.", "Fan, S.", "Zareipour, H.", "Troccoli, A.", "Hyndman, R. J."]
 jahr = 2016
@@ -216,6 +237,7 @@ heft = "3"
 seiten = "896–913"
 
 [pinson2013]
+doi = "10.1214/13-STS445"
 typ = "artikel"
 autoren = ["Pinson, P."]
 jahr = 2013
@@ -226,6 +248,7 @@ heft = "4"
 seiten = "564–585"
 
 [madsen2005]
+doi = "10.1260/030952405776234599"
 typ = "artikel"
 autoren = ["Madsen, H.", "Pinson, P.", "Kariniotakis, G.", "Nielsen, H. A.", "Nielsen, T. S."]
 jahr = 2005
@@ -236,6 +259,7 @@ heft = "6"
 seiten = "475–489"
 
 [antonanzas2016]
+doi = "10.1016/j.solener.2016.06.069"
 typ = "artikel"
 autoren = ["Antonanzas, J.", "Osorio, N.", "Escobar, R.", "Urraca, R.", "Martinez-de-Pison, F. J.", "Antonanzas-Torres, F."]
 jahr = 2016
@@ -251,12 +275,14 @@ typ = "artikel"
 autoren = ["Spencer, J. W."]
 jahr = 1971
 titel = "Fourier Series Representation of the Position of the Sun"
+hinweis = "Laut späterer Korrektur des Verfassers lautet die Konstante der Zeitgleichung 0,0000075 statt des gedruckten 0,000075"
 zeitschrift = "Search"
 band = "2"
 heft = "5"
 seiten = "172"
 
 [duffie2013]
+doi = "10.1002/9781118671603"
 typ = "buch"
 autoren = ["Duffie, J. A.", "Beckman, W. A."]
 jahr = 2013
@@ -271,19 +297,20 @@ autoren = ["Betz, A."]
 jahr = 1920
 titel = "Das Maximum der theoretisch möglichen Ausnützung des Windes durch Windmotoren"
 zeitschrift = "Zeitschrift für das gesamte Turbinenwesen"
-band = "26"
+heft = "26"
 seiten = "307–309"
 
 [manwell2009]
+doi = "10.1002/9781119994367"
 typ = "buch"
 autoren = ["Manwell, J. F.", "McGowan, J. G.", "Rogers, A. L."]
 jahr = 2009
 titel = "Wind Energy Explained: Theory, Design and Application"
 auflage = "2"
-ort = "Chichester"
 verlag = "Wiley"
 
 [lorenz1963]
+doi = "10.1175/1520-0469(1963)020<0130:DNF>2.0.CO;2"
 typ = "artikel"
 autoren = ["Lorenz, E. N."]
 jahr = 1963
@@ -294,6 +321,7 @@ heft = "2"
 seiten = "130–141"
 
 [kalnay2003]
+doi = "10.1017/CBO9780511802270"
 typ = "buch"
 autoren = ["Kalnay, E."]
 jahr = 2003
@@ -302,6 +330,7 @@ ort = "Cambridge"
 verlag = "Cambridge University Press"
 
 [zaengl2015]
+doi = "10.1002/qj.2378"
 typ = "artikel"
 autoren = ["Zängl, G.", "Reinert, D.", "Rípodas, P.", "Baldauf, M."]
 jahr = 2015
@@ -314,14 +343,16 @@ seiten = "563–579"
 # Numerik -----------------------------------------------------------------------------
 
 [ieee754]
+doi = "10.1109/IEEESTD.2019.8766229"
 typ = "norm"
 autoren = ["IEEE"]
 jahr = 2019
 titel = "IEEE Standard for Floating-Point Arithmetic (IEEE Std 754-2019)"
-ort = "New York"
+ort = "Piscataway"
 verlag = "IEEE"
 
 [goldberg1991]
+doi = "10.1145/103162.103163"
 typ = "artikel"
 autoren = ["Goldberg, D."]
 jahr = 1991
@@ -334,6 +365,7 @@ seiten = "5–48"
 # Software ----------------------------------------------------------------------------
 
 [mckinney2010]
+doi = "10.25080/Majora-92bf1922-00a"
 typ = "konferenz"
 autoren = ["McKinney, W."]
 jahr = 2010
@@ -342,6 +374,7 @@ buchtitel = "Proceedings of the 9th Python in Science Conference"
 seiten = "56–61"
 
 [harris2020]
+doi = "10.1038/s41586-020-2649-2"
 typ = "artikel"
 autoren = ["Harris, C. R.", "Millman, K. J.", "van der Walt, S. J."]
 weitere = true
@@ -349,9 +382,11 @@ jahr = 2020
 titel = "Array Programming with NumPy"
 zeitschrift = "Nature"
 band = "585"
+heft = "7825"
 seiten = "357–362"
 
 [hunter2007]
+doi = "10.1109/MCSE.2007.55"
 typ = "artikel"
 autoren = ["Hunter, J. D."]
 jahr = 2007

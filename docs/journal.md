@@ -490,3 +490,25 @@ Nummer auf der obersten Ebene stehen; eigene Stufe dafür.
 
 **Grundsatz:** Ins Literaturverzeichnis kamen nur Arbeiten, deren bibliographische Angaben
 sicher bekannt sind; wo Seitenzahlen unsicher waren (Konferenzbände), fehlen sie lieber.
+
+### 11:00 Literatur online geprüft
+
+**Gemacht:** Alle 46 Einträge in `docs/bericht/literatur.toml` geprüft: Zeitschriftenartikel
+und Bücher über die Crossref-Schnittstelle (Titel, Verfasser, Jahr, Zeitschrift, Band, Heft,
+Seiten), Konferenzbeiträge gegen die NeurIPS-Proceedings, Bücher ohne DOI gegen
+Bibliothekskataloge, Internetquellen per Abruf. 29 Einträge haben jetzt eine geprüfte DOI.
+
+**Korrekturen:**
+
+- Betz (1920): „26“ ist das Heft, nicht der Band der Zeitschrift.
+- Romano u. a. (2019) und Ke u. a. (2017): Seitenzahlen ergänzt (3543–3553, 3146–3154).
+- Harris u. a. (2020): Heft 7825 ergänzt; Strobl u. a. (2007): Heft 1 ergänzt.
+- IEEE 754-2019: Verlagsort Piscataway, nicht New York.
+- Manwell u. a. (2009): Verlagsort uneinheitlich belegt (Hoboken oder Chichester), deshalb weggelassen.
+
+**Befund:** In Spencer (1971) steht in der Reihe für die Zeitgleichung die Konstante 0,000075;
+nach einer späteren Korrektur des Verfassers muss sie 0,0000075 lauten. `sf/sonne.py` und
+`src/forecast/sun.ts` in smard-mcp verwenden den gedruckten Wert. Unterschied knapp eine
+Sekunde, Sonnenhöhe weniger als 0,004°; ohne Bedeutung für die Modelle. Die Konstante bleibt
+bis zum nächsten Neu-Training (Training und Betrieb müssen identisch rechnen), Kommentar im
+Code und Hinweis in Kapitel 6 des Berichts.

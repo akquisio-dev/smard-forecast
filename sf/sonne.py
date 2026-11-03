@@ -11,6 +11,9 @@ def sonnenhoehe(zeit_utc: pd.DatetimeIndex, lat: float, lon: float) -> np.ndarra
     g = 2 * np.pi / 365 * (doy - 1 + (stunde - 12) / 24)
     dekl = (0.006918 - 0.399912 * np.cos(g) + 0.070257 * np.sin(g) - 0.006758 * np.cos(2 * g)
             + 0.000907 * np.sin(2 * g) - 0.002697 * np.cos(3 * g) + 0.00148 * np.sin(3 * g))
+    # 0.000075 ist der gedruckte Wert bei Spencer (1971); laut spaeterer Korrektur des
+    # Verfassers 0.0000075 (Unterschied < 1 s). Bleibt bis zum naechsten Neu-Training, damit
+    # Training und Betrieb (smard-mcp src/forecast/sun.ts) identisch rechnen.
     zgl = 229.18 * (0.000075 + 0.001868 * np.cos(g) - 0.032077 * np.sin(g)
                     - 0.014615 * np.cos(2 * g) - 0.040849 * np.sin(2 * g))
     w = np.radians((stunde * 60 + zgl + 4 * lon) / 4 - 180)
