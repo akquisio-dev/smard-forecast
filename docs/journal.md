@@ -357,3 +357,35 @@ kein Weiter-Kriterium mehr, sondern nur noch eine berichtete Kennzahl (Begründu
 Kalibrierung: Skill 0,57 bis 0,21, Trefferquote 83,7 bis 85,9 %). Bessere Merkmale (etwa ein
 Klarhimmel-Index) kommen später, jedes nur, wenn es die rollierende Prüfung verbessert. Weiter
 mit Phase 3 (Wind).
+
+### 07:30 Phase 3, Wind an Land und Wind auf See
+
+**Gemacht:** `scripts/phase3_wind.py` mit genau dem Verfahren von Solar: Startwerte, 7 Tage
+Abstand, rollierend 03/2025 bis 07/2026, leckfreie Kalibrierung (CQR). Neu in
+`sf/merkmale.py`: `tabelle_wind` (16 Orte an Land, 7 auf See; Windrichtung als Sinus und
+Kosinus, kein Sonnenstand-Maximum). Der Abschlusstest 08 bis 10/2026 war für Wind unberührt und
+wurde hier genau einmal benutzt; wie im Betrieb wird je Monat neu trainiert, seine Kalibrierung
+kommt nur aus den rollierenden Monaten. Laufzeit 6 Minuten.
+
+**Leckprüfung:** Die rollierenden Vorhersagen enden im Juli 2026; der Abschluss steht als ein
+eigener „Monat“ hinter allen rollierenden, die Kalibrierung liest also nur 04/2025 bis 07/2026.
+Ein Kommentar im Skript sprach fälschlich von „einem Modell“ für den Abschluss; korrigiert.
+
+**Ergebnis (mit Kalibrierung; Skill gegen die bessere einfache Messlatte):**
+
+| Quelle, Teil | Skill Tag 1 bis 6 | Trefferquote |
+|---|---|---|
+| an Land, rollierend | 0,72 0,65 0,57 0,44 0,30 **0,17** | 81,4 bis 82,6 % |
+| an Land, Abschluss | 0,77 0,71 0,64 0,54 0,36 0,26 | 79,5 bis 83,8 % |
+| auf See, rollierend | 0,62 0,57 0,48 0,37 0,25 **0,15** | 79,3 bis 81,6 % |
+| auf See, Abschluss | 0,48 0,43 0,33 0,23 **0,12 0,03** | 83,8 bis **87,6 %** |
+
+Nur berichtet: Tag 1 gegen die Netzbetreiber an Land 2,75 % gegen 1,77 % (Skill −0,55), auf
+See 6,94 % gegen 5,36 % (−0,30). Ohne Kalibrierung liegt die Trefferquote bei 67 bis 75 %;
+auf See im Winter auch mit Kalibrierung nur 69 bis 76 %.
+
+**Stand Prüfpunkt B:** nicht erfüllt. An Land fehlt nur Tag 6 (0,17 statt 0,2), auf See Tag 6
+rollierend (0,15) und im Abschluss Tag 5 und 6 (0,12 und 0,03); dort sind die Bänder auch zu
+breit (über 85 %). Im Abschluss (August bis Oktober, ruhige Monate) ist die Klimatologie auf See
+deutlich leichter zu schlagen als sonst schwer: ihr Fehler fällt von 18,5 auf 14,2 %, der des
+Modells kaum. Die Entscheidung über Prüfpunkt B trifft der Betreuer.
