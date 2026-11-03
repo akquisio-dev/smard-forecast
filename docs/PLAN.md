@@ -100,9 +100,15 @@ Messlatten:
 | Persistenz | wie der letzte vollständige Tag | Tag 1 bis 6 |
 | Netzbetreiber | SMARD `forecast_generation_*` | Tag 1 |
 
-Weiter-Kriterium (Startwert, nach den ersten Ergebnissen anpassbar): an Tag 2 bis 6 mindestens
-20 % weniger MAE als die bessere einfache Messlatte, an Tag 1 höchstens 20 % mehr Fehler als
-die Netzbetreiber, Trefferquote zwischen 75 und 85 %.
+Weiter-Kriterium: an Tag 1 bis 6 mindestens 20 % weniger MAE als die bessere einfache
+Messlatte, Trefferquote zwischen 75 und 85 %.
+
+**Geändert am 2026-11-03 (Entscheidung des Betreuers):** Das frühere Kriterium „an Tag 1
+höchstens 20 % mehr Fehler als die Netzbetreiber“ ist kein Weiter-Kriterium mehr. Begründung:
+Das Tool zeigt die Netzbetreiber-Prognose für Tag 1 ohnehin daneben (`official_forecast`), sein
+eigentlicher Wert liegt bei Tag 2 bis 6, für die es keine öffentliche Prognose gibt. Der
+Vergleich mit den Netzbetreibern wird weiter gemessen und berichtet. Anlass: Solar lag an Tag 1
+bei 1,76 % gegen 1,20 % (Skill −0,47), siehe `docs/journal.md`.
 
 ## 5. Eigenes Archiv
 

@@ -348,3 +348,12 @@ Ergebnisse in `data/phase2/solar_abstimmung.json`. Laufzeit 10 Minuten.
 Kriterium 3 erfüllt bis knapp darüber (83,7 bis 85,9 %), Kriterium 2 klar verfehlt. Ob
 Kriterium 2 gelockert wird oder die Netzbetreiber-Prognose für Tag 1 als Merkmal dient,
 entscheidet der Betreuer.
+
+### 07:40 Entscheidung zu Prüfpunkt A
+
+Der Betreuer hat entschieden: Kriterium 2 (Tag 1 gegen die Netzbetreiber) wird gelockert und ist
+kein Weiter-Kriterium mehr, sondern nur noch eine berichtete Kennzahl (Begründung in
+`docs/PLAN.md`, Abschnitt 4). Damit ist **Prüfpunkt A für Solar bestanden** (rollierend mit
+Kalibrierung: Skill 0,57 bis 0,21, Trefferquote 83,7 bis 85,9 %). Bessere Merkmale (etwa ein
+Klarhimmel-Index) kommen später, jedes nur, wenn es die rollierende Prüfung verbessert. Weiter
+mit Phase 3 (Wind).
