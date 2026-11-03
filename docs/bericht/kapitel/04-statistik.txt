@@ -514,10 +514,10 @@ $$ \mathrm{Skill} = 1 - \frac{\mathrm{MAE}_{\mathrm{Modell}}}{\mathrm{MAE}_{\mat
 Angenommen, für Solar an Tag 3 hat Klimatologie einen MAE von 6,0 %, Persistenz 4,5 %, das Modell 3,2 %. Die bessere Messlatte ist Persistenz. Skill = 1 − 3,2/4,5 = 0,29. Das Modell ist 29 % besser als die bessere Messlatte und erfüllt damit das Kriterium „mindestens 20 %“. (Zahlen erfunden; die echten entstehen in Phase 2.)
 !ende
 
-!praxis Das Weiter-Kriterium (Prüfpunkt A)
-1. An Tag 2 bis 6: Skill gegenüber der besseren der beiden einfachen Messlatten mindestens 0,2.
-2. An Tag 1: MAE höchstens 20 % über dem der Netzbetreiber (Skill gegenüber den Netzbetreibern mindestens −0,2). Die Netzbetreiber haben Zugriff auf Daten, die öffentlich nicht verfügbar sind, etwa aktuelle Messungen einzelner Parks; deshalb wäre Gleichstand schon ein Erfolg.
-3. Trefferquote der Bandbreite zwischen 75 und 85 %, je Vorlauftag.
-4. Wintermonate werden getrennt ausgewiesen, weil der Abschlusstest (August bis Oktober 2026) keinen Winter enthält.
-Die Schwellen sind Startwerte; sie dürfen nach den ersten Ergebnissen begründet angepasst werden, aber nicht, um ein schwaches Ergebnis passend zu machen.
+!praxis Das Weiter-Kriterium (Prüfpunkte A und B)
+1. An Tag 1 bis 6: Skill gegenüber der besseren der beiden einfachen Messlatten mindestens 0,2.
+2. Trefferquote der Bandbreite zwischen 75 und 85 %, je Vorlauftag.
+3. Wintermonate werden getrennt ausgewiesen, weil der Abschlusstest (August bis Oktober 2026) keinen Winter enthält.
+4. Berichtet, aber kein Kriterium: der Fehler an Tag 1 im Vergleich mit den Netzbetreibern.
+Ursprünglich verlangte ein weiteres Kriterium, dass der Fehler an Tag 1 höchstens 20 % über dem der Netzbetreiber liegt. Es wurde am 3. November 2026 nach den Ergebnissen von Phase 2 gestrichen, mit inhaltlicher Begründung (Kapitel 21). Die Schwellen dürfen begründet angepasst werden, aber nicht, um ein schwaches Ergebnis passend zu machen; jede Änderung steht deshalb mit Datum und Grund im Plan.
 !ende

@@ -3,6 +3,7 @@
 Aufruf (aus dem Repo-Wurzelverzeichnis):
     .venv/bin/python -I docs/bericht/abbildungen.py    # Projektgrafiken
     .venv/bin/python -I docs/bericht/lehrgrafiken.py   # Lehrgrafiken und zahlen.json
+    .venv/bin/python -I docs/bericht/ergebnisse.py     # Ergebnisse Phase 2 bis 4
     .venv/bin/python -I docs/bericht/bericht.py        # PDF bauen
 
 Der Text steht in docs/bericht/kapitel/*.txt in einer kleinen Auszeichnungssprache:
@@ -55,8 +56,10 @@ FORMELN = ABB / "formeln"
 FORMELN.mkdir(parents=True, exist_ok=True)
 KAPITEL = HIER / "kapitel"
 ZIEL = HIER / "smard-forecast-projektbericht.pdf"
-STAND = "2. November 2026"
+STAND = "3. November 2026"
 ZAHLEN = json.loads((ABB / "zahlen.json").read_text())
+if (ABB / "zahlen_ergebnisse.json").exists():  # aus ergebnisse.py (Phasen 2 bis 4)
+    ZAHLEN.update(json.loads((ABB / "zahlen_ergebnisse.json").read_text()))
 
 F = "/usr/share/fonts/truetype/dejavu/"
 for n, d in (("Sans", "DejaVuSans"), ("Sans-Bold", "DejaVuSans-Bold"), ("Serif", "DejaVuSerif"),

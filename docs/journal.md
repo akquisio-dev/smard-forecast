@@ -449,3 +449,19 @@ gegen 217,1 GWh, bei Wind auf See 61,1 gegen 44,0 GWh. Eine Rechnung dauert rund
 Kapazitäten stehen jetzt in `models/modell.json` auf dem öffentlichen Branch und kämen ins
 npm-Paket); ein datumsabhängiger Test in smard-mcp (`compare_periods`) schlägt schon auf `main`
 fehl und würde `npm run deploy` blockieren.
+
+### 09:45 Bericht: Kapitel zu Phase 2 bis 4 neu
+
+**Gemacht:** Die Kapitel 21 bis 23 des lokalen Projektberichts (PDF nicht im Repository) sind
+als Ergebnisteil neu geschrieben: Versuchsaufbau mit formalem Validierungsschema, erster Lauf,
+Diagnose (Unteranpassung gegen Verteilungsverschiebung), Hyperparameter-Raster, konforme
+Quantilregression mit Herleitung und Grenzen, Ergebnisse und Entscheidungen zu den Prüfpunkten
+A und B, Fehlerwachstum mit dem Vorlauf, Gain-Wichtigkeit, Betriebsmodelle, Gütestufen,
+numerische Äquivalenz von Python und TypeScript, Schnittstelle, Tagesquantile als Summe.
+Neues Skript `docs/bericht/ergebnisse.py` erzeugt 7 Ergebnisgrafiken und alle im Text
+zitierten Zahlen aus `data/phase2`, `data/phase4` und `data/modell`; die Tabellen im Text
+verweisen nur auf diese Schlüssel. Das Kriterium in Kapitel 15, Risiken, offene Fragen,
+Zeitleiste, Fehlschläge, Formelsammlung und Quellen sind nachgezogen.
+
+**Offen im Bericht:** das Ergebnis der Interpolationsprüfung (Abschnitt 23.4 sagt ausdrücklich,
+dass es aussteht; die Grafik entsteht erst ab 12 geladenen Läufen).

@@ -9,7 +9,7 @@ Das vollständige Tagebuch steht in `docs/journal.md` im Repository. Jeder Eintr
 
 ## Zeitleiste
 
-Tabelle: Zeitleiste am 2. November 2026 (UTC)
+Tabelle: Zeitleiste am 2. und 3. November 2026 (UTC)
 | Zeit | Schritt | Commit |
 | 08:00 | Konzept geprüft; Tag 7 fehlt im Archiv | |
 | 08:14 | Deploy-Key angelegt, Plan ins Repository | f151cfd |
@@ -20,6 +20,12 @@ Tabelle: Zeitleiste am 2. November 2026 (UTC)
 | 18:41 | Archiv-Job auf der Web-Maschine in Betrieb | b0783a5 |
 | abends | erster Projektbericht; PDF auf Wunsch aus dem öffentlichen Repository genommen | 6fbdfd0 |
 | abends | diese ausführliche Fassung mit Lehrteil; dabei Zeitversatz der Strahlung entdeckt | |
+| 3.11. früh | Prüfliste des Betreuers eingearbeitet; Phase 2, erster Lauf | 9d50a79 |
+| 07:15 | Abstimmung und CQR für Solar | d8a3a5f |
+| vor 07:30 | Kriterium 2 gestrichen, Prüfpunkt A bestanden | cadc490 |
+| 07:30 bis 07:37 | Phase 3 Wind, Prüfpunkt B zunächst nicht erfüllt | 9df302d |
+| 08:00 | Prüfpunkt B angenommen mit Hinweis und Gütestufen | a5f6aec |
+| 08:05 bis 09:20 | Phase 4: Betriebsmodelle, TypeScript, Tool auf Nebenzweig | a5f6aec, 3da5c60 |
 
 ## Fehlschläge und was sie lehren
 
@@ -35,6 +41,14 @@ Tabelle: Fehlschläge
 | Der erste Kartenumriss hatte eine Lizenz nur für nicht-kommerzielle Nutzung | Hilfsdaten ungeprüft übernommen | durch gemeinfreie Natural-Earth-Daten ersetzt; auch bei Hilfsdaten die Lizenz prüfen |
 | Das erste Lernbeispiel zur Überanpassung zeigte keine Überanpassung | ein einzelner Baum wächst bei 12.500 Stunden nicht weit genug | Beispiel mit wenig Daten und vielen Bäumen neu gebaut; jede Grafik ansehen, bevor man ihr glaubt |
 | Strahlung und Strom waren um eine Stunde versetzt | Open-Meteo stempelt Strahlung am Ende, SMARD am Anfang der Stunde | mit den Daten selbst prüfen (Korrelation bei verschiedenen Verschiebungen) |
+| Die Persistenz-Messlatte war an Tag 5 und 6 falsch | Überlauf eines 8-Bit-Ganzzahltyps beim Rechnen mit Stunden | Datentypen bei Zwischenrechnungen bewusst wählen |
+| Der Abschlusstest Solar wurde mit dem ersten Lauf verbraucht | Ergebnis sofort mit ausgewertet | ab dann nur noch rollierend entscheiden; für Wind genau einmal benutzt |
+| Die Bänder waren zu schmal (69 bis 78 %) | Fehlerverteilung ändert sich zwischen Monaten | Diagnose statt größerem Modell; leckfreie CQR |
+| Vorlaufzeit um den Faktor 80.000 falsch | `asi8` liefert seit pandas 3 je nach Auflösung Mikrosekunden | Zeitrechnung über Zeitspannen statt interner Zähler |
+| Wind wich zwischen Python und TypeScript um 0,7 % ab | pandas mittelt float32 in float32 | Gleitkommatyp der Referenz nachbilden; Vergleichstest auf echter Eingabe |
+| Einzelläufe luden stundenlang nichts | die Single Runs API rechnet je Ort rund eine Minute; Abruf für 40 Orte lief über jede Zeitgrenze | ein Abruf je Ort, weniger Läufe, erst mit einem Lauf prüfen |
+| Ein gestoppter Download lief weiter | systemd-Einheit überlebt das Ende der aufrufenden Shell | Einheit selbst stoppen |
+| Der Wetter-Zwischenspeicher hätte im HTTP-Betrieb nicht gewirkt | eine Server-Instanz je Anfrage | Client prozessweit teilen und testen |
 
 !merke
 Fast jeder dieser Fehlschläge wurde gefunden, weil etwas nachgerechnet oder angesehen wurde, statt es anzunehmen. Das ist die wichtigste Arbeitsregel des Projekts.
@@ -76,6 +90,12 @@ $$ \mathrm{Gewinn} = \mathrm{SSE}(M) - \mathrm{SSE}(L) - \mathrm{SSE}(R) \qquad 
 
 $$ x_{\sin} = \sin\frac{2\pi h}{24} \qquad x_{\cos} = \cos\frac{2\pi h}{24} \qquad \mathrm{Vorlauftag} = \max\left(1, \left\lfloor \frac{t_{\mathrm{Ziel}} - t_{\mathrm{Lauf}}}{24\,\mathrm{h}} \right\rfloor\right)
 
+### Kalibrierung und Betrieb
+
+$$ s_i = \max\left(\hat{q}_{0{,}1}(x_i) - a_i,\ a_i - \hat{q}_{0{,}9}(x_i)\right) \qquad C(x) = \left[\hat{q}_{0{,}1}(x) - \hat{Q},\ \hat{q}_{0{,}9}(x) + \hat{Q}\right]
+
+$$ x = \frac{L - 3\,\mathrm{h}}{24\,\mathrm{h}} \qquad \hat{y}(L) = (1 - w)\,\hat{y}_N + w\,\hat{y}_{N+1}, \quad N = \lfloor x \rfloor,\ w = x - N
+
 ### Abrufgewicht
 
 $$ w = n_{\mathrm{Orte}} \cdot \max\left(1, \frac{n_{\mathrm{Spalten}}}{10}\right) \cdot \max\left(1, \frac{n_{\mathrm{Tage}}}{14}\right)
@@ -104,5 +124,8 @@ Tabelle: Verfahren und Werkzeuge
 | Formel der Sonnendeklination und Zeitgleichung | Kapitel 6 | J. W. Spencer, Search 2 (5), 1971 |
 | Betz-Grenze | Kapitel 7 | A. Betz, 1920 |
 | Lorenz-System | Kapitel 8 | E. N. Lorenz, Journal of the Atmospheric Sciences 20, 1963 |
+| Konforme Quantilregression | Kapitel 21 | Y. Romano, E. Patterson, E. Candès, Conformalized Quantile Regression, NeurIPS 2019 |
+| Entscheidungsregel und Modellformat | Kapitel 23 | LightGBM, Funktion NumericalDecision und dump_model |
+| Gleitkommazahlen | Kapitel 23 | IEEE 754-2019 |
 
 Das Repository steht unter der MIT-Lizenz. Dieses Dokument wird aus den Dateien in `docs/bericht/` erzeugt; das fertige PDF liegt bewusst nicht im öffentlichen Repository.
