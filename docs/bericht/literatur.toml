@@ -463,7 +463,7 @@ jahr = 2026
 titel = "Energy-Charts: Installierte Netto-Leistung zur Stromerzeugung in Deutschland"
 url = "https://www.energy-charts.info"
 abgerufen = "3.11.2026"
-hinweis = "Lizenz noch zu klären"
+hinweis = "CC BY 4.0 laut Beschreibung der Schnittstelle"
 
 [naturalearth]
 typ = "web"
@@ -473,3 +473,175 @@ titel = "Natural Earth: Free Vector and Raster Map Data, Admin 0 Countries"
 url = "https://www.naturalearthdata.com"
 abgerufen = "3.11.2026"
 hinweis = "gemeinfrei"
+
+[landry2016]
+doi = "10.1016/j.ijforecast.2016.02.002"
+typ = "artikel"
+autoren = ["Landry, M.", "Erlinger, T. P.", "Patschke, D.", "Varrichio, C."]
+jahr = 2016
+titel = "Probabilistic Gradient Boosting Machines for GEFCom2014 Wind Forecasting"
+zeitschrift = "International Journal of Forecasting"
+band = "32"
+heft = "3"
+seiten = "1061–1066"
+
+[juban2016]
+doi = "10.1016/j.ijforecast.2015.12.002"
+typ = "artikel"
+autoren = ["Juban, R.", "Ohlsson, H.", "Maasoumy, M.", "Poirier, L.", "Kolter, J. Z."]
+jahr = 2016
+titel = "A Multiple Quantile Regression Approach to the Wind, Solar, and Price Tracks of GEFCom2014"
+zeitschrift = "International Journal of Forecasting"
+band = "32"
+heft = "3"
+seiten = "1094–1102"
+
+[bremnes2004]
+doi = "10.1002/we.107"
+typ = "artikel"
+autoren = ["Bremnes, J. B."]
+jahr = 2004
+titel = "Probabilistic Wind Power Forecasts Using Local Quantile Regression"
+zeitschrift = "Wind Energy"
+band = "7"
+heft = "1"
+seiten = "47–54"
+
+[nielsen2006]
+doi = "10.1002/we.180"
+typ = "artikel"
+autoren = ["Nielsen, H. A.", "Madsen, H.", "Nielsen, T. S."]
+jahr = 2006
+titel = "Using Quantile Regression to Extend an Existing Wind Power Forecasting System with Probabilistic Forecasts"
+zeitschrift = "Wind Energy"
+band = "9"
+heft = "1–2"
+seiten = "95–108"
+
+[pinson2007]
+doi = "10.1002/we.230"
+typ = "artikel"
+autoren = ["Pinson, P.", "Nielsen, H. A.", "Møller, J. K.", "Madsen, H.", "Kariniotakis, G. N."]
+jahr = 2007
+titel = "Non-Parametric Probabilistic Forecasts of Wind Power: Required Properties and Evaluation"
+zeitschrift = "Wind Energy"
+band = "10"
+heft = "6"
+seiten = "497–516"
+
+[lorenz2009]
+doi = "10.1109/JSTARS.2009.2020300"
+typ = "artikel"
+autoren = ["Lorenz, E.", "Hurka, J.", "Heinemann, D.", "Beyer, H. G."]
+jahr = 2009
+titel = "Irradiance Forecasting for the Power Prediction of Grid-Connected Photovoltaic Systems"
+zeitschrift = "IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing"
+band = "2"
+heft = "1"
+seiten = "2–10"
+
+[lorenz2011]
+doi = "10.1002/pip.1033"
+typ = "artikel"
+autoren = ["Lorenz, E.", "Scheidsteger, T.", "Hurka, J.", "Heinemann, D.", "Kurz, C."]
+jahr = 2011
+titel = "Regional PV Power Prediction for Improved Grid Integration"
+zeitschrift = "Progress in Photovoltaics: Research and Applications"
+band = "19"
+heft = "7"
+seiten = "757–771"
+
+[sweeney2020]
+doi = "10.1002/wene.365"
+typ = "artikel"
+autoren = ["Sweeney, C.", "Bessa, R. J.", "Browell, J.", "Pinson, P."]
+jahr = 2020
+titel = "The Future of Forecasting for Renewable Energy"
+zeitschrift = "WIREs Energy and Environment"
+band = "9"
+heft = "2"
+seiten = "e365"
+
+[vandermeer2018]
+doi = "10.1016/j.rser.2017.05.212"
+typ = "artikel"
+autoren = ["van der Meer, D. W.", "Widén, J.", "Munkhammar, J."]
+jahr = 2018
+titel = "Review on Probabilistic Forecasting of Photovoltaic Power Production and Electricity Consumption"
+zeitschrift = "Renewable and Sustainable Energy Reviews"
+band = "81"
+seiten = "1484–1512"
+
+[zhang2014]
+doi = "10.1016/j.rser.2014.01.033"
+typ = "artikel"
+autoren = ["Zhang, Y.", "Wang, J.", "Wang, X."]
+jahr = 2014
+titel = "Review on Probabilistic Forecasting of Wind Power Generation"
+zeitschrift = "Renewable and Sustainable Energy Reviews"
+band = "32"
+seiten = "255–270"
+
+[messner2020]
+doi = "10.1002/we.2497"
+typ = "artikel"
+autoren = ["Messner, J. W.", "Pinson, P.", "Browell, J.", "Bjerregård, M. B.", "Schicker, I."]
+jahr = 2020
+titel = "Evaluation of Wind Power Forecasts: An Up-to-Date View"
+zeitschrift = "Wind Energy"
+band = "23"
+heft = "6"
+seiten = "1461–1481"
+
+[gneiting2005]
+doi = "10.1175/MWR2904.1"
+typ = "artikel"
+autoren = ["Gneiting, T.", "Raftery, A. E.", "Westveld, A. H.", "Goldman, T."]
+jahr = 2005
+titel = "Calibrated Probabilistic Forecasting Using Ensemble Model Output Statistics and Minimum CRPS Estimation"
+zeitschrift = "Monthly Weather Review"
+band = "133"
+heft = "5"
+seiten = "1098–1118"
+
+[delle2013]
+doi = "10.1175/MWR-D-12-00281.1"
+typ = "artikel"
+autoren = ["Delle Monache, L.", "Eckel, F. A.", "Rife, D. L.", "Nagarajan, B.", "Searight, K."]
+jahr = 2013
+titel = "Probabilistic Weather Prediction with an Analog Ensemble"
+zeitschrift = "Monthly Weather Review"
+band = "141"
+heft = "10"
+seiten = "3498–3516"
+
+[vannitsem2021]
+doi = "10.1175/BAMS-D-19-0308.1"
+typ = "artikel"
+autoren = ["Vannitsem, S.", "Bremnes, J. B.", "Demaeyer, J.", "Evans, G. R.", "Flowerdew, J.", "Hemri, S.", "Lerch, S.", "Roberts, N.", "Theis, S.", "Atencia, A.", "Ben Bouallègue, Z.", "Bhend, J.", "Dabernig, M.", "De Cruz, L.", "Hieta, L.", "Mestre, O.", "Moret, L.", "Plenković, I. O.", "Schmeits, M.", "Taillardat, M.", "Van den Bergh, J.", "Van Schaeybroeck, B.", "Whan, K.", "Ylhaisi, J."]
+jahr = 2021
+titel = "Statistical Postprocessing for Weather Forecasts: Review, Challenges, and Avenues in a Big Data World"
+zeitschrift = "Bulletin of the American Meteorological Society"
+band = "102"
+heft = "3"
+seiten = "E681–E699"
+
+[steiner2017]
+doi = "10.1016/j.renene.2016.08.013"
+typ = "artikel"
+autoren = ["Steiner, A.", "Köhler, C.", "Metzinger, I.", "Braun, A.", "Zirkelbach, M.", "Ernst, D.", "Tran, P.", "Ritter, B."]
+jahr = 2017
+titel = "Critical Weather Situations for Renewable Energies. Part A: Cyclone Detection for Wind Power"
+zeitschrift = "Renewable Energy"
+band = "101"
+seiten = "41–50"
+
+[koehler2017]
+doi = "10.1016/j.renene.2016.09.002"
+typ = "artikel"
+autoren = ["Köhler, C.", "Steiner, A.", "Saint-Drenan, Y.-M.", "Ernst, D.", "Bergmann-Dick, A.", "Zirkelbach, M.", "Ben Bouallègue, Z.", "Metzinger, I.", "Ritter, B."]
+jahr = 2017
+titel = "Critical Weather Situations for Renewable Energies. Part B: Low Stratus Risk for Solar Power"
+zeitschrift = "Renewable Energy"
+band = "101"
+seiten = "794–803"

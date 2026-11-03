@@ -619,3 +619,19 @@ auffälligen Solarwert, Prüfpunkt C mit vorab festgelegten Kriterien als Platzh
 Kalibrierung im Winter, fünf Grenzen der Gültigkeit) und 27 Fazit und Ausblick. Kurzfassung und
 Abstract um den Betrieb ergänzt. PDF neu gebaut (nur lokal). Grundlagenteil unverändert.
 Offen: Forschungsstand und Einordnung gegen Literaturwerte (neue Quellen nötig).
+
+### 13:15 Bericht: Einordnung in die Forschung
+
+**Gemacht:** Neues Kapitel 26 „Einordnung in die Forschung“ vor der Diskussion (keine bestehende
+Kapitelnummer verschoben): physikalische und statistische Verfahren, drei Familien von
+Wahrscheinlichkeitsprognosen (EMOS, Analog-Ensembles, Quantilregression), GEFCom2014 (Windspur
+gewonnen mit Gradient Boosting je Zone und Quantil), Bewertung, Fehlerwerte im Vergleich, was das
+Projekt unterscheidet. 16 neue Literatureinträge, alle Angaben über Crossref geprüft (DOI, Band,
+Heft, Seiten, Verfasser); Aussagen nur aus Abstracts oder geprüften Zusammenfassungen.
+`scripts/literaturvergleich.py` rechnet RMSE aus der rollierenden Prüfung, weil Studien meist RMSE
+angeben: Solar Tag 1 2,54 % (Netzbetreiber 1,71 %), Lorenz u. a. 2011 berichten 4 bis 5 % für zwei
+Regelzonen 2009/10; nur als Größenordnung vergleichbar.
+
+**Fehlschlag:** Für Wind in ganz Deutschland kein aktueller, begutachteter RMSE-Wert gefunden; im
+Bericht offen gesagt, stattdessen Steiner u. a. 2017 (Zyklonen) und Köhler u. a. 2017 (Hochnebel)
+zu den Ursachen großer Fehler. Semantic Scholar drosselte nach wenigen Abfragen (HTTP 429).

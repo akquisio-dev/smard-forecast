@@ -793,7 +793,7 @@ Tabelle: Überwachung, erster Lauf (Vorlauftag 1)
 | Wind an Land | 80 | 1,21 GW (1,7 %) | 95,0 % |
 | Wind auf See | 80 | 0,69 GW (5,9 %) | 100,0 % |
 
-Die Windwerte liegen im erwarteten Bereich oder darüber. Solar liegt mit 3,0 % klar über dem MAE der rollierenden Prüfung an Tag 1 ({{z:sol_r_mae_1:2}} %), und weniger als die Hälfte der Messwerte fiel ins Band. Aus 36 Stunden von zwei bis drei Novembertagen lässt sich das nicht deuten: Die Stunden eines Tages sind stark voneinander abhängig, und ein einzelner Tag mit Hochnebel, den das Wettermodell nicht vorhersieht, kann eine solche Zahl allein erklären. Es ist aber genau die Art Abweichung, für die die Überwachung gebaut wurde; sie wird in Prüfpunkt C ausdrücklich bewertet.
+Die Windwerte liegen im erwarteten Bereich oder darüber. Solar liegt mit 3,0 % klar über dem MAE der rollierenden Prüfung an Tag 1 ({{z:sol_r_mae_1:2}} %), und weniger als die Hälfte der Messwerte fiel ins Band. Aus 36 Stunden von zwei bis drei Novembertagen lässt sich das nicht deuten: Die Stunden eines Tages sind stark voneinander abhängig, und ein einzelner Tag mit Hochnebel, den Wettermodelle schlecht vorhersagen [@koehler2017], kann eine solche Zahl allein erklären. Es ist aber genau die Art Abweichung, für die die Überwachung gebaut wurde; sie wird in Prüfpunkt C ausdrücklich bewertet.
 
 ## Prüfpunkt C
 
@@ -852,9 +852,62 @@ Tabelle: Nützliche Befehle
 | Letzte Archiv-Läufe | `journalctl -u smard-forecast-archiv -n 20` |
 | Dieses Dokument neu bauen | `abbildungen.py`, `lehrgrafiken.py`, dann `bericht.py` |
 
+# Einordnung in die Forschung
+
+Dieses Kapitel stellt das Projekt in den Zusammenhang veröffentlichter Arbeiten: welche Verfahren für Wind- und Solarprognosen üblich sind, wie man Wahrscheinlichkeitsprognosen bewertet, welche Fehler vergleichbare Systeme erreichen und worin sich dieses Projekt unterscheidet. Es ersetzt keinen vollständigen Literaturüberblick; dafür sei auf die Übersichtsarbeiten zu Wind [@zhang2014], zu Photovoltaik [@antonanzas2016; @vandermeer2018] und zu beiden zusammen [@hong2016; @sweeney2020] verwiesen.
+
+## Vom Wettermodell zur Leistung
+
+Prognosen der Wind- und Solarerzeugung über mehr als einige Stunden beruhen fast immer auf numerischen Wettervorhersagen, weil Messungen allein nur für die nächsten Stunden Information tragen [@sweeney2020]. Die Literatur unterscheidet zwei Wege von der Wettervorhersage zur Leistung. **Physikalische Verfahren** rechnen die vorhergesagte Strahlung oder Windgeschwindigkeit über Modelle der Anlagen in Leistung um und rechnen von repräsentativen Anlagen auf eine Region hoch; ein für Deutschland gut dokumentiertes Beispiel ist das System der Universität Oldenburg für Photovoltaik [@lorenz2009; @lorenz2011]. **Statistische Verfahren** lernen den Zusammenhang zwischen Wettervorhersage und gemessener Leistung direkt aus Daten. Dieses Projekt gehört zur zweiten Gruppe, nimmt aber physikalisches Wissen in Form von Merkmalen auf (Sonnenhöhe, dritte Potenz der Windgeschwindigkeit, Kapitel 14).
+
+Beide Wege sind eine Form der statistischen Nachbearbeitung von Wettermodellen, die heute zum Standard der Wetterdienste gehört und von einfachen Korrekturen der Verzerrung bis zu Verfahren reicht, die ganze Verteilungen anpassen [@vannitsem2021].
+
+## Wahrscheinlichkeitsprognosen
+
+Für Wahrscheinlichkeitsprognosen haben sich drei Familien herausgebildet.
+
+1. **Ensemble-basiert.** Ein Wetterdienst rechnet dasselbe Modell mit leicht veränderten Anfangszuständen mehrfach; die Streuung der Läufe zeigt die Unsicherheit der aktuellen Wetterlage. Roh sind solche Ensembles meist zu wenig gestreut und verzerrt; Ensemble Model Output Statistics (EMOS) korrigieren beides mit einer Regression, deren Koeffizienten den CRPS minimieren [@gneiting2005].
+2. **Analog-Ensembles.** Aus einer einzigen deterministischen Vorhersage entsteht eine Verteilung, indem man in der Vergangenheit ähnliche Vorhersagen sucht und deren tatsächliche Ergebnisse als Stichprobe nimmt; das Verfahren erreichte in einer Studie die Güte eines echten Ensembles bei geringerem Rechenaufwand [@delle2013].
+3. **Quantilregression.** Man schätzt die gewünschten Quantile direkt mit dem Pinball-Verlust, ohne eine Verteilungsform anzunehmen [@koenker1978]. Für Windleistung wurde das früh vorgeschlagen [@bremnes2004]; Nielsen u. a. zeigten, wie sich ein bestehendes Punktprognosesystem so um Unsicherheitsangaben erweitern lässt, und nannten als Einflussgrößen der Unsicherheit die Vorhersagbarkeit der Wetterlage, die Höhe der vorhergesagten Windgeschwindigkeit (wegen der gekrümmten Leistungskurve) und den Vorlauf [@nielsen2006].
+
+Dieses Projekt gehört zur dritten Familie. Die drei von Nielsen u. a. genannten Einflussgrößen sind hier als Merkmale abgebildet, mit einer Ausnahme: Die Vorhersagbarkeit der Wetterlage ließe sich am besten aus einem Ensemble ablesen, das das Projekt nicht verwendet (Ausblick in Kapitel 28).
+
+## Gradient Boosting im Wettbewerb
+
+Die Global Energy Forecasting Competition 2014 (GEFCom2014) war ein offener Wettbewerb für Wahrscheinlichkeitsprognosen mit je einer Spur für Last, Preis, Wind und Solar und 581 Teilnehmern aus 61 Ländern; bewertet wurde mit dem Pinball-Verlust über viele Quantile [@hong2016]. Die Windspur gewann ein Team mit Gradient Boosting für mehrere Quantile, mit unabhängigen Modellen je Windzone und je Quantil [@landry2016]. Ein anderes Team nutzte multiple Quantilregression für die Wind-, Solar- und Preisspur gemeinsam [@juban2016]. Der Aufbau dieses Projekts, ein LightGBM-Modell je Quelle und Quantil mit Pinball-Verlust, folgt damit einem Verfahren, das sich im direkten Vergleich bewährt hat; neu ist er nicht.
+
+## Bewertung
+
+Die Anforderungen an Wahrscheinlichkeitsprognosen, Kalibrierung und Schärfe, sind seit Langem formuliert [@pinson2007; @gneiting2007b], ebenso ein Standard für die Bewertung von Punktprognosen der Windleistung [@madsen2005]. Messner u. a. betonen aus Sicht der Nutzer, dass übliche Fehlermaße wie MAE und RMSE nicht immer abbilden, was ein Nutzer verliert, und dass Unterschiede zwischen Prognosen auf ihre Signifikanz geprüft werden sollten [@messner2020]. Dieses Projekt folgt der ersten Empfehlung teilweise (Trefferquote, Pinball-Verlust und MAE nebeneinander, Kapitel 15) und der zweiten nicht: Es gibt keine Signifikanztests an, weil die starke Abhängigkeit der Stunden die üblichen Tests zu optimistisch machen würde (Kapitel 27, Grenzen der Gültigkeit).
+
+## Fehlerwerte im Vergleich
+
+Studien geben den Fehler meist als RMSE in Prozent der Nennleistung an, dieses Projekt bisher als MAE. Für den Vergleich wurden RMSE-Werte aus derselben rollierenden Prüfung berechnet (`scripts/literaturvergleich.py`, bei Solar nur Stunden mit Erzeugung).
+
+Tabelle: RMSE in % der installierten Leistung, rollierende Prüfung 03/2025 bis 10/2026
+| Quelle | Modell, Tag 1 | Modell, Tag 6 | Netzbetreiber, Day-Ahead |
+| Solar | {{z:lit_sol_rmse_1:2}} | {{z:lit_sol_rmse_6:2}} | {{z:lit_sol_nb_rmse:2}} |
+| Wind an Land | {{z:lit_won_rmse_1:2}} | {{z:lit_won_rmse_6:2}} | {{z:lit_won_nb_rmse:2}} |
+| Wind auf See | {{z:lit_wof_rmse_1:2}} | {{z:lit_wof_rmse_6:2}} | {{z:lit_wof_nb_rmse:2}} |
+
+**Solar.** Für das Oldenburger System berichten Lorenz u. a. einen RMSE von 4 bis 5 % der Nennleistung für Intraday- und Day-Ahead-Prognosen in den Regelzonen von transpower und 50Hertz, ausgewertet von Juli 2009 bis April 2010 [@lorenz2011]. Der Wert des Modells für Tag 1 liegt darunter. Ein Leistungsvergleich ist das nicht: Ganz Deutschland ist größer als eine Regelzone, sodass sich örtliche Fehler stärker ausgleichen; die Wettermodelle sind seit 2010 deutlich besser geworden; und der Anlagenbestand hat sich vervielfacht. Die Zahlen zeigen nur, dass die Fehler des Modells in einer plausiblen Größenordnung liegen.
+
+**Wind.** Für die Windprognose ganz Deutschlands wurde bei der Recherche für diese Arbeit kein aktueller, begutachteter RMSE-Wert gefunden, der sich als Vergleich eignet. Belegt ist dagegen, woher die großen Fehler kommen: Von den Tagen mit den größten Fehlern der Day-Ahead-Windprognose in Deutschland 2012 bis 2014 hingen 60 % mit Zyklonen und Trögen über Nord- und Ostsee oder Deutschland zusammen [@steiner2017]. Für Solar ist die entsprechende Wetterlage Nebel und Hochnebel, den Wettermodelle schlecht vorhersagen; an solchen Tagen können die Fehler der deutschlandweiten Day-Ahead-Prognose die Größenordnung der Regelenergie erreichen [@koehler2017]. Beides betrifft dieses Modell genauso, weil es dieselben Wettermodelle verwendet.
+
+**Netzbetreiber.** Den aussagekräftigsten Vergleich liefert ohnehin die Prognose der Netzbetreiber, weil sie dieselbe Größe für denselben Zeitraum vorhersagt. Sie ist an Tag 1 für alle drei Quellen genauer (Kapitel 27).
+
+## Was dieses Projekt unterscheidet
+
+Methodisch folgt das Projekt bewährten Verfahren. Unterschiede liegen in der Ausführung:
+
+- **Horizont.** Die meisten der hier zitierten Arbeiten zur Leistungsprognose betrachten Horizonte bis 48 oder 72 Stunden [@pinson2007; @lorenz2011; @landry2016]. Dieses Projekt reicht bis 6 Tage und weist aus, wie der Skill mit dem Vorlauf abnimmt.
+- **Training mit dem Vorlauf des Betriebs.** Die Trainingsdaten sind archivierte Vorhersagen so, wie sie 1 bis 6 Tage vor der Zielstunde vorlagen, nicht nachträglich gerechnete Analysen (Kapitel 16). Damit sieht das Modell im Training dieselben Wetterfehler wie im Betrieb.
+- **Offenheit.** Alle Eingangsdaten sind frei verfügbar, Code und Prüfung öffentlich, die Modelle Teil eines frei installierbaren Pakets.
+- **Rückkopplung aus dem Betrieb.** Die ausgelieferte Software wird täglich gegen die Messung geprüft, und das Ergebnis steht in jeder Antwort.
+
 # Diskussion
 
-Dieses Kapitel ordnet die Ergebnisse der Kapitel 21 bis 24 ein: was sie über das Verfahren aussagen, wo sie an ihre Grenzen stoßen und welche Einwände gegen ihre Gültigkeit bestehen.
+Dieses Kapitel ordnet die Ergebnisse der Kapitel 21 bis 24 ein, nach dem Blick auf die Literatur in Kapitel 26: was sie über das Verfahren aussagen, wo sie an ihre Grenzen stoßen und welche Einwände gegen ihre Gültigkeit bestehen.
 
 ## Verlauf des Skills über den Vorlauf
 
@@ -872,7 +925,7 @@ Für die Anwendung ist das Ergebnis trotzdem brauchbar. Für den Folgetag gibt d
 
 ## Wind auf See an den späten Vorlauftagen
 
-Im Abschlusstest (August bis Oktober 2026) fällt der Skill von Wind auf See an Tag 5 und 6 auf {{z:wof_a_sk_5:2}} und {{z:wof_a_sk_6:2}}, praktisch auf die Klimatologie. Ein Teil davon liegt an der Messlatte, deren MAE in den ruhigen Spätsommermonaten von {{z:wof_r_kl_1:1}} auf {{z:wof_a_kl_1:1}} % sinkt (Kapitel 22). Ein anderer Teil ist strukturell: Die Offshore-Leistung konzentriert sich auf wenige Cluster in Nord- und Ostsee. Während sich Vorhersagefehler über viele weit verteilte Anlagen an Land teilweise ausgleichen, betrifft ein Fehler in der Lage eines Tiefs auf See fast die gesamte Leistung zugleich. Hinzu kommen Abschaltungen bei Netzengpässen, die im Wetter nicht sichtbar sind; das ist eine Vermutung, die die Daten dieses Projekts weder bestätigen noch widerlegen. Die Gütestufe „low“ für diese Vorlauftage (Kapitel 22) ist deshalb keine Vorsichtsmaßnahme, sondern eine zutreffende Beschreibung.
+Im Abschlusstest (August bis Oktober 2026) fällt der Skill von Wind auf See an Tag 5 und 6 auf {{z:wof_a_sk_5:2}} und {{z:wof_a_sk_6:2}}, praktisch auf die Klimatologie. Ein Teil davon liegt an der Messlatte, deren MAE in den ruhigen Spätsommermonaten von {{z:wof_r_kl_1:1}} auf {{z:wof_a_kl_1:1}} % sinkt (Kapitel 22). Ein anderer Teil ist strukturell: Die Offshore-Leistung konzentriert sich auf wenige Cluster in Nord- und Ostsee. Während sich Vorhersagefehler über viele weit verteilte Anlagen an Land teilweise ausgleichen, betrifft ein Fehler in der Lage eines Tiefs auf See fast die gesamte Leistung zugleich. Dazu passt, dass die größten Fehler der deutschen Windprognose mit Zyklonen über Nord- und Ostsee zusammenhängen [@steiner2017]. Hinzu kommen Abschaltungen bei Netzengpässen, die im Wetter nicht sichtbar sind; das ist eine Vermutung, die die Daten dieses Projekts weder bestätigen noch widerlegen. Die Gütestufe „low“ für diese Vorlauftage (Kapitel 22) ist deshalb keine Vorsichtsmaßnahme, sondern eine zutreffende Beschreibung.
 
 ## Kalibrierung
 
@@ -917,4 +970,4 @@ Tabelle: Nächste Schritte
 | Ensemble-Merkmale (ICON-EPS) | Band folgt der aktuellen Unsicherheit der Wetterlage | Archiv der Ensemble-Streuung |
 | Prognose der Netzbetreiber als Merkmal für Tag 1 | Tag 1 mindestens so gut wie die Netzbetreiber | Entscheidung des Betreuers; Verfügbarkeit zur Abrufzeit |
 | Regelzonen statt nur Deutschland | regionale Aussagen | Erzeugung je Regelzone bei SMARD, eigene Modelle |
-| Einordnung gegen die Literatur | Maßstab für die Fehlerwerte | Recherche vergleichbarer Studien |
+| aktueller Vergleichswert für Wind in ganz Deutschland | Maßstab für die Fehlerwerte | begutachtete Studie oder eigene Auswertung der Netzbetreiberprognosen |

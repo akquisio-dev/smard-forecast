@@ -17,7 +17,7 @@ Tabelle: Aufbau des Dokuments
 | II Strom und Zeit | Leistung, Energie, Zeitzonen, das Stromsystem | um Zahlen von SMARD richtig zu lesen |
 | III Physik und Wetter | Sonne, Wind, Wettervorhersage | um zu verstehen, woher die Information kommt |
 | IV Statistik und Lernen | Fehlermaße, Quantile, Bäume, Boosting, Prüfen | um zu verstehen, wie das Modell lernt und wie man es ehrlich bewertet |
-| V Das Projekt | Daten, Phasen, Architektur, Betrieb, Diskussion, Fazit | was konkret gebaut wird und was es taugt |
+| V Das Projekt | Daten, Phasen, Architektur, Betrieb, Forschungsstand, Diskussion, Fazit | was konkret gebaut wird und was es taugt |
 | Literatur | alle zitierten Arbeiten, Daten und Dienste | zum Nachprüfen |
 | VI Anhang | Entstehung, Formeln, Glossar, Daten und Lizenzen | zum Nachschlagen |
 

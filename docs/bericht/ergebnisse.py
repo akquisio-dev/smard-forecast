@@ -277,6 +277,18 @@ def interpolation():
     speichern(fig, "e_interpolation")
 
 
+def literaturvergleich():
+    """RMSE und MAE fuer den Vergleich mit Studien (scripts/literaturvergleich.py)."""
+    datei = ROOT / "data" / "betrieb" / "literaturvergleich.json"
+    if not datei.exists():
+        return
+    kurz = {"solar": "sol", "wind_onshore": "won", "wind_offshore": "wof"}
+    for q, r in json.loads(datei.read_text()).items():
+        for n in range(1, 7):
+            Z[f"lit_{kurz[q]}_rmse_{n}"] = r[f"tag{n}"]["rmse"]
+        Z[f"lit_{kurz[q]}_nb_rmse"] = r["nb"]["rmse"]
+
+
 def main():
     k, a, s1 = lade()
     zahlen(k, a, s1)
@@ -288,6 +300,7 @@ def main():
     beispielwoche()
     betrieb()
     interpolation()
+    literaturvergleich()
     (HIER / "abb" / "zahlen_ergebnisse.json").write_text(
         json.dumps(Z, indent=1, ensure_ascii=False, default=float))
     print(len(Z), "Zahlen")
