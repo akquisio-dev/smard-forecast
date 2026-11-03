@@ -569,3 +569,17 @@ bei der Single Runs API auch nach vier Versuchen je Ort nur leere Antworten. Mit
 84,8 %, Wind an Land 84,8 gegenüber 81,9 %, Wind auf See 88,0 gegenüber 85,5 %; MAE praktisch
 gleich. Interpolation bleibt. Abschnitt 23.4 des Berichts nachgetragen, Grafik e_interpolation,
 PDF neu gebaut (nur lokal).
+
+### 11:40 Phase 6: ausgerollt und geprüft
+
+**Gemacht:** Joey hat smard-mcp 1.4.0 und das neue Archivskript ausgerollt. Geprüft:
+`/health` meldet 1.4.0, 13 Tools; Smoke-Test gegen energie.akquisio.eu 12/12; Live-Aufruf
+liefert Modell 2026.11.02 ohne Warnungen. Das Archiv speichert seit 10:33 UTC `laeufe_ende`;
+dabei taucht `dwd_icon_d2_ruc_native_15min` als eigener Lauf auf (Bestätigung der Vermutung
+zu ICON-D2-RUC in Kapitel 20).
+
+**Fehlschlag:** Der erste Smoke-Test direkt nach dem Ausrollen scheiterte: Open-Meteo antwortete
+dem frisch gestarteten Server mit HTTP 503, und ohne Cache gibt es dann keine Rückfallebene.
+Wenige Minuten später lief derselbe Abruf von der Web-Maschine fehlerfrei; vorübergehende Störung
+bei Open-Meteo. Die Units für `forecast-monitor` sind auf der Web-Maschine noch nicht installiert,
+`recent_accuracy` bleibt bis dahin `null`.
