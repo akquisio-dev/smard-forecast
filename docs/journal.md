@@ -387,5 +387,4 @@ auf See im Winter auch mit Kalibrierung nur 69 bis 76 %.
 **Stand Prüfpunkt B:** nicht erfüllt. An Land fehlt nur Tag 6 (0,17 statt 0,2), auf See Tag 6
 rollierend (0,15) und im Abschluss Tag 5 und 6 (0,12 und 0,03); dort sind die Bänder auch zu
 breit (über 85 %). Im Abschluss (August bis Oktober, ruhige Monate) ist die Klimatologie auf See
-deutlich leichter zu schlagen als sonst schwer: ihr Fehler fällt von 18,5 auf 14,2 %, der des
-Modells kaum. Die Entscheidung über Prüfpunkt B trifft der Betreuer.
+schwerer zu schlagen als sonst: ihr Fehler fällt von 18,5 auf 14,2 %, der des Modells kaum. Die Entscheidung über Prüfpunkt B trifft der Betreuer.
