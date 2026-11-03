@@ -388,3 +388,50 @@ auf See im Winter auch mit Kalibrierung nur 69 bis 76 %.
 rollierend (0,15) und im Abschluss Tag 5 und 6 (0,12 und 0,03); dort sind die Bänder auch zu
 breit (über 85 %). Im Abschluss (August bis Oktober, ruhige Monate) ist die Klimatologie auf See
 schwerer zu schlagen als sonst: ihr Fehler fällt von 18,5 auf 14,2 %, der des Modells kaum. Die Entscheidung über Prüfpunkt B trifft der Betreuer.
+
+### 08:00 Entscheidung zu Prüfpunkt B
+
+Der Betreuer will bei allen Modellwerten einen Hinweis, dass sie nur geschätzt sind, und ein
+Tool, das die Funktionsweise des Modells kurz und technisch erklärt. Damit ist **Prüfpunkt B
+angenommen** (Möglichkeit 1): Tag 6 und auf See Tag 5 bleiben drin, aber mit Gütestufe „low“.
+Festgehalten in `docs/PLAN.md`, Abschnitte 4 und 7.
+
+### 08:05 Phase 4: Betriebsmodelle, TypeScript-Auswertung, Tool
+
+**Gemacht:**
+
+- `sf/merkmale.py`: Die zeitliche Ausrichtung steht jetzt in einer eigenen Funktion
+  `ausrichten`, dazu `lauf_merkmale` (Merkmale aus EINEM Wetterlauf, wie im Betrieb).
+  `sf/betrieb.py`: Vorhersage im Betrieb (Interpolation der Vorlauftage, Kalibrierung,
+  Nachtmaske). Beides ist die Referenz für die TypeScript-Fassung.
+- `scripts/phase4_export.py`: je Quelle und Quantil ein Modell auf ALLEN Daten (bis
+  1. November 2026), Kalibrierung je Vorlauftag aus allen Vorhersagen außerhalb der Stichprobe,
+  Kennzahlen und Gütestufe je Vorlauftag aus den Dateien von Phase 2 und 3, Kapazität je Monat.
+  Version `2026.11.01`, 2,3 MB JSON (im npm-Paket 0,8 MB gepackt).
+- `scripts/phase4_vergleich.py`: holt die aktuelle Vorhersage aller 40 Orte, genau wie das Tool,
+  und rechnet sie mit Python durch. Der Test in smard-mcp rechnet dieselbe Eingabe in TypeScript.
+- smard-mcp, Branch `forecast` (778c3d8, nicht live): `forecast_renewables` und
+  `describe_forecast_model`, Baumauswertung, Merkmale, Sonnenstand und Feiertage in TypeScript,
+  Wetter-Abruf mit Cache bis zum nächsten Lauf und 12 Stunden Notbetrieb.
+
+**Fehlschläge:**
+
+- Die Single Runs API rechnet `icon_seamless` je Ort erst bei der Anfrage zusammen (30 bis 70 s
+  je Ort). Ein Abruf für 40 Orte lief über jede Zeitgrenze und wiederholte sich still. Jetzt ein
+  Abruf je Ort, 4 gleichzeitig, und nur jeder fünfte Tag. Dabei lief der alte Prozess als
+  systemd-Einheit weiter, obwohl die Shell gestoppt war; von Hand beendet.
+- Vorlaufzeit im Vergleichsskript um Faktoren falsch (−497.747 h statt −6 h): `asi8` liefert seit
+  pandas 3 je nach Auflösung Mikrosekunden statt Nanosekunden. Ersetzt durch eine Rechnung über
+  `Timedelta`. Das Training war nicht betroffen (es nutzt `asi8` nicht).
+- Wind wich anfangs um bis zu 0,7 % der Kapazität ab, Solar gar nicht. Ursache: pandas bildet die
+  Mittel über alle Orte in float32, TypeScript rechnete in float64; beim Luftdruck (um
+  1000 hPa) reichen wenige Bits, um eine Baumgrenze zu kippen. TypeScript summiert jetzt ebenso
+  in float32. Danach stimmen alle drei Quellen auf 7 Nachkommastellen überein.
+
+**Ergebnis:** Probelauf mit echten Daten am 3. November, 9 Uhr: Für den Rest des Tages sagt das
+Modell bei Solar 105,8 GWh voraus, die Netzbetreiber 105,1 GWh. Bei Wind an Land sind es 213,5
+gegen 217,1 GWh, bei Wind auf See 61,1 gegen 44,0 GWh. Eine Rechnung dauert rund 150 ms.
+
+**Offen in Phase 4:** die Prüfung der Interpolation mit Einzelläufen (Download läuft). Ein
+schon vorher fehlschlagender, datumsabhängiger Test in smard-mcp (`compare_periods`) ist nicht
+Teil dieser Arbeit.

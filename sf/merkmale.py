@@ -29,23 +29,33 @@ def wetter_ort(name: str, variablen: list[str]) -> pd.DataFrame:
     df = pd.concat(teile).sort_values(["vorlauf", "zeit"]).reset_index(drop=True)
     aus = []
     for n, g in df.groupby("vorlauf"):
-        g = g.set_index("zeit").asfreq("h")
-        neu = pd.DataFrame(index=g.index)
-        for v in variablen:
-            x = g[v].astype("float32")
-            if v.startswith("wind_direction"):
-                # Richtung ist ein Kreis (359 Grad liegt neben 1 Grad): erst in Sinus und
-                # Kosinus zerlegen, dann auf die Stundenmitte mitteln
-                r = np.radians(x)
-                for f, name in ((np.sin, "sin"), (np.cos, "cos")):
-                    y = f(r).astype("float32")
-                    neu[f"{v}_{name}"] = (y + y.shift(-1)) / 2
-                continue
-            nach = x.shift(-1)
-            neu[v] = nach if v in STRAHLUNG else (x + nach) / 2
+        neu = ausrichten(g.set_index("zeit"), variablen)
         neu["vorlauf"] = np.int8(n)
         aus.append(neu.reset_index())
     return pd.concat(aus, ignore_index=True)
+
+
+def ausrichten(g: pd.DataFrame, variablen: list[str]) -> pd.DataFrame:
+    """Eine Zeitreihe (Index zeit UTC, stuendlich) auf SMARD-Stunden ausrichten.
+
+    Diese Funktion ist die Vorlage fuer die TypeScript-Fassung in smard-mcp; jede Aenderung
+    hier muss dort nachgezogen werden (der Vergleichstest faengt Abweichungen).
+    """
+    g = g.asfreq("h")
+    neu = pd.DataFrame(index=g.index)
+    for v in variablen:
+        x = g[v].astype("float32")
+        if v.startswith("wind_direction"):
+            # Richtung ist ein Kreis (359 Grad liegt neben 1 Grad): erst in Sinus und
+            # Kosinus zerlegen, dann auf die Stundenmitte mitteln
+            r = np.radians(x)
+            for f, name in ((np.sin, "sin"), (np.cos, "cos")):
+                y = f(r).astype("float32")
+                neu[f"{v}_{name}"] = (y + y.shift(-1)) / 2
+            continue
+        nach = x.shift(-1)
+        neu[v] = nach if v in STRAHLUNG else (x + nach) / 2
+    return neu
 
 
 def wetter_breit(typ: str, variablen: list[str]) -> pd.DataFrame:
@@ -127,4 +137,31 @@ def tabelle_wind(quelle: str) -> tuple[pd.DataFrame, list[str]]:
     d["a"] = d.ist_mwh / d.kap_mw
     d["a_nb"] = d.nb_mwh / d.kap_mw
     merkmale = [c for c in d.columns if "__" in c] + list(kal.columns) + ["vorlauf_tag"]
+    return d, merkmale
+
+
+def lauf_merkmale(roh: pd.DataFrame, quelle: str) -> tuple[pd.DataFrame, list[str]]:
+    """Merkmale aus EINEM Wetterlauf (lange Form: ort, zeit UTC, Variablen), wie im Betrieb.
+
+    Gibt die Tabelle je SMARD-Stunde und die Merkmalsliste OHNE vorlauf_tag zurueck; die
+    Reihenfolge der Spalten ist dieselbe wie im Training (tabelle_solar/tabelle_wind).
+    """
+    from sf.openmeteo import VARIABLEN
+    typ = {"solar": "solar", "wind_onshore": "wind", "wind_offshore": "offshore"}[quelle]
+    orte = [o for o in lade_orte() if typ in o.typ]
+    teile = []
+    for o in orte:
+        a = ausrichten(roh[roh.ort == o.name].set_index("zeit"), VARIABLEN[typ])
+        a.columns = [f"{o.name}__{c}" for c in a.columns]
+        teile.append(a)
+    breit = pd.concat(teile, axis=1)
+    spalten = sorted({c.split("__", 1)[1] for c in breit.columns})
+    for v in spalten:
+        breit[f"mittel__{v}"] = breit[[f"{o.name}__{v}" for o in orte]].mean(axis=1)
+    breit.index.name = "zeit"
+    kal = kalender(pd.DatetimeIndex(breit.index), orte)
+    if quelle != "solar":
+        kal = kal.drop(columns=["sonne_max"])
+    d = breit.join(kal)
+    merkmale = [c for c in breit.columns] + list(kal.columns)
     return d, merkmale

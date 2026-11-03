@@ -110,6 +110,13 @@ eigentlicher Wert liegt bei Tag 2 bis 6, für die es keine öffentliche Prognose
 Vergleich mit den Netzbetreibern wird weiter gemessen und berichtet. Anlass: Solar lag an Tag 1
 bei 1,76 % gegen 1,20 % (Skill −0,47), siehe `docs/journal.md`.
 
+**Entschieden am 2026-11-03 (Betreuer), Prüfpunkt B:** angenommen, obwohl Tag 6 (an Land 0,17,
+auf See 0,15) und auf See im Abschlusstest auch Tag 5 unter 0,2 Skill liegen. Ausgleich: Jede
+Antwort des Tools trägt einen festen Hinweis, dass es Modellschätzungen sind (`model_notice`),
+und jedes Intervall eine Gütestufe aus den gemessenen Werten (`quality`: hoch ab 0,4, mittel ab
+0,2, gering darunter; maßgeblich ist der schlechtere Wert aus rollierender Prüfung und
+Abschlusstest). Dazu kommt das Tool `describe_forecast_model` (Abschnitt 7).
+
 ## 5. Eigenes Archiv
 
 Ein täglicher Job auf der Web-Maschine speichert die aktuelle Vorhersage aller Wetterorte mit
@@ -144,9 +151,21 @@ Bandbreite; daneben `official_forecast`, wo die Netzbetreiber veröffentlicht ha
 `warnings`, Quelle, `server_time`); neu `model_version`, `trained_until`, `weather_run` und der
 Fehler je Vorlauftag aus dem Abschlusstest sowie aus den letzten 30 Tagen Monitoring.
 
+Ergänzt am 2026-11-03 (Wunsch des Betreuers):
+
+- `model_notice` in jeder Antwort und als erste Textzeile: Die Werte sind Schätzungen eines
+  Modells, keine Messung und keine amtliche Prognose.
+- `quality` je Intervall (siehe Abschnitt 4).
+- Zweites Tool `describe_forecast_model`: kurze technische Beschreibung (Daten, Merkmale,
+  Verfahren, Vorlauf, Kalibrierung, Prüfung, Fehler je Quelle und Vorlauftag, Grenzen). Alle
+  Zahlen darin kommen aus `models/modell.json`, das der Export aus den Kennzahl-Dateien erzeugt;
+  nichts davon wird von Hand geschrieben.
+
 Verhalten am Rand:
 
-- Zeitraum über 6 Tage hinaus: Fehler mit dem letzten möglichen Zeitpunkt
+- Zeitraum über 6 Tage hinaus: Beginn nach dem Horizont ist ein Fehler mit dem letzten möglichen
+  Zeitpunkt; reicht nur das Ende darüber, wird gekürzt (`complete: false` und Hinweis), damit
+  die Standardanfrage „bis in 6 Tagen“ nicht scheitert
 - Zeitraum in der Vergangenheit: Fehler mit Hinweis auf `get_generation_mix`
 - Wetter-API nicht erreichbar: zuletzt gespeicherte Vorhersage mit `warnings` und Alter, ab
   12 Stunden Alter ein Fehler
