@@ -426,12 +426,26 @@ Festgehalten in `docs/PLAN.md`, Abschnitte 4 und 7.
 - Wind wich anfangs um bis zu 0,7 % der Kapazität ab, Solar gar nicht. Ursache: pandas bildet die
   Mittel über alle Orte in float32, TypeScript rechnete in float64; beim Luftdruck (um
   1000 hPa) reichen wenige Bits, um eine Baumgrenze zu kippen. TypeScript summiert jetzt ebenso
-  in float32. Danach stimmen alle drei Quellen auf 7 Nachkommastellen überein.
+  in float32. Danach weichen alle drei Quellen um weniger als 1e-6 ab (so prüft es der Test).
 
 **Ergebnis:** Probelauf mit echten Daten am 3. November, 9 Uhr: Für den Rest des Tages sagt das
 Modell bei Solar 105,8 GWh voraus, die Netzbetreiber 105,1 GWh. Bei Wind an Land sind es 213,5
 gegen 217,1 GWh, bei Wind auf See 61,1 gegen 44,0 GWh. Eine Rechnung dauert rund 150 ms.
 
-**Offen in Phase 4:** die Prüfung der Interpolation mit Einzelläufen (Download läuft). Ein
-schon vorher fehlschlagender, datumsabhängiger Test in smard-mcp (`compare_periods`) ist nicht
-Teil dieser Arbeit.
+### 09:20 Phase 4, Nachbesserungen nach Durchsicht
+
+- Der HTTP-Server von smard-mcp baut je Anfrage einen neuen MCP-Server. Mit je einem eigenen
+  Wetter-Client hätte jede Anfrage Open-Meteo gefragt (40 Einheiten, etwa 250 Anfragen am Tag bis
+  zum Tageslimit). Jetzt teilen sich alle einen Client; ein Test prüft „zwei Server, ein Abruf“.
+- `deploy/deploy.sh` kopierte nur `dist/`; ohne `models/` wäre der erste Aufruf gescheitert.
+- Die Modellbeschreibung hatte doch noch Handgeschriebenes (Prüfzeiträume, welche Tage „low“
+  sind, wer an Tag 1 besser ist). Alles kommt jetzt aus `modell.json`
+  (`phase4_export.py --nur-meta` schreibt die Angaben, ohne neu zu trainieren). Dort steht auch,
+  dass der Solar-Abschlusstest noch ohne Kalibrierung und ohne Abstand lief.
+- Einzelläufe: nur noch alle 15 Tage (12 Läufe, je rund 14 Minuten). Probelauf der Auswertung auf
+  dem ersten Lauf (1. Mai) lief durch; Ergebnisse erst mit allen Läufen.
+
+**Offen:** Ergebnis der Interpolationsprüfung; Lizenz von Energy-Charts (die monatlichen
+Kapazitäten stehen jetzt in `models/modell.json` auf dem öffentlichen Branch und kämen ins
+npm-Paket); ein datumsabhängiger Test in smard-mcp (`compare_periods`) schlägt schon auf `main`
+fehl und würde `npm run deploy` blockieren.

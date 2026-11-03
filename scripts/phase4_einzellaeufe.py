@@ -1,6 +1,6 @@
 """Phase 4: Einzellaeufe aus der Single Runs API laden (Pruefung der Vorlauf-Interpolation).
 
-Ein Lauf alle 5 Tage von 2026-05-01 bis gestern, abwechselnd 00 und 12 UTC (nur diese
+Ein Lauf alle 15 Tage von 2026-05-01 bis gestern, abwechselnd 00 und 12 UTC (nur diese
 ICON-global-Laeufe reichen 180 h weit). Die Single Runs API rechnet icon_seamless je Ort erst bei
 der Anfrage zusammen (rund 30 s je Ort; 40 Orte in einem Abruf liefen ueber jede Zeitgrenze).
 Deshalb ein Abruf je Ort, 4 gleichzeitig, mit 10 Minuten Zeitgrenze.
@@ -39,7 +39,7 @@ def laeufe():
     while tag <= bis:
         stunde = 0 if tag.toordinal() % 2 == 0 else 12
         yield dt.datetime(tag.year, tag.month, tag.day, stunde)
-        tag += dt.timedelta(days=5)
+        tag += dt.timedelta(days=15)
 
 
 def main():

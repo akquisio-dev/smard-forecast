@@ -9,7 +9,7 @@ Startwerten, trainiert auf ALLEN vorhandenen Daten. Dazu:
   * Orte, Variablen, Merkmalsreihenfolge, Kapazitaet je Monat.
 
 Ausgabe: data/modell/<version>/ mit modell.json und <quelle>_p<q>.json (kompakte Baeume).
-Aufruf: scripts/als-dienst.sh scripts/phase4_export.py
+Aufruf: scripts/als-dienst.sh scripts/phase4_export.py [--nur-meta <version>]
 """
 
 import datetime as dt
@@ -32,6 +32,7 @@ from sf.orte import ROOT, lade_orte  # noqa: E402
 
 QUELLEN = ("solar", "wind_onshore", "wind_offshore")
 PH = ROOT / "data" / "phase2"
+GRENZEN = {"high": 0.4, "medium": 0.2}  # Guetestufen nach Skill gegen die einfache Messlatte
 
 
 def tabelle(quelle):
@@ -88,6 +89,21 @@ def cqr_betrieb(quelle) -> dict:
     return aus
 
 
+def pruefung(quelle) -> dict:
+    """Wie die Kennzahlen entstanden sind (fuer die Modellbeschreibung, nicht von Hand)."""
+    if quelle == "solar":
+        e = pd.read_parquet(PH / "solar_rollierend_bester.parquet")
+        monate = sorted(e.monat.unique())[1:]  # der erste Monat dient nur der Kalibrierung
+        return {"rollierend_von": monate[0], "rollierend_bis": monate[-1], "abstand_tage": 7,
+                "abschluss_von": P.ABSCHLUSS[0], "abschluss_bis": P.ABSCHLUSS[-1],
+                "abschluss_kalibriert": False, "abschluss_abstand_tage": 0}
+    e = pd.read_parquet(PH / f"{quelle}_vorhersagen.parquet")
+    monate = sorted(e[e.teil == "rollierend"].monat.unique())
+    return {"rollierend_von": monate[0], "rollierend_bis": monate[-1], "abstand_tage": 7,
+            "abschluss_von": P.ABSCHLUSS[0], "abschluss_bis": P.ABSCHLUSS[-1],
+            "abschluss_kalibriert": True, "abschluss_abstand_tage": 7}
+
+
 def kennzahlen(quelle) -> dict:
     """Gemessene Fehler: rollierend mit Kalibrierung und Abschlusstest (erster Blick)."""
     if quelle == "solar":
@@ -101,7 +117,7 @@ def kennzahlen(quelle) -> dict:
     for n in range(1, 7):
         r, a = roll[str(n)], absch[str(n)]
         skill = min(r["skill_einfach"], a["skill_einfach"])
-        stufe = "high" if skill >= 0.4 else "medium" if skill >= 0.2 else "low"
+        stufe = "high" if skill >= GRENZEN["high"] else "medium" if skill >= GRENZEN["medium"] else "low"
         tage[n] = {
             "mae_pct_of_capacity": round(r["mae_pct"], 2), "mae_gw": round(r["mae_gw"], 2),
             "coverage_p10_p90_pct": round(r["treffer_pct"], 1),
@@ -111,7 +127,8 @@ def kennzahlen(quelle) -> dict:
             "holdout_skill_vs_simple": round(a["skill_einfach"], 2),
             "quality": stufe}
     r1 = roll["1"]
-    return {"je_tag": tage, "holdout_calibrated": absch_cqr,
+    return {"je_tag": tage, "holdout_calibrated": absch_cqr, "pruefung": pruefung(quelle),
+            "guete_grenzen": GRENZEN,
             "day1_vs_tso": {"model_mae_pct": round(r1["modell_mae_pct_nb_stunden"], 2),
                             "tso_mae_pct": round(r1["nb_mae_pct"], 2)}}
 
@@ -131,7 +148,19 @@ def kapazitaet() -> dict:
     return aus
 
 
+def nur_meta(version: str):
+    """Kennzahlen und Pruefangaben in modell.json neu schreiben, ohne neu zu trainieren."""
+    datei = ROOT / "data" / "modell" / version / "modell.json"
+    meta = json.loads(datei.read_text())
+    for quelle in QUELLEN:
+        meta["quellen"][quelle]["kennzahlen"] = kennzahlen(quelle)
+    datei.write_text(json.dumps(meta, indent=1, default=str))
+    log(f"modell.json von {version} aktualisiert (nur Beschreibung)")
+
+
 def main():
+    if len(sys.argv) == 3 and sys.argv[1] == "--nur-meta":
+        return nur_meta(sys.argv[2])
     t0 = time.time()
     orte = lade_orte()
     trainiert_bis = None
