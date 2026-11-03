@@ -8,7 +8,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 MCP=${SMARD_MCP_REPO:-/root/smard-mcp}
-BASIS=${SMARD_MCP_BASIS:-forecast}   # nach dem Mergen des Tools: main
+BASIS=${SMARD_MCP_BASIS:-main}
 WT=/root/smard-mcp-modelle
 LOG=data/logs/monatlich_git.log
 log() { echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $*" | tee -a "$LOG"; }

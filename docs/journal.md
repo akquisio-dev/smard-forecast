@@ -538,3 +538,25 @@ zwischen 70 und 90 %.
 **Fehlschlag:** Timer konnte nicht aus der Sitzung installiert werden (Freigabe fehlt); Joey
 installiert ihn. Unter systemd fehlen HOME (SSH-Alias für den Push) und der nvm-Pfad für npx;
 beides in der Unit gesetzt.
+
+### 10:15 Phase 6: Ausrollen vorbereitet
+
+**Gemacht:**
+
+- Live-Probe gegen Open-Meteo mit dem gebauten Server: erste Anfrage 0,6 bis 0,7 s, danach 7 ms
+  aus dem Cache, 131 MB Speicher (Dienst hat 256 MB). Day-Werte des laufenden und letzten Tags
+  sind Teiltage; der Text sagt das jetzt („only 14 of 24 hours“).
+- Lizenz Energy-Charts geklärt: Laut Beschreibung der Energy-Charts-API stehen die Daten, wenn
+  nicht anders angegeben, unter CC BY 4.0 mit Nennung von Energy-Charts.info. Nennung in der
+  Quellenangabe des Tools und in der README ergänzt. Damit ist der letzte offene Punkt aus
+  Phase 0 erledigt.
+- smard-mcp: README (Abschnitt Forecast, Datenschutz Open-Meteo, Datenquellen, Betrieb),
+  Smoke-Test ruft `forecast_renewables` auf, Version 1.4.0, Modelle 2026.11.02 aus dem
+  monatlichen Branch übernommen, `forecast` per Fast-Forward nach `main` (c6eefbc).
+  179 Tests, Smoke-Test gegen lokalen HTTP-Server 12/12.
+- `monatlich.sh` baut ab jetzt auf `main`. Kriterien für Prüfpunkt C in PLAN.md.
+
+**Fehlschlag:** `npm run deploy` aus der Sitzung blockiert (Freigabe fehlt), Joey rollt aus.
+Bis dahin schlägt der tägliche Smoke-Test der GitHub-Action fehl, weil er die neuen Tools erwartet.
+`npm install --package-lock-only` hätte nebenbei `libc`-Felder im Lockfile entfernt (andere
+npm-Version); zurückgenommen, nur die Versionszeilen geändert.

@@ -215,6 +215,21 @@ Technik:
 | 5 | Monitoring und monatlicher Workflow | ja |
 | 6 | ausrollen, 2 bis 4 Wochen Fehler im Betrieb beobachten, **Prüfpunkt C**, danach npm-Release | ja |
 
+**Phase 6 (seit 2026-11-03):** smard-mcp 1.4.0 mit Modell 2026.11.02 auf `main` (c6eefbc),
+Ausrollen auf die Web-Maschine durch den Betreuer. Das monatliche Neu-Training baut seine
+Branches ab jetzt auf `main`. Das npm-Paket bleibt bis Prüfpunkt C bei 1.3.0.
+
+**Prüfpunkt C** (Vorschlag, Entscheidung beim Betreuer), frühestens nach 14, regulär nach
+28 Tagen Monitoring, je Quelle und Vorlauftag mit mindestens 7 Tagen vergleichbarer Stunden:
+
+1. Trefferquote p10 bis p90 zwischen 70 und 90 %.
+2. MAE höchstens das 1,5-fache des MAE aus der rollierenden Prüfung (`models/modell.json`).
+3. Betrieb: täglicher Smoke-Test grün; Warnungen wegen veralteter Wetterdaten an höchstens
+   2 Tagen.
+
+Verfehlt ein Vorlauftag Punkt 1 oder 2, wird seine Gütestufe gesenkt oder er aus dem Tool
+genommen, bevor das npm-Paket erscheint.
+
 Erst wenn das Solar-Modell an Prüfpunkt A die Messlatten schlägt, entsteht Code in smard-mcp.
 Termine sind bewusst offen.
 
