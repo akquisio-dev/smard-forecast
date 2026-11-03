@@ -108,7 +108,7 @@ Tabelle: Was die Phasen tun
 | 1 | Trainingsdaten laden, eigenes Archiv der Wettervorhersagen starten | Download abgeschlossen; Archiv läuft täglich |
 | 2 | Solar-Modell bauen und gegen einfache Messlatten prüfen, dann **Prüfpunkt A** | abgeschlossen am 3.11.2026, Prüfpunkt A bestanden (Kapitel 21) |
 | 3 | Wind-Modelle, dann **Prüfpunkt B** | abgeschlossen am 3.11.2026, Prüfpunkt B mit Auflagen angenommen (Kapitel 22) |
-| 4 | Tool in smard-mcp auf einem Nebenzweig einbauen | Tool fertig, nicht ausgerollt; Prüfung der Interpolation läuft (Kapitel 23) |
+| 4 | Tool in smard-mcp auf einem Nebenzweig einbauen | Tool fertig; Interpolation an Einzelläufen bestätigt (Kapitel 23) |
 | 5 | tägliche Überwachung, monatliches Neu-Training | geplant |
 | 6 | ausrollen, im Betrieb beobachten, **Prüfpunkt C**, Veröffentlichung | geplant |
 

@@ -621,9 +621,13 @@ Der Horizont endet, wo der längste trainierte Vorlauf erreicht ist: (L − 3 h)
 
 Kapitel 16 begründet, warum der Vorlauf zwischen den Vorlauftagen interpoliert statt abgerundet wird. Geprüft wird das an echten Einzelläufen aus der Single Runs API: Für Läufe von Mai bis Oktober 2026 wird jede Stunde mit ihrem tatsächlichen Vorlauf einmal interpoliert und einmal abgerundet vorhergesagt, mit Modellen, die nur Daten bis Ende April kennen. Verglichen werden Trefferquote und MAE je 6-Stunden-Band des Vorlaufs.
 
-!achtung Ergebnis steht noch aus
-Die Single Runs API setzt `icon_seamless` für jeden Ort bei der Anfrage neu zusammen und braucht dafür rund eine Minute je Ort. Geladen werden deshalb nur 13 Läufe im Abstand von 15 Tagen; zum Stand dieses Dokuments lagen {{z:interp_laeufe}} vor. Ein Probelauf auf dem ersten Lauf bestätigte nur, dass die Auswertung technisch durchläuft; aus einem einzigen Lauf lässt sich nichts schließen. Das Ergebnis wird in diesem Abschnitt nachgetragen.
-!ende
+**Datenbasis.** Die Single Runs API setzt `icon_seamless` für jeden Ort bei der Anfrage neu zusammen und braucht dafür rund eine Minute je Ort. Geladen wurden deshalb Läufe im Abstand von 15 Tagen; {{z:interp_laeufe}} Läufe von Mai bis Mitte Oktober 2026 kamen vollständig an, der dreizehnte (28. Oktober) lieferte auch nach vier Versuchen je Ort keine Antwort und fehlt. Bei Solar zählen nur Stunden mit Sonne über dem Horizont.
+
+[abb e_interpolation | Trefferquote p10 bis p90 je 6-Stunden-Band des Vorlaufs, abgerundet (gestrichelt) und interpoliert (durchgezogen), {{z:interp_laeufe}} Einzelläufe Mai bis Oktober 2026. Grau: Zielbereich 75 bis 85 %.]
+
+**Ergebnis.** Über alle Bänder steigt die Trefferquote mit Interpolation bei Solar von {{z:interp_solar_tr_abgerundet}} auf {{z:interp_solar_tr_interpoliert}} %, bei Wind an Land von {{z:interp_wind_onshore_tr_abgerundet}} auf {{z:interp_wind_onshore_tr_interpoliert}} % und bei Wind auf See von {{z:interp_wind_offshore_tr_abgerundet}} auf {{z:interp_wind_offshore_tr_interpoliert}} %. Der MAE ändert sich kaum (Solar {{z:interp_solar_mae_abgerundet}} gegenüber {{z:interp_solar_mae_interpoliert}} %, Wind an Land {{z:interp_wind_onshore_mae_abgerundet}} gegenüber {{z:interp_wind_onshore_mae_interpoliert}} %, Wind auf See {{z:interp_wind_offshore_mae_abgerundet}} gegenüber {{z:interp_wind_offshore_mae_interpoliert}} %, jeweils in % der installierten Leistung). In 20 von 21 Bändern bei Solar und Wind auf See und in allen 21 bei Wind an Land ist die Trefferquote mit Interpolation mindestens so hoch wie mit Abrunden. Das entspricht der Erwartung aus Kapitel 16: Abrunden behandelt eine Stunde mit 47 h Vorlauf wie eine mit 24 h und gibt ihr das schmalere Band des früheren Tags; die Interpolation verbreitert das Band stetig mit dem Vorlauf, während der Median praktisch gleich bleibt.
+
+**Einschränkung.** Die Stunden eines Laufs sind stark voneinander abhängig (Begriff Autokorrelation); die effektive Stichprobe ist eher die Zahl der Läufe als die Zahl der Stunden. Die Unterschiede in einzelnen Bändern sind deshalb nicht belastbar, wohl aber die einheitliche Richtung über alle drei Quellen. Die Interpolation bleibt im Betrieb; ihre Wirkung misst die Überwachung (Kapitel 24) laufend mit.
 
 ## Numerische Äquivalenz von Python und TypeScript
 
@@ -793,15 +797,13 @@ Tabelle: Risiken
 | seltene Wetterlagen (Dunkelflaute, Sturm) | grobe Ausreißer | Quantile; Winter getrennt bewertet |
 | Open-Meteo ändert Bedingungen oder fällt aus | keine Prognose | Zwischenspeicher mit Warnung; langfristig DWD Open Data als zweite Quelle |
 | Wechsel innerhalb von icon_seamless | Eingaben verändern sich | Laufzeitpunkte im Archiv, Überwachung zeigt Brüche |
-| Lizenz Energy-Charts | Nenner fehlt; die Monatswerte stehen in der Modelldatei, die mit dem npm-Paket verteilt würde | vor dem Mergen klären; Rückfall Marktstammdatenregister |
+| Lizenz Energy-Charts | Nenner fehlt; die Monatswerte stehen in der Modelldatei, die mit dem npm-Paket verteilt würde | geklärt am 3. November 2026: CC BY 4.0 laut Beschreibung der Energy-Charts-API, Nennung in der Quellenangabe |
 | Abweichung zwischen Python und TypeScript | Tool rechnet anders als geprüft | Vergleichstest auf echter Eingabe, Toleranz 10⁻⁶ |
 | Tageslimit von Open-Meteo | keine Prognose | ein prozessweiter Zwischenspeicher, Abruf nur bei neuem Lauf |
 | Unsicherheit hängt von der Jahreszeit ab | Bänder im Winter zu schmal, im Sommer zu breit | Überwachung; später Kalibrierung nach Jahreszeit |
 
 ## Offene Fragen
 
-- Lizenz der Energy-Charts-Daten.
-- Ergebnis der Interpolationsprüfung mit Einzelläufen.
 - Kalibrierung nach Jahreszeit oder Wetterlage statt nur nach Vorlauftag?
 - Ein datumsabhängiger, schon vorher fehlschlagender Test in smard-mcp (`compare_periods`) blockiert `npm run deploy`.
 - Welche Lauffolge liefert icon_seamless in den ersten 48 Stunden genau?

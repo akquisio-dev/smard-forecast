@@ -560,3 +560,12 @@ beides in der Unit gesetzt.
 Bis dahin schlägt der tägliche Smoke-Test der GitHub-Action fehl, weil er die neuen Tools erwartet.
 `npm install --package-lock-only` hätte nebenbei `libc`-Felder im Lockfile entfernt (andere
 npm-Version); zurückgenommen, nur die Versionszeilen geändert.
+
+### 10:35 Interpolationsprüfung abgeschlossen
+
+**Gemacht:** Einzelläufe-Download endete mit 12 von 13 Läufen; der Lauf vom 28.10. 12 UTC lieferte
+bei der Single Runs API auch nach vier Versuchen je Ort nur leere Antworten. Mit 12 Läufen
+`phase4_interpolation.py`: Trefferquote interpoliert gegenüber abgerundet Solar 85,6 gegenüber
+84,8 %, Wind an Land 84,8 gegenüber 81,9 %, Wind auf See 88,0 gegenüber 85,5 %; MAE praktisch
+gleich. Interpolation bleibt. Abschnitt 23.4 des Berichts nachgetragen, Grafik e_interpolation,
+PDF neu gebaut (nur lokal).
